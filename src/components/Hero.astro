@@ -1,0 +1,214 @@
+---
+import { hero, site } from "../config/site";
+
+// Split the headline so one word can carry italic-serif emphasis.
+const [before, after] = hero.headline.split(hero.emphasis);
+---
+
+<section class="hero" id="efni">
+  <div class="shell hero-grid">
+    <div class="hero-copy">
+      <p class="kicker rise" style="animation-delay: 40ms">{hero.kicker}</p>
+
+      <h1 class="hero-title rise" style="animation-delay: 90ms">
+        {before}<em>{hero.emphasis}</em>{after}
+      </h1>
+
+      <p class="hero-sub rise" style="animation-delay: 160ms">{hero.sub}</p>
+
+      <div class="hero-actions rise" style="animation-delay: 230ms">
+        <a href={hero.primaryCta.href} class="btn btn-primary">
+          {hero.primaryCta.label}
+        </a>
+        <a href={hero.secondaryCta.href} class="btn btn-ghost">
+          {hero.secondaryCta.label}
+        </a>
+      </div>
+    </div>
+
+    <aside class="hero-plate rise" style="animation-delay: 300ms" aria-label="Í stuttu máli">
+      <span class="plate-mark" aria-hidden="true"></span>
+      <div class="plate-inner">
+        <p class="plate-quote">
+          „Ég byggi þjálfun fyrir <em>alvöru líf</em> — ekki bara á blaði.“
+        </p>
+        <p class="plate-attr">— {site.coach.name}, {site.coach.role}</p>
+      </div>
+      <dl class="proof">
+        {
+          hero.proof.map((p) => (
+            <div class="proof-item">
+              <dt>{p.value}</dt>
+              <dd>{p.label}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding-block: clamp(3rem, 1rem + 9vw, 7rem) clamp(3rem, 1rem + 6vw, 5.5rem);
+    overflow: hidden;
+  }
+  /* Warm ambient wash behind the hero */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        60% 55% at 78% 12%,
+        var(--color-clay-tint) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        70% 60% at 8% 90%,
+        var(--color-forest-tint) 0%,
+        transparent 55%
+      );
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 1rem + 5vw, 4rem);
+    align-items: center;
+  }
+
+  .hero-title {
+    font-size: var(--text-hero);
+    font-weight: 480;
+    margin-block: 1.1rem 0;
+    max-width: 15ch;
+  }
+  .hero-title em {
+    font-style: italic;
+    font-weight: 460;
+    color: var(--color-clay-deep);
+  }
+
+  .hero-sub {
+    font-size: var(--text-lead);
+    color: var(--color-ink-soft);
+    max-width: 44ch;
+    margin-block: 1.5rem 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-block-start: 2rem;
+  }
+
+  /* ---- The plate ---- */
+  .hero-plate {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+    border-radius: 1.5rem;
+    background: linear-gradient(
+      160deg,
+      var(--color-forest) 0%,
+      var(--color-forest-deep) 100%
+    );
+    color: var(--color-paper);
+    box-shadow:
+      0 1px 2px oklch(0.3 0.05 154 / 0.2),
+      0 24px 50px -24px oklch(0.3 0.06 154 / 0.55);
+    min-height: 20rem;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* Brand-mark watermark — echoes the logo ring, fills the plate with
+     character (and marks where a real coach photo will later sit). */
+  .plate-mark {
+    position: absolute;
+    right: -3.5rem;
+    bottom: 5.5rem;
+    width: 15rem;
+    height: 15rem;
+    border-radius: 999px;
+    border: 1.5px solid color-mix(in oklch, var(--color-clay-tint) 40%, transparent);
+    z-index: -1;
+  }
+  .plate-mark::after {
+    content: "";
+    position: absolute;
+    inset: 2.5rem;
+    border-radius: 999px;
+    border: 1.5px solid color-mix(in oklch, var(--color-paper) 14%, transparent);
+  }
+  .hero-plate::after {
+    /* subtle inner light */
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      80% 50% at 80% 0%,
+      oklch(0.8 0.09 150 / 0.28),
+      transparent 70%
+    );
+    z-index: -1;
+  }
+
+  .plate-quote {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    color: color-mix(in oklch, var(--color-paper) 96%, transparent);
+  }
+  .plate-quote em {
+    font-style: italic;
+    color: var(--color-clay-tint);
+  }
+  .plate-attr {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: color-mix(in oklch, var(--color-paper) 70%, transparent);
+  }
+
+  .proof {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid color-mix(in oklch, var(--color-paper) 22%, transparent);
+  }
+  .proof-item dt {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.9rem);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-paper);
+  }
+  .proof-item dd {
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: color-mix(in oklch, var(--color-paper) 74%, transparent);
+  }
+
+  @media (min-width: 900px) {
+    .hero-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+    }
+    .hero-plate {
+      min-height: 27rem;
+    }
+  }
+</style>

@@ -1,0 +1,63 @@
+---
+import { finalCta } from "../config/site";
+---
+
+<section class="section cta-section" id="hafa-samband">
+  <div class="shell">
+    <div class="cta-panel">
+      <p class="kicker cta-kicker">{finalCta.kicker}</p>
+      <h2 class="cta-title">{finalCta.title}</h2>
+      <p class="cta-body">{finalCta.body}</p>
+      <a href={finalCta.cta.href} class="btn btn-clay cta-btn">{finalCta.cta.label}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-panel {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(2.5rem, 1.5rem + 5vw, 5rem) clamp(1.5rem, 1rem + 3vw, 4rem);
+    border-radius: 1.75rem;
+    background: linear-gradient(
+      160deg,
+      var(--color-forest) 0%,
+      var(--color-forest-deep) 100%
+    );
+    color: var(--color-paper);
+    text-align: center;
+    isolation: isolate;
+  }
+  .cta-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(50% 60% at 15% 10%, oklch(0.8 0.09 150 / 0.3), transparent 60%),
+      radial-gradient(50% 70% at 90% 100%, var(--color-clay-deep) 0%, transparent 55%);
+    opacity: 0.55;
+  }
+  .cta-kicker {
+    color: var(--color-clay-tint);
+    justify-content: center;
+  }
+  .cta-kicker::before {
+    background: var(--color-clay-tint);
+  }
+  .cta-title {
+    font-size: var(--text-display);
+    margin-block: 1rem 0;
+    max-width: 20ch;
+    margin-inline: auto;
+  }
+  .cta-body {
+    font-size: var(--text-lead);
+    color: color-mix(in oklch, var(--color-paper) 84%, transparent);
+    max-width: 46ch;
+    margin: 1.25rem auto 0;
+  }
+  .cta-btn {
+    margin-top: 2.25rem;
+  }
+</style>

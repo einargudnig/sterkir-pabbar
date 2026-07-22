@@ -1,0 +1,210 @@
+---
+import { site, nav } from "../config/site";
+---
+
+<header class="site-header">
+  <div class="shell bar">
+    <a href="#efni" class="wordmark" aria-label={`${site.name} — heim`}>
+      <span class="mark" aria-hidden="true"></span>
+      <span class="wordmark-text">{site.name}</span>
+    </a>
+
+    <nav class="desktop-nav" aria-label="Aðalvalmynd">
+      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+    </nav>
+
+    <div class="header-cta">
+      <a href="#hafa-samband" class="btn btn-primary btn-sm">Ókeypis spjall</a>
+    </div>
+
+    <button
+      class="menu-toggle"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+      aria-label="Opna valmynd"
+    >
+      <span></span><span></span>
+    </button>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" hidden>
+    <nav class="shell" aria-label="Valmynd">
+      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+      <a href="#hafa-samband" class="btn btn-primary">Ókeypis spjall</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in oklch, var(--color-paper) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms ease;
+  }
+  .site-header[data-scrolled] {
+    border-bottom-color: var(--color-line);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 4.5rem;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+  .mark {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 999px;
+    background: var(--color-forest);
+    box-shadow: inset 0 0 0 3px var(--color-paper), 0 0 0 2px var(--color-forest);
+  }
+
+  .desktop-nav {
+    display: none;
+    gap: 1.75rem;
+    margin-inline-start: auto;
+    margin-inline-end: 1.5rem;
+  }
+  .desktop-nav a {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-ink-soft);
+    position: relative;
+    transition: color 160ms ease;
+  }
+  .desktop-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    height: 2px;
+    width: 0;
+    background: var(--color-clay);
+    transition: width 220ms var(--ease-out-strong);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .desktop-nav a:hover {
+      color: var(--color-ink);
+    }
+    .desktop-nav a:hover::after {
+      width: 100%;
+    }
+  }
+
+  .btn-sm {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.9rem;
+  }
+  .header-cta {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-inline-start: auto;
+    border-radius: 0.6rem;
+    border: 1px solid var(--color-line);
+    background: transparent;
+  }
+  .menu-toggle span {
+    display: block;
+    width: 1.15rem;
+    height: 2px;
+    margin-inline: auto;
+    background: var(--color-ink);
+    transition: transform 220ms var(--ease-out-strong), opacity 160ms ease;
+  }
+  .menu-toggle[aria-expanded="true"] span:first-child {
+    transform: translateY(3.5px) rotate(45deg);
+  }
+  .menu-toggle[aria-expanded="true"] span:last-child {
+    transform: translateY(-3.5px) rotate(-45deg);
+  }
+
+  .mobile-nav {
+    border-top: 1px solid var(--color-line);
+    background: var(--color-paper);
+    overflow: hidden;
+  }
+  .mobile-nav nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-block: 1rem 1.5rem;
+  }
+  .mobile-nav nav a:not(.btn) {
+    padding: 0.75rem 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mobile-nav nav .btn {
+    margin-top: 0.75rem;
+  }
+
+  @media (min-width: 900px) {
+    .desktop-nav {
+      display: flex;
+    }
+    .header-cta {
+      display: block;
+    }
+    .menu-toggle {
+      display: none;
+    }
+    .mobile-nav {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>(".site-header");
+  const toggle = document.querySelector<HTMLButtonElement>(".menu-toggle");
+  const panel = document.getElementById("mobile-nav");
+
+  if (toggle && panel) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Loka valmynd" : "Opna valmynd");
+      panel.hidden = !open;
+    };
+    toggle.addEventListener("click", () =>
+      setOpen(toggle.getAttribute("aria-expanded") !== "true"),
+    );
+    panel.querySelectorAll("a").forEach((link) =>
+      link.addEventListener("click", () => setOpen(false)),
+    );
+  }
+
+  if (header) {
+    const onScroll = () => {
+      if (window.scrollY > 8) header.setAttribute("data-scrolled", "");
+      else header.removeAttribute("data-scrolled");
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+</script>

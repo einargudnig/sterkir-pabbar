@@ -1,0 +1,93 @@
+---
+import "../styles/global.css";
+import { site } from "../config/site";
+import { buildJsonLd } from "../lib/jsonLd";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path relative to the site root, e.g. "/" */
+  path?: string;
+}
+
+const {
+  title = `${site.name} — ${site.tagline}`,
+  description = site.description,
+  path = "/",
+} = Astro.props;
+
+const canonical = new URL(path, site.domain).href;
+const ogImage = new URL("/og.png", site.domain).href;
+const jsonLd = JSON.stringify(buildJsonLd());
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4efe4" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Preconnect not needed: fonts are self-hosted. Preload the critical ones. -->
+    <link
+      rel="preload"
+      href="/fonts/hanken-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/fraunces-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <script type="application/ld+json" set:html={jsonLd} is:inline />
+  </head>
+  <body>
+    <a href="#efni" class="skip-link">Fara í meginmál</a>
+    <slot />
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: 1rem;
+        top: -3rem;
+        z-index: 100;
+        background: var(--color-forest);
+        color: var(--color-paper);
+        padding: 0.6rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: top 160ms var(--ease-out-strong);
+      }
+      .skip-link:focus {
+        top: 1rem;
+      }
+    </style>
+  </body>
+</html>

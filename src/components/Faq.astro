@@ -1,0 +1,130 @@
+---
+import { faq } from "../config/site";
+---
+
+<section class="section faq" id="spurningar">
+  <div class="shell faq-grid">
+    <header class="faq-head">
+      <p class="kicker">Algengar spurningar</p>
+      <h2 class="faq-title">Það sem pabbar spyrja fyrst</h2>
+    </header>
+
+    <div class="faq-list">
+      {
+        faq.map((item) => (
+          <details class="faq-item" name="faq">
+            <summary>
+              <span>{item.q}</span>
+              <span class="faq-icon" aria-hidden="true" />
+            </summary>
+            <div class="faq-answer">
+              <p>{item.a}</p>
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+    align-items: start;
+  }
+  .faq-title {
+    font-size: var(--text-display);
+    margin-top: 0.9rem;
+    max-width: 12ch;
+  }
+
+  .faq-item {
+    border-top: 1px solid var(--color-line);
+  }
+  .faq-item:last-child {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 1.35rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
+    font-weight: 500;
+    color: var(--color-ink);
+    transition: color 160ms ease;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    summary:hover {
+      color: var(--color-forest);
+    }
+  }
+
+  .faq-icon {
+    position: relative;
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .faq-icon::before,
+  .faq-icon::after {
+    content: "";
+    position: absolute;
+    background: var(--color-clay-deep);
+    border-radius: 2px;
+    transition: transform 260ms var(--ease-out-strong), opacity 200ms ease;
+  }
+  .faq-icon::before {
+    inset-block: 0;
+    inset-inline: 45%;
+  }
+  .faq-icon::after {
+    inset-inline: 0;
+    inset-block: 45%;
+  }
+  .faq-item[open] .faq-icon::before {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+
+  .faq-answer {
+    display: grid;
+    grid-template-rows: 1fr;
+    overflow: hidden;
+    padding-bottom: 1.5rem;
+  }
+  .faq-answer p {
+    color: var(--color-ink-soft);
+    max-width: 60ch;
+  }
+  /* Gentle reveal that respects reduced motion via the global rule */
+  .faq-item[open] .faq-answer p {
+    animation: faq-in 320ms var(--ease-out-strong);
+  }
+  @keyframes faq-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  @media (min-width: 860px) {
+    .faq-grid {
+      grid-template-columns: 0.8fr 1.2fr;
+    }
+    .faq-head {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+</style>

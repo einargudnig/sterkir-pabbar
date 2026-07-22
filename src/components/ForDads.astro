@@ -1,0 +1,73 @@
+---
+import { forDads } from "../config/site";
+---
+
+<section class="section fordads">
+  <div class="shell fordads-grid">
+    <div class="fordads-head">
+      <p class="kicker">{forDads.kicker}</p>
+      <h2 class="fordads-title">{forDads.title}</h2>
+    </div>
+    <ul class="reasons">
+      {
+        forDads.points.map((point, i) => (
+          <li class="reason">
+            <span class="reason-index">{String(i + 1).padStart(2, "0")}</span>
+            <p>{point}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .fordads-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+    align-items: start;
+  }
+  .fordads-title {
+    font-size: var(--text-display);
+    margin-top: 0.9rem;
+    max-width: 16ch;
+  }
+  .reasons {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .reason {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.1rem;
+    align-items: baseline;
+  }
+  .reason-index {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-forest);
+    padding-top: 0.15rem;
+  }
+  .reason p {
+    font-size: var(--text-subtitle);
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--color-ink);
+    max-width: 30ch;
+  }
+
+  @media (min-width: 860px) {
+    .fordads-grid {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+    .fordads-head {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+</style>
