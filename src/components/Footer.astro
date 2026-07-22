@@ -7,7 +7,7 @@ const year = new Date().getFullYear();
   <div class="shell footer-grid">
     <div class="footer-brand">
       <a href="#efni" class="wordmark">
-        <span class="mark" aria-hidden="true"></span>
+        <span class="crest-mark mark" aria-hidden="true"></span>
         {site.name}
       </a>
       <p class="footer-tag">{site.tagline}.</p>
@@ -56,11 +56,9 @@ const year = new Date().getFullYear();
     color: var(--color-ink);
   }
   .mark {
-    width: 1rem;
-    height: 1rem;
-    border-radius: 999px;
-    background: var(--color-forest);
-    box-shadow: inset 0 0 0 3px var(--color-paper-sink), 0 0 0 2px var(--color-forest);
+    width: 1.6rem;
+    height: 1.45rem;
+    --crest-color: var(--color-forest);
   }
   .footer-tag {
     margin-top: 0.85rem;

@@ -27,7 +27,7 @@ const [before, after] = hero.headline.split(hero.emphasis);
     </div>
 
     <aside class="hero-plate rise" style="animation-delay: 300ms" aria-label="Í stuttu máli">
-      <span class="plate-mark" aria-hidden="true"></span>
+      <span class="crest-mark plate-mark" aria-hidden="true"></span>
       <div class="plate-inner">
         <p class="plate-quote">
           „Ég byggi þjálfun fyrir <em>alvöru líf</em> — ekki bara á blaði.“
@@ -131,24 +131,14 @@ const [before, after] = hero.headline.split(hero.emphasis);
     isolation: isolate;
   }
 
-  /* Brand-mark watermark — echoes the logo ring, fills the plate with
-     character (and marks where a real coach photo will later sit). */
+  /* Real brand crest as a large, faint watermark on the plate. */
   .plate-mark {
     position: absolute;
-    right: -3.5rem;
-    bottom: 5.5rem;
+    right: -2.5rem;
+    bottom: 3.5rem;
     width: 15rem;
-    height: 15rem;
-    border-radius: 999px;
-    border: 1.5px solid color-mix(in oklch, var(--color-clay-tint) 40%, transparent);
     z-index: -1;
-  }
-  .plate-mark::after {
-    content: "";
-    position: absolute;
-    inset: 2.5rem;
-    border-radius: 999px;
-    border: 1.5px solid color-mix(in oklch, var(--color-paper) 14%, transparent);
+    --crest-color: color-mix(in oklch, var(--color-paper) 14%, transparent);
   }
   .hero-plate::after {
     /* subtle inner light */

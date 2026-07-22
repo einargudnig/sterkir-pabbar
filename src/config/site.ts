@@ -9,7 +9,7 @@
 export const site = {
   name: "Sterkir pabbar",
   legalName: "Sterkir pabbar", // TODO(client): official ehf./kt. name if different
-  tagline: "Þjálfun fyrir pabba sem vilja endast",
+  tagline: "Verðum sterkari saman",
   domain: "https://sterkirpabbar.is", // TODO(client): confirm final domain
   locale: "is_IS",
   lang: "is",
@@ -33,21 +33,20 @@ export const site = {
 
   // The coach behind it — feeds the Person schema + About section.
   coach: {
-    name: "Nafn Þjálfara", // TODO(client)
-    role: "Einkaþjálfari",
-    // TODO(client): real bio — 2–3 sentences, first person, warm.
-    bio: "Ég er pabbi, þjálfari og hef hjálpað tugum feðra að ná aftur styrk og orku. Ég veit hvað það er að þjálfa í kringum svefnlausar nætur, vinnu og fjölskyldu — því byggi ég prógrömm sem virka í alvöru lífi, ekki bara á blaði.",
-    credentials: "ÍAK einkaþjálfari", // TODO(client): real certification
+    name: "Aron Ingi",
+    role: "Einkaþjálfari & pabbi",
+    // TODO(client): confirm/expand bio with Aron — first person, warm.
+    bio: "Ég heiti Aron Ingi, er pabbi og einkaþjálfari. Ég veit hvað það er að þjálfa í kringum svefnlausar nætur, vinnu og fjölskyldu — því byggi ég prógrömm sem virka í alvöru lífi, ekki bara á blaði. Markmiðið er einfalt: að við verðum sterkari saman.",
+    credentials: "ÍAK einkaþjálfari", // TODO(client): confirm real certification
   },
 
   priceRange: "$$", // schema hint, not shown to users
 } as const;
 
 export const nav = [
-  { label: "Þjálfun", href: "#thjalfun" },
   { label: "Aðferð", href: "#adferd" },
-  { label: "Verð", href: "#verd" },
-  { label: "Algengar spurningar", href: "#spurningar" },
+  { label: "Pakkar", href: "#thjalfun" },
+  { label: "Spurningar", href: "#spurningar" },
 ] as const;
 
 export const hero = {

@@ -5,7 +5,7 @@ import { site, nav } from "../config/site";
 <header class="site-header">
   <div class="shell bar">
     <a href="#efni" class="wordmark" aria-label={`${site.name} — heim`}>
-      <span class="mark" aria-hidden="true"></span>
+      <span class="crest-mark mark" aria-hidden="true"></span>
       <span class="wordmark-text">{site.name}</span>
     </a>
 
@@ -68,11 +68,9 @@ import { site, nav } from "../config/site";
     color: var(--color-ink);
   }
   .mark {
-    width: 1.15rem;
-    height: 1.15rem;
-    border-radius: 999px;
-    background: var(--color-forest);
-    box-shadow: inset 0 0 0 3px var(--color-paper), 0 0 0 2px var(--color-forest);
+    width: 1.75rem;
+    height: 1.6rem;
+    --crest-color: var(--color-forest);
   }
 
   .desktop-nav {
