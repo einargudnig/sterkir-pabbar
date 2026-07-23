@@ -24,6 +24,14 @@
   font-display: swap;
   src: url("/fonts/hanken-normal.woff2") format("woff2");
 }
+/* Wordmark accent — carried over from the brand's current identity */
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("/fonts/orbitron-normal.woff2") format("woff2");
+}
 
 /* ------------------------------------------------------------------ *
  * Design tokens — "Kraftur og ró": warm paper, espresso ink,         *
@@ -50,6 +58,7 @@
   /* Typography */
   --font-display: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: "Orbitron", var(--font-sans);
 
   /* Fluid type scale (mobile → desktop) */
   --text-hero: clamp(2.75rem, 1.6rem + 5.7vw, 6rem);
