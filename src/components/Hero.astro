@@ -1,204 +1,147 @@
 ---
 import { hero, site } from "../config/site";
-
-// Split the headline so one word can carry italic-serif emphasis.
-const [before, after] = hero.headline.split(hero.emphasis);
 ---
 
 <section class="hero" id="efni">
-  <div class="shell hero-grid">
-    <div class="hero-copy">
-      <p class="kicker rise" style="animation-delay: 40ms">{hero.kicker}</p>
+  <div class="hero-glow" aria-hidden="true"></div>
 
-      <h1 class="hero-title rise" style="animation-delay: 90ms">
-        {before}<em>{hero.emphasis}</em>{after}
-      </h1>
+  <div class="shell hero-inner">
+    <p class="kicker rise" style="animation-delay: 40ms">{hero.kicker}</p>
 
-      <p class="hero-sub rise" style="animation-delay: 160ms">{hero.sub}</p>
+    <span
+      class="crest-mark hero-crest rise"
+      style="animation-delay: 100ms"
+      aria-hidden="true"></span>
 
-      <div class="hero-actions rise" style="animation-delay: 230ms">
-        <a href={hero.primaryCta.href} class="btn btn-primary">
-          {hero.primaryCta.label}
-        </a>
-        <a href={hero.secondaryCta.href} class="btn btn-ghost">
-          {hero.secondaryCta.label}
-        </a>
-      </div>
+    <h1 class="wordmark-hero rise" style="animation-delay: 170ms">{site.name}</h1>
+
+    <p class="tagline rise" style="animation-delay: 240ms">{site.tagline}</p>
+
+    <p class="hero-sub rise" style="animation-delay: 300ms">{hero.sub}</p>
+
+    <div class="hero-actions rise" style="animation-delay: 370ms">
+      <a href={hero.primaryCta.href} class="btn btn-primary">{hero.primaryCta.label}</a>
+      <a href={hero.secondaryCta.href} class="btn btn-ghost">{hero.secondaryCta.label}</a>
     </div>
+  </div>
 
-    <aside class="hero-plate rise" style="animation-delay: 300ms" aria-label="Í stuttu máli">
-      <span class="crest-mark plate-mark" aria-hidden="true"></span>
-      <div class="plate-inner">
-        <p class="plate-quote">
-          „Ég byggi þjálfun fyrir <em>alvöru líf</em> — ekki bara á blaði.“
-        </p>
-        <p class="plate-attr">— {site.coach.name}, {site.coach.role}</p>
-      </div>
-      <dl class="proof">
-        {
-          hero.proof.map((p) => (
-            <div class="proof-item">
-              <dt>{p.value}</dt>
-              <dd>{p.label}</dd>
-            </div>
-          ))
-        }
-      </dl>
-    </aside>
+  <div class="shell">
+    <dl class="proof rise" style="animation-delay: 450ms">
+      {
+        hero.proof.map((p) => (
+          <div class="proof-item">
+            <dt>{p.value}</dt>
+            <dd>{p.label}</dd>
+          </div>
+        ))
+      }
+    </dl>
   </div>
 </section>
 
 <style>
   .hero {
     position: relative;
-    padding-block: clamp(3rem, 1rem + 9vw, 7rem) clamp(3rem, 1rem + 6vw, 5.5rem);
+    text-align: center;
+    padding-block: clamp(2.5rem, 1rem + 7vw, 5rem) clamp(2.5rem, 1rem + 4vw, 4rem);
     overflow: hidden;
   }
-  /* Warm ambient wash behind the hero */
-  .hero::before {
-    content: "";
+  .hero-glow {
     position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(
-        60% 55% at 78% 12%,
-        var(--color-clay-tint) 0%,
-        transparent 60%
-      ),
-      radial-gradient(
-        70% 60% at 8% 90%,
-        var(--color-forest-tint) 0%,
-        transparent 55%
-      );
-    opacity: 0.7;
+    top: clamp(1rem, 6vw, 5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92vw, 42rem);
+    height: 32rem;
+    background: radial-gradient(
+      circle at 50% 42%,
+      color-mix(in oklch, var(--color-forest) 42%, transparent),
+      transparent 62%
+    );
+    opacity: 0.35;
     pointer-events: none;
   }
 
-  .hero-grid {
+  .hero-inner {
     position: relative;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(2.5rem, 1rem + 5vw, 4rem);
+    display: flex;
+    flex-direction: column;
     align-items: center;
   }
-
-  .hero-title {
-    font-size: var(--text-hero);
-    font-weight: 480;
-    margin-block: 1.1rem 0;
-    max-width: 15ch;
-  }
-  .hero-title em {
-    font-style: italic;
-    font-weight: 460;
+  .hero-inner .kicker {
+    justify-content: center;
     color: var(--color-clay-deep);
   }
 
+  .hero-crest {
+    width: clamp(8.5rem, 26vw, 14rem);
+    margin-block: 1.5rem 1.75rem;
+    --crest-color: var(--color-clay);
+    filter: drop-shadow(0 14px 26px oklch(0 0 0 / 0.55));
+  }
+
+  .wordmark-hero {
+    font-family: var(--font-wordmark);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.05;
+    font-size: clamp(1.85rem, 1rem + 5.4vw, 4rem);
+    /* Brushed-bronze wordmark treatment — brand logotype, applied only here */
+    background: linear-gradient(
+      168deg,
+      var(--color-clay-tint) 0%,
+      var(--color-forest-deep) 88%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .tagline {
+    margin-top: 1.1rem;
+    font-size: clamp(1.25rem, 1rem + 1.4vw, 1.85rem);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
   .hero-sub {
+    margin-top: 1rem;
+    max-width: 42ch;
     font-size: var(--text-lead);
     color: var(--color-ink-soft);
-    max-width: 44ch;
-    margin-block: 1.5rem 0;
   }
 
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 0.85rem;
-    margin-block-start: 2rem;
-  }
-
-  /* ---- The plate ---- */
-  .hero-plate {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 2rem;
-    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
-    border-radius: 1.5rem;
-    background: linear-gradient(
-      160deg,
-      var(--color-forest) 0%,
-      var(--color-forest-deep) 100%
-    );
-    color: var(--color-paper);
-    box-shadow:
-      0 1px 2px oklch(0.3 0.05 154 / 0.2),
-      0 24px 50px -24px oklch(0.3 0.06 154 / 0.55);
-    min-height: 20rem;
-    overflow: hidden;
-    isolation: isolate;
-  }
-
-  /* Real brand crest as a large, faint watermark on the plate. */
-  .plate-mark {
-    position: absolute;
-    right: -2.5rem;
-    bottom: 3.5rem;
-    width: 15rem;
-    z-index: -1;
-    --crest-color: color-mix(in oklch, var(--color-paper) 14%, transparent);
-  }
-  .hero-plate::after {
-    /* subtle inner light */
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      80% 50% at 80% 0%,
-      oklch(0.8 0.09 150 / 0.28),
-      transparent 70%
-    );
-    z-index: -1;
-  }
-
-  .plate-quote {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2rem);
-    line-height: 1.12;
-    letter-spacing: -0.01em;
-    color: color-mix(in oklch, var(--color-paper) 96%, transparent);
-  }
-  .plate-quote em {
-    font-style: italic;
-    color: var(--color-clay-tint);
-  }
-  .plate-attr {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    color: color-mix(in oklch, var(--color-paper) 70%, transparent);
+    margin-top: 2rem;
   }
 
   .proof {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid color-mix(in oklch, var(--color-paper) 22%, transparent);
+    gap: clamp(0.75rem, 0.5rem + 1vw, 2rem);
+    max-width: 44rem;
+    margin: clamp(2.5rem, 1.5rem + 3vw, 4rem) auto 0;
+    padding-top: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+    border-top: 1px solid var(--color-line);
+    text-align: center;
   }
   .proof-item dt {
-    font-family: var(--font-display);
-    font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.9rem);
-    font-weight: 500;
+    font-family: var(--font-wordmark);
+    font-size: clamp(1.3rem, 1rem + 1.6vw, 2.1rem);
+    font-weight: 600;
     line-height: 1;
-    color: var(--color-paper);
+    color: var(--color-clay);
   }
   .proof-item dd {
-    margin-top: 0.4rem;
-    font-size: 0.78rem;
+    margin-top: 0.6rem;
+    font-size: clamp(0.72rem, 0.65rem + 0.3vw, 0.85rem);
     line-height: 1.35;
-    color: color-mix(in oklch, var(--color-paper) 74%, transparent);
-  }
-
-  @media (min-width: 900px) {
-    .hero-grid {
-      grid-template-columns: 1.15fr 0.85fr;
-      align-items: center;
-    }
-    .hero-plate {
-      min-height: 27rem;
-    }
+    color: var(--color-ink-faint);
   }
 </style>

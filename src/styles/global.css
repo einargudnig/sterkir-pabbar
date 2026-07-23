@@ -24,32 +24,42 @@
   font-display: swap;
   src: url("/fonts/hanken-normal.woff2") format("woff2");
 }
+/* Wordmark only — brand continuity with the current site */
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("/fonts/orbitron-normal.woff2") format("woff2");
+}
 
 /* ------------------------------------------------------------------ *
  * Design tokens — "Kraftur og ró": warm paper, espresso ink,         *
  * grounded forest green, terracotta accent. OKLCH, tinted neutrals.  *
  * ------------------------------------------------------------------ */
 @theme {
-  /* Neutrals — warm, never pure white/black */
-  --color-paper: oklch(0.968 0.013 84);
-  --color-paper-raised: oklch(0.943 0.017 82);
-  --color-paper-sink: oklch(0.915 0.02 80);
-  --color-ink: oklch(0.245 0.02 54);
-  --color-ink-soft: oklch(0.44 0.022 54);
-  --color-ink-faint: oklch(0.6 0.02 58);
-  --color-line: oklch(0.885 0.017 78);
+  /* Neutrals — warm espresso dark, never pure black */
+  --color-paper: oklch(0.194 0.012 52);
+  --color-paper-raised: oklch(0.238 0.014 50);
+  --color-paper-sink: oklch(0.162 0.011 50);
+  --color-ink: oklch(0.935 0.012 82);
+  --color-ink-soft: oklch(0.76 0.014 74);
+  --color-ink-faint: oklch(0.62 0.015 68);
+  --color-line: oklch(0.32 0.014 55);
 
-  /* Brand */
-  --color-forest: oklch(0.42 0.072 154);
-  --color-forest-deep: oklch(0.31 0.055 154);
-  --color-forest-tint: oklch(0.93 0.03 150);
-  --color-clay: oklch(0.635 0.132 42);
-  --color-clay-deep: oklch(0.52 0.13 40);
-  --color-clay-tint: oklch(0.93 0.035 60);
+  /* Brand — bronze / sand (elevated from the live site's tan palette).
+     `forest` slots are the primary accent, `clay` the lighter sand. */
+  --color-forest: oklch(0.72 0.045 66);
+  --color-forest-deep: oklch(0.6 0.05 60);
+  --color-forest-tint: oklch(0.3 0.02 58);
+  --color-clay: oklch(0.82 0.045 70);
+  --color-clay-deep: oklch(0.78 0.05 66);
+  --color-clay-tint: oklch(0.87 0.035 72);
 
   /* Typography */
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: "Orbitron", var(--font-sans);
 
   /* Fluid type scale (mobile → desktop) */
   --text-hero: clamp(2.75rem, 1.6rem + 5.7vw, 6rem);
@@ -89,11 +99,29 @@
  * ------------------------------------------------------------------ */
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
+  }
+
+  /* Film grain / plaster texture — subtle, fixed, above content but inert.
+     Echoes the tactile wall-sign of the brand's logo photography. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body::after {
+      display: none;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -126,9 +154,9 @@
   h4 {
     font-family: var(--font-display);
     font-optical-sizing: auto;
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    line-height: 1.02;
+    font-weight: 680;
+    letter-spacing: -0.025em;
+    line-height: 1.04;
     text-wrap: balance;
   }
 

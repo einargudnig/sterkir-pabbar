@@ -87,8 +87,8 @@ import { offerings } from "../config/site";
   .offer--featured {
     background: linear-gradient(
       165deg,
-      var(--color-ink) 0%,
-      oklch(0.2 0.02 54) 100%
+      var(--color-forest) 0%,
+      var(--color-forest-deep) 100%
     );
     border-color: transparent;
     color: var(--color-paper);
@@ -113,7 +113,7 @@ import { offerings } from "../config/site";
     margin-bottom: 0.85rem;
   }
   .offer--featured .offer-tag {
-    color: var(--color-clay-tint);
+    color: color-mix(in oklch, var(--color-paper) 72%, transparent);
   }
 
   .offer-name {
@@ -162,7 +162,7 @@ import { offerings } from "../config/site";
     transform: rotate(-45deg);
   }
   .offer--featured .offer-features li::before {
-    border-color: var(--color-clay);
+    border-color: color-mix(in oklch, var(--color-paper) 70%, transparent);
   }
 
   .offer-cta {
