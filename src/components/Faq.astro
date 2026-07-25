@@ -5,14 +5,24 @@ import { faq } from "../config/site";
 <section class="section faq" id="spurningar">
   <div class="shell faq-grid">
     <header class="faq-head">
-      <p class="kicker">Algengar spurningar</p>
-      <h2 class="faq-title">Það sem pabbar spyrja fyrst</h2>
+      <h2 class="section-title faq-title">Það sem pabbar spyrja fyrst</h2>
     </header>
 
+    {/*
+      Two changes here, both about the same failure.
+
+      `name="faq"` made this an exclusive accordion, so opening "Hvað kostar
+      þetta?" silently closed "Ég hef varla æft í mörg ár — er þetta fyrir mig?".
+      A father weighing cost against the fear of being too unfit literally could
+      not hold both answers on screen.
+
+      And the first item now ships open. "Já, einmitt þá." is the single most
+      reassuring sentence on this site; it should not cost a click.
+    */}
     <div class="faq-list">
       {
-        faq.map((item) => (
-          <details class="faq-item" name="faq">
+        faq.map((item, i) => (
+          <details class="faq-item" open={i === 0}>
             <summary>
               <span>{item.q}</span>
               <span class="faq-icon" aria-hidden="true" />
@@ -31,20 +41,18 @@ import { faq } from "../config/site";
   .faq-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+    gap: clamp(2.5rem, 1.5rem + 4vw, 5rem);
     align-items: start;
   }
   .faq-title {
-    font-size: var(--text-display);
-    margin-top: 0.9rem;
     max-width: 12ch;
   }
 
   .faq-item {
-    border-top: 1px solid var(--color-line);
+    border-top: 1px solid var(--color-line-soft);
   }
   .faq-item:last-child {
-    border-bottom: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line-soft);
   }
 
   summary {
@@ -52,37 +60,39 @@ import { faq } from "../config/site";
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    padding-block: 1.35rem;
+    padding-block: 1.5rem;
     cursor: pointer;
     list-style: none;
     font-family: var(--font-display);
-    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem);
-    font-weight: 500;
-    color: var(--color-ink);
-    transition: color 160ms ease;
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.3rem);
+    font-weight: 460;
+    color: var(--color-text);
+    transition: color 200ms ease;
   }
   summary::-webkit-details-marker {
     display: none;
   }
   @media (hover: hover) and (pointer: fine) {
     summary:hover {
-      color: var(--color-forest);
+      color: var(--color-bronze);
     }
   }
 
   .faq-icon {
     position: relative;
     flex: none;
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1rem;
+    height: 1rem;
   }
   .faq-icon::before,
   .faq-icon::after {
     content: "";
     position: absolute;
-    background: var(--color-clay-deep);
+    background: var(--color-bronze);
     border-radius: 2px;
-    transition: transform 260ms var(--ease-out-strong), opacity 200ms ease;
+    transition:
+      transform 320ms var(--ease-out-expo),
+      opacity 200ms ease;
   }
   .faq-icon::before {
     inset-block: 0;
@@ -98,33 +108,38 @@ import { faq } from "../config/site";
   }
 
   .faq-answer {
-    display: grid;
-    grid-template-rows: 1fr;
-    overflow: hidden;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1.75rem;
   }
   .faq-answer p {
-    color: var(--color-ink-soft);
-    max-width: 60ch;
+    color: var(--color-text-soft);
+    max-width: 58ch;
   }
-  /* Gentle reveal that respects reduced motion via the global rule */
-  .faq-item[open] .faq-answer p {
-    animation: faq-in 320ms var(--ease-out-strong);
-  }
-  @keyframes faq-in {
-    from {
+
+  /* Smooth open/close where the browser can interpolate to `auto`.
+     Elsewhere the panel simply snaps open, which is the native behaviour. */
+  @supports selector(::details-content) {
+    .faq-item::details-content {
+      block-size: 0;
+      overflow: hidden;
       opacity: 0;
-      transform: translateY(-6px);
+      transition:
+        block-size 380ms var(--ease-out-expo),
+        opacity 260ms ease,
+        content-visibility 380ms allow-discrete;
+    }
+    .faq-item[open]::details-content {
+      block-size: auto;
+      opacity: 1;
     }
   }
 
-  @media (min-width: 860px) {
+  @media (min-width: 900px) {
     .faq-grid {
       grid-template-columns: 0.8fr 1.2fr;
     }
     .faq-head {
       position: sticky;
-      top: 6rem;
+      top: 7rem;
     }
   }
 </style>

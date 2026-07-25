@@ -5,16 +5,21 @@ import { method } from "../config/site";
 <section class="section method" id="adferd">
   <div class="shell method-grid">
     <header class="method-head">
-      <p class="kicker">{method.kicker}</p>
-      <h2 class="method-title">{method.title}</h2>
-      <p class="method-intro">{method.intro}</p>
+      <h2 class="section-title method-title">{method.title}</h2>
+      <p class="section-lead">{method.intro}</p>
     </header>
 
+    {/* Method keeps its ordinals: this is a genuine sequence, and the order
+        carries information the reader needs. ForDads dropped its numbers
+        because four benefits are not a sequence, and numbering a non-sequence
+        borrowed this section's grammar and devalued it. */}
     <ol class="steps">
       {
         method.steps.map((s) => (
           <li class="step">
-            <span class="step-n">{s.n}</span>
+            <span class="step-n" aria-hidden="true">
+              {s.n}
+            </span>
             <div class="step-body">
               <h3 class="step-title">{s.title}</h3>
               <p>{s.body}</p>
@@ -28,69 +33,66 @@ import { method } from "../config/site";
 
 <style>
   .method {
-    background: var(--color-paper-sink);
+    background: var(--color-sunken);
+    border-block: 1px solid var(--color-line-soft);
   }
   .method-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+    gap: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
   }
   .method-head {
     align-self: start;
   }
   .method-title {
-    font-size: var(--text-display);
-    margin-block: 0.9rem 0;
-    max-width: 14ch;
-  }
-  .method-intro {
-    font-size: var(--text-lead);
-    color: var(--color-ink-soft);
-    margin-top: 1.1rem;
-    max-width: 34ch;
+    max-width: 13ch;
   }
 
   .steps {
     list-style: none;
-    counter-reset: step;
     display: flex;
     flex-direction: column;
   }
   .step {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: clamp(1rem, 0.5rem + 2vw, 2rem);
-    padding-block: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
-    border-top: 1px solid var(--color-line);
+    gap: clamp(1.25rem, 0.75rem + 2vw, 2.5rem);
+    padding-block: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
+    border-top: 1px solid var(--color-line-soft);
   }
   .step:last-child {
-    border-bottom: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line-soft);
   }
   .step-n {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.4rem);
-    font-weight: 400;
-    font-style: italic;
-    color: var(--color-clay);
-    line-height: 1;
+    font-family: var(--font-sans);
+    font-size: clamp(0.8rem, 0.72rem + 0.4vw, 0.9rem);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+    /* bronze-dim would only reach 2.3:1 against the sunken band */
+    color: var(--color-bronze-deep);
+    line-height: 1.7;
+    transition: color 300ms var(--ease-out-quart);
+  }
+  .step:hover .step-n {
+    color: var(--color-bronze);
   }
   .step-title {
     font-size: var(--text-subtitle);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.7rem;
   }
   .step-body p {
-    color: var(--color-ink-soft);
-    max-width: 52ch;
+    color: var(--color-text-soft);
+    max-width: 48ch;
   }
 
-  @media (min-width: 860px) {
+  @media (min-width: 900px) {
     .method-grid {
       grid-template-columns: 0.85fr 1.15fr;
     }
     .method-head {
       position: sticky;
-      top: 6rem;
+      top: 7rem;
     }
   }
 </style>

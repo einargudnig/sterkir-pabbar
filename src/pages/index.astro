@@ -2,23 +2,35 @@
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
-import Offerings from "../components/Offerings.astro";
+import Coach from "../components/Coach.astro";
 import Method from "../components/Method.astro";
 import ForDads from "../components/ForDads.astro";
-import Testimonials from "../components/Testimonials.astro";
+import Offerings from "../components/Offerings.astro";
 import Faq from "../components/Faq.astro";
 import FinalCta from "../components/FinalCta.astro";
 import Footer from "../components/Footer.astro";
+import { assertBookingConfigured } from "../lib/booking";
+
+assertBookingConfigured();
 ---
 
+{/*
+  Order is the argument, and it changed.
+
+  Offerings used to be section two, so a father who had not trained in years met
+  "frá 24.900 kr/mán" before he was told he does not need a gym, does not need to
+  be fit, and needs thirty minutes twice a week. On mobile that price was his
+  second screen. Reassurance now precedes the number: who Aron is, how the method
+  works, and why it is worth it — then what it costs.
+*/}
 <Layout path="/">
   <Header />
   <main>
     <Hero />
-    <Offerings />
+    <Coach />
     <Method />
     <ForDads />
-    <Testimonials />
+    <Offerings />
     <Faq />
     <FinalCta />
   </main>

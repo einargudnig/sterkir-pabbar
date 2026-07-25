@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ *
- * Self-hosted variable fonts (latin-ext → full Icelandic coverage)   *
+ * Self-hosted variable fonts (latin-ext → full Icelandic coverage)    *
  * ------------------------------------------------------------------ */
 @font-face {
   font-family: "Fraunces";
@@ -24,7 +24,7 @@
   font-display: swap;
   src: url("/fonts/hanken-normal.woff2") format("woff2");
 }
-/* Wordmark accent — carried over from the brand's current identity */
+/* Wordmark + numerals only — brand continuity with the current identity */
 @font-face {
   font-family: "Orbitron";
   font-style: normal;
@@ -34,52 +34,72 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Design tokens — "Kraftur og ró": warm paper, espresso ink,         *
- * grounded forest green, terracotta accent. OKLCH, tinted neutrals.  *
+ * Design tokens — "Espresso & bronze".                                *
+ * Warm dark surfaces, one true accent (bronze), one cool anchor       *
+ * (slate, inherited from the crest's navy). OKLCH throughout so the   *
+ * neutrals stay tinted toward the brand hue instead of going grey.    *
  * ------------------------------------------------------------------ */
 @theme {
-  /* Neutrals — warm, never pure white/black */
-  --color-paper: oklch(0.968 0.013 84);
-  --color-paper-raised: oklch(0.943 0.017 82);
-  --color-paper-sink: oklch(0.915 0.02 80);
-  --color-ink: oklch(0.245 0.02 54);
-  --color-ink-soft: oklch(0.44 0.022 54);
-  --color-ink-faint: oklch(0.6 0.02 58);
-  --color-line: oklch(0.885 0.017 78);
+  /* Surfaces — espresso, warm hue ~57. Never pure black. */
+  --color-base: oklch(0.176 0.014 57);
+  --color-raised: oklch(0.227 0.016 56);
+  --color-sunken: oklch(0.144 0.012 56);
+  /* Cool anchor: the crest's navy, heavily muted. Used sparingly, as a
+     surface — never as a glow. */
+  --color-slate: oklch(0.252 0.038 248);
 
-  /* Brand */
-  --color-forest: oklch(0.42 0.072 154);
-  --color-forest-deep: oklch(0.31 0.055 154);
-  --color-forest-tint: oklch(0.93 0.03 150);
-  --color-clay: oklch(0.635 0.132 42);
-  --color-clay-deep: oklch(0.52 0.13 40);
-  --color-clay-tint: oklch(0.93 0.035 60);
+  --color-line: oklch(0.305 0.014 58);
+  --color-line-soft: oklch(0.245 0.012 57);
+
+  /* Text — warm cream, never pure white */
+  --color-text: oklch(0.945 0.012 82);
+  --color-text-soft: oklch(0.775 0.016 76);
+  --color-text-muted: oklch(0.645 0.018 70);
+
+  /* Accent — bronze. Enough chroma to actually read as metal. */
+  --color-bronze: oklch(0.745 0.105 68);
+  --color-bronze-bright: oklch(0.858 0.078 80);
+  --color-bronze-deep: oklch(0.605 0.098 58);
+  --color-bronze-dim: oklch(0.415 0.058 55);
 
   /* Typography */
   --font-display: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-wordmark: "Orbitron", var(--font-sans);
+  /* Orbitron carries the wordmark and all-caps labels only. It draws a
+     slashed zero, so "01" reads as "Ø1" — never set digits in it. */
+  --font-mark: "Orbitron", var(--font-sans);
 
   /* Fluid type scale (mobile → desktop) */
-  --text-hero: clamp(2.75rem, 1.6rem + 5.7vw, 6rem);
-  --text-display: clamp(2.1rem, 1.3rem + 4vw, 4rem);
+  /* Capped so the three-line headline plus the proof rule still clear a
+     900px-tall viewport — the masthead has to survive the fold. */
+  --text-hero: clamp(2.75rem, 1.1rem + 6.2vw, 6rem);
+  --text-display: clamp(2.15rem, 1.3rem + 4.2vw, 4.25rem);
   --text-title: clamp(1.6rem, 1.15rem + 2.2vw, 2.6rem);
-  --text-subtitle: clamp(1.2rem, 1.05rem + 0.9vw, 1.6rem);
-  --text-lead: clamp(1.12rem, 1.02rem + 0.55vw, 1.35rem);
+  --text-subtitle: clamp(1.2rem, 1.05rem + 0.9vw, 1.55rem);
+  --text-lead: clamp(1.1rem, 1rem + 0.55vw, 1.3rem);
 
-  /* Motion — strong custom curves (per Emil's framework) */
-  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  /* Motion — exponential deceleration. No bounce, no elastic.
+     Tailwind ships --animate-bounce in its default theme and emits it even
+     though nothing here uses it; `initial` removes it from the output so the
+     stylesheet cannot be read as endorsing bounce easing. */
+  --animate-bounce: initial;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 
-  /* Layout */
-  --spacing-gutter: clamp(1.25rem, 0.5rem + 3vw, 3rem);
+  /* Layout rhythm — deliberately generous. */
+  --spacing-gutter: clamp(1.25rem, 0.5rem + 3vw, 3.5rem);
+  --spacing-section: clamp(4.5rem, 2.5rem + 8vw, 9.5rem);
+  --spacing-block: clamp(2rem, 1.25rem + 3vw, 4rem);
 }
 
-/* Brand crest — one asset, recolored per context via --crest-color.
-   The webp's alpha channel is used as a mask. */
+/* ------------------------------------------------------------------ *
+ * Brand crest — one asset, recoloured per context via --crest-color.  *
+ * The webp's alpha channel is used as a mask, so the mark can be any  *
+ * colour at any scale without shipping variants.                      *
+ * ------------------------------------------------------------------ */
 :root {
-  --crest-src: url("/logo/crest-navy.webp");
-  --crest-color: var(--color-forest);
+  --crest-src: url("/logo/crest-cream.webp");
+  --crest-color: var(--color-bronze);
 }
 .crest-mark {
   display: inline-block;
@@ -89,7 +109,6 @@
   mask: var(--crest-src) center / contain no-repeat;
   -webkit-mask-mode: alpha;
   mask-mode: alpha;
-  /* the crest art is ~600x543 → keep that ratio */
   aspect-ratio: 600 / 543;
 }
 
@@ -98,11 +117,56 @@
  * ------------------------------------------------------------------ */
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
-    scroll-padding-top: 5rem;
+    scroll-padding-top: 6rem;
+    /* Lets the FAQ panels transition to/from `auto` height where supported. */
+    interpolate-size: allow-keywords;
+  }
+
+  body {
+    background-color: var(--color-base);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* The feTurbulence film grain that used to live here was removed. Procedural
+     SVG noise is a costume for texture rather than texture from the subject's
+     world, and at 0.035 opacity it was paying nothing for the tell. The warmth
+     comes from the OKLCH surfaces instead. */
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 460;
+    letter-spacing: -0.022em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-bronze);
+    color: var(--color-base);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-bronze);
+    outline-offset: 3px;
+    border-radius: 3px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -117,44 +181,6 @@
       transition-duration: 0.01ms !important;
     }
   }
-
-  body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-    font-size: 1.0625rem;
-    line-height: 1.65;
-    font-optical-sizing: auto;
-    text-rendering: optimizeLegibility;
-    overflow-x: hidden;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: var(--font-display);
-    font-optical-sizing: auto;
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    line-height: 1.02;
-    text-wrap: balance;
-  }
-
-  p {
-    text-wrap: pretty;
-  }
-
-  ::selection {
-    background: var(--color-forest);
-    color: var(--color-paper);
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-forest);
-    outline-offset: 3px;
-    border-radius: 2px;
-  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -163,28 +189,30 @@
 @layer components {
   .shell {
     width: 100%;
-    max-width: 78rem;
+    max-width: 80rem;
     margin-inline: auto;
     padding-inline: var(--spacing-gutter);
   }
 
-  /* Eyebrow / kicker label */
-  .kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-clay-deep);
+  .section {
+    padding-block: var(--spacing-section);
   }
-  .kicker::before {
-    content: "";
-    width: 1.6rem;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.6;
+
+  /* The `.kicker` primitive was removed entirely. It opened all six sections,
+     which turned six different arguments into one repeated template, and the
+     last survivor — the hero eyebrow — is itself a saturated pattern. Sections
+     now open on their own headings. */
+
+  /* Section heading block — shared rhythm across every section */
+  .section-title {
+    font-size: var(--text-display);
+    margin-block: 1.1rem 0;
+  }
+  .section-lead {
+    font-size: var(--text-lead);
+    color: var(--color-text-soft);
+    margin-top: 1.25rem;
+    max-width: 42ch;
   }
 
   /* Buttons */
@@ -192,55 +220,84 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
     font-weight: 600;
     font-size: 1rem;
     line-height: 1;
-    padding: 0.95rem 1.5rem;
+    padding: 1.05rem 1.7rem;
     border-radius: 999px;
     transition:
-      transform 160ms var(--ease-out-strong),
-      background-color 200ms ease,
-      color 200ms ease,
-      box-shadow 200ms ease;
-    will-change: transform;
+      transform 200ms var(--ease-out-expo),
+      background-color 220ms ease,
+      border-color 220ms ease,
+      color 220ms ease,
+      box-shadow 260ms var(--ease-out-expo);
   }
   .btn:active {
-    transform: scale(0.97);
+    transform: scale(0.975);
   }
 
   .btn-primary {
-    background: var(--color-forest);
-    color: var(--color-paper);
-    box-shadow: 0 1px 0 oklch(0.25 0.05 154 / 0.4);
+    background: var(--color-bronze);
+    color: var(--color-base);
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-bronze) 45%, transparent);
   }
   @media (hover: hover) and (pointer: fine) {
     .btn-primary:hover {
-      background: var(--color-forest-deep);
+      background: var(--color-bronze-bright);
+      box-shadow: 0 10px 30px -12px color-mix(in oklch, var(--color-bronze) 70%, transparent);
     }
   }
 
   .btn-ghost {
-    color: var(--color-ink);
+    color: var(--color-text);
     border: 1px solid var(--color-line);
     background: transparent;
   }
   @media (hover: hover) and (pointer: fine) {
     .btn-ghost:hover {
-      background: var(--color-paper-raised);
-      border-color: var(--color-ink-faint);
+      background: var(--color-raised);
+      border-color: var(--color-bronze-dim);
+    }
+  }
+
+  /* Text link with a travelling arrow — the quiet half of a CTA pair */
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding-block: 0.5rem;
+  }
+  .link-arrow svg {
+    flex: none;
+    transition: transform 320ms var(--ease-out-expo);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .link-arrow:hover {
+      color: var(--color-bronze);
+    }
+    .link-arrow:hover svg {
+      transform: translateX(5px);
     }
   }
 }
 
 /* ------------------------------------------------------------------ *
- * Entrance: staggered reveal on load (opacity + subtle rise)          *
+ * Motion                                                              *
+ * ------------------------------------------------------------------ *
+ * `.rise`   — orchestrated page-load entrance (hero only).            *
+ * `.reveal` — scroll-linked entrance for everything below the fold,   *
+ *             driven entirely by CSS scroll-driven animations. Where  *
+ *             unsupported the content simply renders in place, so     *
+ *             there is no JS, no observer, and nothing to hydrate.    *
  * ------------------------------------------------------------------ */
 @layer utilities {
   .rise {
     opacity: 0;
-    transform: translateY(14px);
-    animation: rise-in 0.7s var(--ease-out-strong) forwards;
+    transform: translateY(18px);
+    animation: rise-in 0.9s var(--ease-out-expo) forwards;
   }
   @keyframes rise-in {
     to {
@@ -248,4 +305,14 @@
       transform: translateY(0);
     }
   }
+
+  /* The scroll-linked `.reveal` system that used to live here was removed.
+     It applied one identical fade-up entrance to every section, which is
+     scattered motion rather than an authored moment — and because the element
+     sat at opacity 0 until its own timeline resolved, any renderer that expands
+     the viewport to full document height (print, PDF export, headless capture)
+     produced a blank page.
+
+     The hero's staggered load sequence is now the page's single motion moment.
+     Everything else earns attention through composition. */
 }
