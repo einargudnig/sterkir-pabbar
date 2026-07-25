@@ -9,5 +9,13 @@
   "rules": {
     "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }]
   },
-  "ignorePatterns": ["node_modules/", "dist/", ".next/", "**/*.d.ts"]
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    ".next/",
+    "**/*.d.ts",
+    ".agents/",
+    ".impeccable/",
+    ".claude/"
+  ]
 }
