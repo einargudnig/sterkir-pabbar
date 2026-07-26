@@ -7,3 +7,12 @@ dist/
 .env.*.local
 .astro/
 .output/
+
+# Agent skills — vendored source (~3M), reinstallable from skills-lock.json,
+# which IS tracked. Ignore the payload, keep the pin.
+.agents/
+.claude/skills/
+# ...but keep the critique history: it is small, and a future `critique` run
+# reads it to show whether the design is getting better or worse over time.
+.impeccable/*
+!.impeccable/critique/

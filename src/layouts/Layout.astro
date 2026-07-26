@@ -8,12 +8,20 @@ interface Props {
   description?: string;
   /** Path relative to the site root, e.g. "/" */
   path?: string;
+  /**
+   * Keep the page out of the index and suppress its structured data.
+   * Error pages need both: they must not rank, and emitting the business
+   * @graph from an error URL would claim a second canonical home for the
+   * same entity.
+   */
+  noindex?: boolean;
 }
 
 const {
   title = `${site.name} — ${site.tagline}`,
   description = site.description,
   path = "/",
+  noindex = false,
 } = Astro.props;
 
 const canonical = new URL(path, site.domain).href;
@@ -27,7 +35,7 @@ const canonical = new URL(path, site.domain).href;
  * palette changes, or the shared link stops matching the page it opens.
  */
 const ogImage = new URL("/og.png", site.domain).href;
-const jsonLd = JSON.stringify(buildJsonLd());
+const jsonLd = noindex ? null : JSON.stringify(buildJsonLd());
 ---
 
 <!doctype html>
@@ -39,8 +47,11 @@ const jsonLd = JSON.stringify(buildJsonLd());
 
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta
+      name="robots"
+      content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
+    />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -93,10 +104,12 @@ const jsonLd = JSON.stringify(buildJsonLd());
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/logo/icon-512.png" />
 
-    <script type="application/ld+json" set:html={jsonLd} is:inline />
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd} is:inline />}
   </head>
   <body>
-    <a href="#efni" class="skip-link">Fara í meginmál</a>
+    {/* #efni is the homepage's main landmark; pages without it target #meginmal,
+        which every page wrapper provides. */}
+    <a href={noindex ? "#meginmal" : "#efni"} class="skip-link">Fara í meginmál</a>
     <slot />
 
     <style>

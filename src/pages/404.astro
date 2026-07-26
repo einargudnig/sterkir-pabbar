@@ -1,0 +1,122 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { nav, site } from "../config/site";
+import { bookingHref } from "../lib/booking";
+
+/**
+ * This is a one-page site, so a wrong URL almost always means someone typed or
+ * followed a link meant for a section anchor (/thjalfun, /adferd). Listing the
+ * real destinations is more useful than a bare "go home" — the visitor gets
+ * where he was going instead of starting over.
+ */
+---
+
+<Layout
+  title={`Síðan fannst ekki — ${site.name}`}
+  description="Þessi slóð er ekki til á vefnum."
+  path="/404"
+  noindex
+>
+  <Header />
+
+  <main class="notfound" id="meginmal">
+    <div class="shell notfound-inner">
+      <span class="notfound-crest" aria-hidden="true">
+        <span class="crest-mark"></span>
+      </span>
+
+      <p class="notfound-code">404</p>
+      <h1 class="notfound-title">Þessi síða er ekki til</h1>
+      <p class="notfound-body">
+        Slóðin gæti verið úrelt eða misrituð. Allt efnið er á forsíðunni:
+      </p>
+
+      <ul class="notfound-links">
+        <li><a href="/">Forsíðan</a></li>
+        {nav.map((item) => <li><a href={`/${item.href}`}>{item.label}</a></li>)}
+      </ul>
+
+      <a href={bookingHref} class="btn btn-primary notfound-cta">
+        Bókaðu ókeypis spjall
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* Sits between the sticky header and the footer without the page collapsing
+     on a short viewport. */
+  .notfound {
+    display: flex;
+    align-items: center;
+    min-height: clamp(30rem, calc(100svh - 4.5rem - 12rem), 46rem);
+    padding-block: var(--spacing-section);
+  }
+  .notfound-inner {
+    max-width: 44rem;
+  }
+
+  .notfound-crest .crest-mark {
+    width: clamp(3.25rem, 8vw, 4.5rem);
+    --crest-color: var(--color-bronze);
+    opacity: 0.9;
+  }
+
+  .notfound-code {
+    margin-top: 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .notfound-title {
+    font-size: var(--text-display);
+    margin-top: 0.9rem;
+    max-width: 14ch;
+  }
+
+  .notfound-body {
+    font-size: var(--text-lead);
+    color: var(--color-text-soft);
+    margin-top: 1.35rem;
+    max-width: 40ch;
+  }
+
+  .notfound-links {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin-top: 1.75rem;
+  }
+  .notfound-links a {
+    display: inline-block;
+    padding-block: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 460;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-bronze-dim);
+    text-underline-offset: 0.3em;
+    text-decoration-thickness: 1px;
+    transition: color 200ms ease, text-decoration-color 200ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .notfound-links a:hover {
+      color: var(--color-bronze);
+      text-decoration-color: var(--color-bronze);
+    }
+  }
+
+  .notfound-cta {
+    margin-top: 2.5rem;
+  }
+</style>
