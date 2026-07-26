@@ -7,104 +7,136 @@ const year = new Date().getFullYear();
   <div class="shell footer-grid">
     <div class="footer-brand">
       <a href="#efni" class="wordmark">
-        <span class="mark" aria-hidden="true"></span>
-        {site.name}
+        <span class="crest-mark mark" aria-hidden="true"></span>
+        <span class="wordmark-text">{site.name}</span>
       </a>
       <p class="footer-tag">{site.tagline}.</p>
     </div>
 
-    <nav class="footer-nav" aria-label="Vefkort">
+    {/* These were <h2>, which put "Efni" and "Hafa samband" at the same outline
+        level as the page's real section headings. Both landmarks are already
+        labelled, so the visible text does not need to be a heading at all. */}
+    <nav class="footer-col" aria-label="Vefkort">
+      <p class="footer-heading">Efni</p>
       {nav.map((item) => <a href={item.href}>{item.label}</a>)}
     </nav>
 
-    <div class="footer-contact">
+    <div class="footer-col">
+      <p class="footer-heading">Hafa samband</p>
       <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
-      <a href={`tel:${site.contact.phone.replace(/\s/g, "")}`}>{site.contact.phone}</a>
+      {/* The phone number is deliberately absent until a real one exists. It
+          previously rendered "+354 000 0000" as a tappable tel: link — to a
+          visitor auditing whether this operation is real, that is proof it
+          isn't. A missing number costs nothing; a fake one costs everything. */}
+      {
+        site.contact.phone && (
+          <a href={`tel:${site.contact.phone.replace(/\s/g, "")}`}>
+            {site.contact.phone}
+          </a>
+        )
+      }
       <div class="footer-social">
-        <a href={site.social.instagram} rel="me noopener" target="_blank">Instagram</a>
-        <a href={site.social.facebook} rel="me noopener" target="_blank">Facebook</a>
+        <a href={site.social.instagram} rel="me noopener noreferrer" target="_blank">
+          Instagram
+        </a>
+        <a href={site.social.facebook} rel="me noopener noreferrer" target="_blank">
+          Facebook
+        </a>
       </div>
     </div>
   </div>
 
   <div class="shell footer-bottom">
     <span>© {year} {site.name}</span>
-    <span>{site.contact.city}, Ísland</span>
+    {/* Was "Reykjavík, Ísland" — the page's final fact told a father in
+        Akureyri the service was not for him. */}
+    <span>Þjálfun um allt land</span>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    margin-top: clamp(2rem, 1rem + 3vw, 4rem);
-    padding-top: clamp(2.5rem, 2rem + 3vw, 4rem);
-    border-top: 1px solid var(--color-line);
-    background: var(--color-paper-sink);
+    padding-top: clamp(3rem, 2rem + 4vw, 5rem);
+    border-top: 1px solid var(--color-line-soft);
+    background: var(--color-sunken);
   }
   .footer-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2rem;
-    padding-bottom: 2.5rem;
+    gap: 2.5rem;
+    padding-bottom: 3rem;
   }
+
   .wordmark {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
-    font-family: var(--font-display);
+    gap: 0.6rem;
+    color: var(--color-text);
+  }
+  .wordmark-text {
+    font-family: var(--font-mark);
+    font-size: 0.8rem;
     font-weight: 600;
-    font-size: 1.25rem;
-    color: var(--color-ink);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
   }
   .mark {
-    width: 1rem;
-    height: 1rem;
-    border-radius: 999px;
-    background: var(--color-forest);
-    box-shadow: inset 0 0 0 3px var(--color-paper-sink), 0 0 0 2px var(--color-forest);
+    width: 1.75rem;
+    --crest-color: var(--color-bronze);
   }
   .footer-tag {
-    margin-top: 0.85rem;
-    color: var(--color-ink-soft);
-    max-width: 30ch;
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--color-text-soft);
+    max-width: 24ch;
   }
-  .footer-nav,
-  .footer-contact {
+
+  .footer-heading {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 1.1rem;
+  }
+  .footer-col {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.7rem;
   }
-  .footer-nav a,
-  .footer-contact a {
-    color: var(--color-ink-soft);
-    transition: color 160ms ease;
+  .footer-col a {
+    color: var(--color-text-soft);
+    transition: color 200ms ease;
     width: fit-content;
   }
   @media (hover: hover) and (pointer: fine) {
-    .footer-nav a:hover,
-    .footer-contact a:hover {
-      color: var(--color-forest);
+    .footer-col a:hover {
+      color: var(--color-bronze);
     }
   }
   .footer-social {
     display: flex;
-    gap: 1rem;
-    margin-top: 0.4rem;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
   }
+
   .footer-bottom {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem 1.5rem;
     justify-content: space-between;
-    padding-block: 1.5rem;
-    border-top: 1px solid var(--color-line);
-    font-size: 0.85rem;
-    color: var(--color-ink-faint);
+    padding-block: 1.75rem;
+    border-top: 1px solid var(--color-line-soft);
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
   }
 
   @media (min-width: 760px) {
     .footer-grid {
-      grid-template-columns: 1.5fr 1fr 1fr;
-      gap: 3rem;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      gap: 3.5rem;
     }
   }
 </style>

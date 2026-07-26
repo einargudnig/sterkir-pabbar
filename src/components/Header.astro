@@ -1,11 +1,12 @@
 ---
 import { site, nav } from "../config/site";
+import { bookingHref } from "../lib/booking";
 ---
 
 <header class="site-header">
   <div class="shell bar">
     <a href="#efni" class="wordmark" aria-label={`${site.name} — heim`}>
-      <span class="mark" aria-hidden="true"></span>
+      <span class="crest-mark mark" aria-hidden="true"></span>
       <span class="wordmark-text">{site.name}</span>
     </a>
 
@@ -13,8 +14,17 @@ import { site, nav } from "../config/site";
       {nav.map((item) => <a href={item.href}>{item.label}</a>)}
     </nav>
 
+    {/*
+      Visible at every width now. This was `display: none` below 900px, so on a
+      phone the only persistent route to the one conversion goal was opening the
+      hamburger — on the device this audience actually browses on, at night, in
+      fragments, when the moment of "fine, I'll do it" is unpredictable.
+    */}
     <div class="header-cta">
-      <a href="#hafa-samband" class="btn btn-primary btn-sm">Ókeypis spjall</a>
+      <a href={bookingHref} class="btn btn-primary btn-sm">
+        <span class="cta-long">Ókeypis spjall</span>
+        <span class="cta-short">Spjall</span>
+      </a>
     </div>
 
     <button
@@ -27,10 +37,12 @@ import { site, nav } from "../config/site";
     </button>
   </div>
 
+  <div class="scroll-progress" aria-hidden="true"></div>
+
   <div class="mobile-nav" id="mobile-nav" hidden>
     <nav class="shell" aria-label="Valmynd">
       {nav.map((item) => <a href={item.href}>{item.label}</a>)}
-      <a href="#hafa-samband" class="btn btn-primary">Ókeypis spjall</a>
+      <a href={bookingHref} class="btn btn-primary">Ókeypis spjall</a>
     </nav>
   </div>
 </header>
@@ -40,13 +52,15 @@ import { site, nav } from "../config/site";
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in oklch, var(--color-paper) 82%, transparent);
-    backdrop-filter: saturate(1.4) blur(10px);
+    background: color-mix(in oklch, var(--color-base) 78%, transparent);
+    backdrop-filter: saturate(1.5) blur(14px);
+    -webkit-backdrop-filter: saturate(1.5) blur(14px);
     border-bottom: 1px solid transparent;
-    transition: border-color 200ms ease;
+    transition: border-color 260ms ease, background-color 260ms ease;
   }
   .site-header[data-scrolled] {
-    border-bottom-color: var(--color-line);
+    background: color-mix(in oklch, var(--color-base) 88%, transparent);
+    border-bottom-color: var(--color-line-soft);
   }
 
   .bar {
@@ -57,62 +71,125 @@ import { site, nav } from "../config/site";
     height: 4.5rem;
   }
 
+  /* Reading progress, driven entirely by scroll position — no JS, and it
+     costs one hairline of chrome. */
+  .scroll-progress {
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    height: 1px;
+    width: 100%;
+    background: var(--color-bronze);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .scroll-progress {
+        animation: progress-grow linear both;
+        animation-timeline: scroll(root block);
+      }
+    }
+  }
+  @keyframes progress-grow {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
   .wordmark {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    font-family: var(--font-display);
+    gap: 0.65rem;
+    color: var(--color-text);
+  }
+  .wordmark-text {
+    font-family: var(--font-mark);
+    font-size: 0.82rem;
     font-weight: 600;
-    font-size: 1.3rem;
-    letter-spacing: -0.02em;
-    color: var(--color-ink);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    /* The persistent CTA narrows the bar on small screens; without this the
+       wordmark breaks across two lines. */
+    white-space: nowrap;
+  }
+  @media (max-width: 419px) {
+    .wordmark-text {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+    .mark {
+      width: 1.75rem;
+    }
   }
   .mark {
-    width: 1.15rem;
-    height: 1.15rem;
-    border-radius: 999px;
-    background: var(--color-forest);
-    box-shadow: inset 0 0 0 3px var(--color-paper), 0 0 0 2px var(--color-forest);
+    width: 2.05rem;
+    --crest-color: var(--color-bronze);
+    transition: transform 400ms var(--ease-out-expo);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .wordmark:hover .mark {
+      transform: translateY(-2px);
+    }
   }
 
   .desktop-nav {
     display: none;
-    gap: 1.75rem;
+    gap: 2rem;
     margin-inline-start: auto;
-    margin-inline-end: 1.5rem;
+    margin-inline-end: 1.75rem;
   }
   .desktop-nav a {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    color: var(--color-ink-soft);
+    color: var(--color-text-muted);
     position: relative;
-    transition: color 160ms ease;
+    transition: color 200ms ease;
   }
   .desktop-nav a::after {
     content: "";
     position: absolute;
     left: 0;
-    bottom: -4px;
-    height: 2px;
-    width: 0;
-    background: var(--color-clay);
-    transition: width 220ms var(--ease-out-strong);
+    bottom: -5px;
+    height: 1px;
+    width: 100%;
+    background: var(--color-bronze);
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 320ms var(--ease-out-expo);
   }
   @media (hover: hover) and (pointer: fine) {
     .desktop-nav a:hover {
-      color: var(--color-ink);
+      color: var(--color-text);
     }
     .desktop-nav a:hover::after {
-      width: 100%;
+      transform: scaleX(1);
+      transform-origin: left center;
     }
   }
 
   .btn-sm {
-    padding: 0.6rem 1.1rem;
-    font-size: 0.9rem;
+    padding: 0.65rem 1.2rem;
+    font-size: 0.875rem;
   }
   .header-cta {
+    margin-inline-start: auto;
+  }
+  /* The label shortens rather than the button disappearing. */
+  .cta-short {
     display: none;
+  }
+  @media (max-width: 419px) {
+    .cta-long {
+      display: none;
+    }
+    .cta-short {
+      display: inline;
+    }
+    .btn-sm {
+      /* keeps the tap target at ~44px once the label shortens */
+      padding: 0.9rem 1.05rem;
+    }
   }
 
   .menu-toggle {
@@ -122,46 +199,83 @@ import { site, nav } from "../config/site";
     gap: 5px;
     width: 2.75rem;
     height: 2.75rem;
-    margin-inline-start: auto;
-    border-radius: 0.6rem;
+    margin-inline-start: 0.75rem;
+    border-radius: 0.65rem;
     border: 1px solid var(--color-line);
     background: transparent;
+    transition: border-color 200ms ease;
   }
   .menu-toggle span {
     display: block;
     width: 1.15rem;
-    height: 2px;
+    height: 1.5px;
     margin-inline: auto;
-    background: var(--color-ink);
-    transition: transform 220ms var(--ease-out-strong), opacity 160ms ease;
+    background: var(--color-text);
+    transition:
+      transform 320ms var(--ease-out-expo),
+      opacity 200ms ease;
+  }
+  .menu-toggle[aria-expanded="true"] {
+    border-color: var(--color-bronze-dim);
   }
   .menu-toggle[aria-expanded="true"] span:first-child {
-    transform: translateY(3.5px) rotate(45deg);
+    transform: translateY(3.25px) rotate(45deg);
   }
   .menu-toggle[aria-expanded="true"] span:last-child {
-    transform: translateY(-3.5px) rotate(-45deg);
+    transform: translateY(-3.25px) rotate(-45deg);
   }
 
   .mobile-nav {
-    border-top: 1px solid var(--color-line);
-    background: var(--color-paper);
+    border-top: 1px solid var(--color-line-soft);
+    background: var(--color-sunken);
     overflow: hidden;
   }
   .mobile-nav nav {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    padding-block: 1rem 1.5rem;
+    gap: 0.25rem;
+    padding-block: 1rem 1.75rem;
+  }
+  /* Toggling `hidden` flips display, which restarts these — so the panel
+     staggers open without any JS driving the animation. */
+  .mobile-nav nav > * {
+    opacity: 0;
+    animation: nav-item-in 420ms var(--ease-out-expo) forwards;
+  }
+  @keyframes nav-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .mobile-nav nav > *:nth-child(1) {
+    animation-delay: 20ms;
+  }
+  .mobile-nav nav > *:nth-child(2) {
+    animation-delay: 70ms;
+  }
+  .mobile-nav nav > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .mobile-nav nav > *:nth-child(4) {
+    animation-delay: 170ms;
   }
   .mobile-nav nav a:not(.btn) {
-    padding: 0.75rem 0;
+    padding: 0.85rem 0;
+    /* Sans, not the display serif: these are navigation controls, not
+       editorial text, and the serif was doing interface work it isn't for. */
     font-size: 1.1rem;
     font-weight: 500;
-    color: var(--color-ink);
-    border-bottom: 1px solid var(--color-line);
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-line-soft);
   }
   .mobile-nav nav .btn {
-    margin-top: 0.75rem;
+    margin-top: 1rem;
+    align-self: flex-start;
   }
 
   @media (min-width: 900px) {
@@ -169,7 +283,7 @@ import { site, nav } from "../config/site";
       display: flex;
     }
     .header-cta {
-      display: block;
+      margin-inline-start: 0;
     }
     .menu-toggle {
       display: none;
@@ -186,17 +300,39 @@ import { site, nav } from "../config/site";
   const panel = document.getElementById("mobile-nav");
 
   if (toggle && panel) {
+    const isOpen = () => toggle.getAttribute("aria-expanded") === "true";
+
     const setOpen = (open: boolean) => {
       toggle.setAttribute("aria-expanded", String(open));
       toggle.setAttribute("aria-label", open ? "Loka valmynd" : "Opna valmynd");
       panel.hidden = !open;
+      // Stop the page scrolling behind the open panel.
+      document.body.style.overflow = open ? "hidden" : "";
     };
-    toggle.addEventListener("click", () =>
-      setOpen(toggle.getAttribute("aria-expanded") !== "true"),
-    );
+
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(!isOpen());
+    });
+
     panel.querySelectorAll("a").forEach((link) =>
       link.addEventListener("click", () => setOpen(false)),
     );
+
+    // Dismiss by tapping anywhere outside the panel — previously the only ways
+    // out were Escape or picking a link, which is a trap on a touch device.
+    document.addEventListener("click", (e) => {
+      if (!isOpen()) return;
+      if (panel.contains(e.target as Node)) return;
+      setOpen(false);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
   }
 
   if (header) {

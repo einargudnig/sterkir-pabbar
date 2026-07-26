@@ -21,7 +21,15 @@ export const buildJsonLd = () => {
         publisher: { "@id": orgId },
       },
       {
-        "@type": ["LocalBusiness", "HealthAndBeautyBusiness"],
+        /**
+         * Was `LocalBusiness` with a `PostalAddress` and
+         * `areaServed: "Höfuðborgarsvæðið"`. The business is online-first and
+         * nationwide, so that combination told search engines this was a
+         * capital-area gym — shrinking the market before a visitor ever
+         * clicked. `ProfessionalService` carries the offer without asserting a
+         * storefront.
+         */
+        "@type": ["ProfessionalService", "HealthAndBeautyBusiness"],
         "@id": orgId,
         name: site.name,
         legalName: site.legalName,
@@ -31,13 +39,9 @@ export const buildJsonLd = () => {
         priceRange: site.priceRange,
         inLanguage: site.lang,
         email: site.contact.email,
-        telephone: site.contact.phone,
-        areaServed: site.contact.areaServed,
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: site.contact.city,
-          addressCountry: "IS",
-        },
+        // Only emitted once a real number exists — never a placeholder.
+        ...(site.contact.phone ? { telephone: site.contact.phone } : {}),
+        areaServed: { "@type": "Country", name: site.contact.areaServed },
         founder: { "@id": personId },
         employee: { "@id": personId },
         sameAs: Object.values(site.social),

@@ -1,0 +1,93 @@
+---
+import { coachIntro, site } from "../config/site";
+---
+
+{/*
+  The one long-form passage on the page, and the only fully verifiable evidence
+  on it. It sits before the pricing on purpose: the visitor should know whose
+  fifteen minutes he is being asked to book before he is shown a number.
+
+  No kicker here. Every section used to open with one, which made five different
+  arguments look like one repeated template.
+*/}
+<section class="section coach" id="thjalfarinn">
+  <div class="shell coach-grid">
+    <div class="coach-mark" aria-hidden="true">
+      <span class="crest-mark"></span>
+    </div>
+
+    <div class="coach-body">
+      <h2 class="coach-title">{coachIntro.title}</h2>
+      {coachIntro.paragraphs.map((p) => <p class="coach-para">{p}</p>)}
+      <p class="coach-sign">{site.coach.role}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .coach {
+    background: var(--color-sunken);
+    border-block: 1px solid var(--color-line-soft);
+  }
+
+  /* Held to a column rather than spanning the full 80rem shell — at full width
+     the text stopped at 46ch and left a third of the section as orphan void,
+     which reads as unfinished rather than composed. */
+  .coach-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1.5rem + 3vw, 4rem);
+    align-items: start;
+    max-width: 62rem;
+  }
+
+  /* The crest at reading scale, legible enough to actually resolve as a father
+     with a child on his shoulders — which is the claim the text is making. */
+  .coach-mark {
+    justify-self: start;
+  }
+  .coach-mark .crest-mark {
+    width: clamp(4.5rem, 12vw, 7.5rem);
+    --crest-color: var(--color-bronze);
+    opacity: 0.85;
+  }
+
+  .coach-title {
+    font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3rem);
+    letter-spacing: -0.025em;
+  }
+
+  /* Long-form measure, deliberately wider than the terse section leads
+     elsewhere — this is the one place the visitor is asked to read. */
+  .coach-para {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 1rem + 0.8vw, 1.45rem);
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--color-text-soft);
+    /* Wider than the terse leads elsewhere: this is the page's one sustained
+       read, so it gets a proper body measure. */
+    max-width: 58ch;
+    margin-top: 1.5rem;
+  }
+  .coach-para:first-of-type {
+    color: var(--color-text);
+    margin-top: 1.75rem;
+  }
+
+  .coach-sign {
+    margin-top: 2.25rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-bronze);
+  }
+
+  @media (min-width: 860px) {
+    .coach-grid {
+      grid-template-columns: auto 1fr;
+      gap: clamp(3rem, 2rem + 4vw, 6rem);
+    }
+  }
+</style>

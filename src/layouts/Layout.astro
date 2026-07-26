@@ -8,17 +8,34 @@ interface Props {
   description?: string;
   /** Path relative to the site root, e.g. "/" */
   path?: string;
+  /**
+   * Keep the page out of the index and suppress its structured data.
+   * Error pages need both: they must not rank, and emitting the business
+   * @graph from an error URL would claim a second canonical home for the
+   * same entity.
+   */
+  noindex?: boolean;
 }
 
 const {
   title = `${site.name} — ${site.tagline}`,
   description = site.description,
   path = "/",
+  noindex = false,
 } = Astro.props;
 
 const canonical = new URL(path, site.domain).href;
+
+/**
+ * Social share card. Absolute URL is required — crawlers do not resolve
+ * relative paths, so this breaks if `site.domain` is wrong (still TODO).
+ *
+ * public/og.png is generated, not hand-drawn: render the card markup at
+ * exactly 1200x630 and screenshot it. Regenerate whenever the headline or
+ * palette changes, or the shared link stops matching the page it opens.
+ */
 const ogImage = new URL("/og.png", site.domain).href;
-const jsonLd = JSON.stringify(buildJsonLd());
+const jsonLd = noindex ? null : JSON.stringify(buildJsonLd());
 ---
 
 <!doctype html>
@@ -26,12 +43,15 @@ const jsonLd = JSON.stringify(buildJsonLd());
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f4efe4" />
+    <meta name="theme-color" content="#221c16" />
 
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta
+      name="robots"
+      content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
+    />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -48,10 +68,20 @@ const jsonLd = JSON.stringify(buildJsonLd());
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <!-- Preconnect not needed: fonts are self-hosted. Preload the critical ones. -->
+    <!--
+      Preconnect not needed: fonts are self-hosted. Preload only faces that
+      render above the fold, largest-first.
+
+      fraunces-italic was previously omitted, which was the wrong call: it sets
+      "orka" in the h1 — the emphasis word in the largest type on the page — so
+      the one word the design leans on was the one that swapped in late.
+
+      Orbitron is deliberately NOT preloaded. It sets the wordmark only, at
+      0.82rem, where a swap costs almost nothing.
+    -->
     <link
       rel="preload"
-      href="/fonts/hanken-normal.woff2"
+      href="/fonts/fraunces-italic.woff2"
       as="font"
       type="font/woff2"
       crossorigin
@@ -63,27 +93,37 @@ const jsonLd = JSON.stringify(buildJsonLd());
       type="font/woff2"
       crossorigin
     />
+    <link
+      rel="preload"
+      href="/fonts/hanken-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/logo/icon-512.png" />
 
-    <script type="application/ld+json" set:html={jsonLd} is:inline />
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd} is:inline />}
   </head>
   <body>
-    <a href="#efni" class="skip-link">Fara í meginmál</a>
+    {/* #efni is the homepage's main landmark; pages without it target #meginmal,
+        which every page wrapper provides. */}
+    <a href={noindex ? "#meginmal" : "#efni"} class="skip-link">Fara í meginmál</a>
     <slot />
 
     <style>
       .skip-link {
         position: absolute;
         left: 1rem;
-        top: -3rem;
-        z-index: 100;
-        background: var(--color-forest);
-        color: var(--color-paper);
-        padding: 0.6rem 1rem;
+        top: -4rem;
+        z-index: 200;
+        background: var(--color-bronze);
+        color: var(--color-base);
+        padding: 0.7rem 1.1rem;
         border-radius: 0.5rem;
         font-weight: 600;
-        transition: top 160ms var(--ease-out-strong);
+        transition: top 220ms var(--ease-out-expo);
       }
       .skip-link:focus {
         top: 1rem;

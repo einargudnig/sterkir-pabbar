@@ -1,63 +1,124 @@
 ---
-import { finalCta } from "../config/site";
+import { finalCta, site } from "../config/site";
+import { bookingHref } from "../lib/booking";
 ---
 
 <section class="section cta-section" id="hafa-samband">
   <div class="shell">
     <div class="cta-panel">
-      <p class="kicker cta-kicker">{finalCta.kicker}</p>
-      <h2 class="cta-title">{finalCta.title}</h2>
-      <p class="cta-body">{finalCta.body}</p>
-      <a href={finalCta.cta.href} class="btn btn-clay cta-btn">{finalCta.cta.label}</a>
+      <div class="cta-crest" aria-hidden="true">
+        <span class="crest-mark"></span>
+      </div>
+
+      <div class="cta-content">
+        <h2 class="cta-title">{finalCta.title}</h2>
+        <p class="cta-body">{finalCta.body}</p>
+
+        <div class="cta-actions">
+          <a href={bookingHref} class="btn cta-btn">{finalCta.cta.label}</a>
+          {/* A second, genuinely different channel out of the highest-intent
+              moment on the page — the button opens mail, this one dials — so
+              the panel is never a single point of failure. */}
+          {
+            site.contact.phone && (
+              <a href={`tel:${site.contact.phone.replace(/\s/g, "")}`} class="cta-alt">
+                eða hringdu í {site.contact.phone}
+              </a>
+            )
+          }
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  /* The only light surface on the page. It lands on the single action the
+     whole site is asking for, and rhymes with the hero's crest bleed. */
   .cta-panel {
     position: relative;
     overflow: hidden;
-    padding: clamp(2.5rem, 1.5rem + 5vw, 5rem) clamp(1.5rem, 1rem + 3vw, 4rem);
-    border-radius: 1.75rem;
-    background: linear-gradient(
-      160deg,
-      var(--color-forest) 0%,
-      var(--color-forest-deep) 100%
-    );
-    color: var(--color-paper);
-    text-align: center;
     isolation: isolate;
+    padding: clamp(2.5rem, 1.5rem + 5vw, 5.5rem) clamp(1.75rem, 1rem + 3vw, 4.5rem);
+    border-radius: clamp(1.25rem, 0.75rem + 1.5vw, 2rem);
+    background: linear-gradient(
+      152deg,
+      var(--color-bronze-bright) 0%,
+      var(--color-bronze) 58%,
+      var(--color-bronze-deep) 100%
+    );
+    color: var(--color-base);
   }
-  .cta-panel::before {
-    content: "";
+
+  .cta-crest {
     position: absolute;
-    inset: 0;
     z-index: -1;
-    background:
-      radial-gradient(50% 60% at 15% 10%, oklch(0.8 0.09 150 / 0.3), transparent 60%),
-      radial-gradient(50% 70% at 90% 100%, var(--color-clay-deep) 0%, transparent 55%);
-    opacity: 0.55;
+    top: 50%;
+    right: -6%;
+    width: min(46vw, 24rem);
+    translate: 0 -50%;
+    pointer-events: none;
   }
-  .cta-kicker {
-    color: var(--color-clay-tint);
-    justify-content: center;
+  .cta-crest .crest-mark {
+    width: 100%;
+    --crest-color: var(--color-base);
+    opacity: 0.11;
   }
-  .cta-kicker::before {
-    background: var(--color-clay-tint);
+
+  .cta-content {
+    position: relative;
+    max-width: 34rem;
   }
+
   .cta-title {
     font-size: var(--text-display);
-    margin-block: 1rem 0;
-    max-width: 20ch;
-    margin-inline: auto;
+    margin-block: 1.1rem 0;
+    max-width: 16ch;
+    color: var(--color-base);
   }
   .cta-body {
     font-size: var(--text-lead);
-    color: color-mix(in oklch, var(--color-paper) 84%, transparent);
-    max-width: 46ch;
-    margin: 1.25rem auto 0;
+    color: color-mix(in oklch, var(--color-base) 82%, transparent);
+    max-width: 40ch;
+    margin-top: 1.35rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-top: clamp(2rem, 1.5rem + 1.5vw, 2.75rem);
   }
   .cta-btn {
-    margin-top: 2.25rem;
+    background: var(--color-base);
+    color: var(--color-text);
+  }
+  .cta-alt {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-base);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+    padding-block: 0.5rem;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .cta-alt:hover {
+      text-decoration-thickness: 2px;
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .cta-btn:hover {
+      background: var(--color-sunken);
+      box-shadow: 0 12px 32px -14px oklch(0.1 0.02 55 / 0.55);
+    }
+  }
+
+  @media (min-width: 760px) {
+    .cta-crest {
+      right: 2%;
+      width: min(34vw, 22rem);
+    }
   }
 </style>
