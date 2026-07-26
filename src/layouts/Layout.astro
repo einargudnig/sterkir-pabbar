@@ -17,6 +17,15 @@ const {
 } = Astro.props;
 
 const canonical = new URL(path, site.domain).href;
+
+/**
+ * Social share card. Absolute URL is required — crawlers do not resolve
+ * relative paths, so this breaks if `site.domain` is wrong (still TODO).
+ *
+ * public/og.png is generated, not hand-drawn: render the card markup at
+ * exactly 1200x630 and screenshot it. Regenerate whenever the headline or
+ * palette changes, or the shared link stops matching the page it opens.
+ */
 const ogImage = new URL("/og.png", site.domain).href;
 const jsonLd = JSON.stringify(buildJsonLd());
 ---
@@ -48,10 +57,20 @@ const jsonLd = JSON.stringify(buildJsonLd());
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <!-- Preconnect not needed: fonts are self-hosted. Preload the critical ones. -->
+    <!--
+      Preconnect not needed: fonts are self-hosted. Preload only faces that
+      render above the fold, largest-first.
+
+      fraunces-italic was previously omitted, which was the wrong call: it sets
+      "orka" in the h1 — the emphasis word in the largest type on the page — so
+      the one word the design leans on was the one that swapped in late.
+
+      Orbitron is deliberately NOT preloaded. It sets the wordmark only, at
+      0.82rem, where a swap costs almost nothing.
+    -->
     <link
       rel="preload"
-      href="/fonts/hanken-normal.woff2"
+      href="/fonts/fraunces-italic.woff2"
       as="font"
       type="font/woff2"
       crossorigin
@@ -65,7 +84,7 @@ const jsonLd = JSON.stringify(buildJsonLd());
     />
     <link
       rel="preload"
-      href="/fonts/orbitron-normal.woff2"
+      href="/fonts/hanken-normal.woff2"
       as="font"
       type="font/woff2"
       crossorigin
