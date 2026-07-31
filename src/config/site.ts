@@ -16,14 +16,16 @@ export const site = {
 
   // Short description reused in <meta description> and schema.
   description:
-    "Persónuleg þjálfun og æfingaprógrömm sniðin að pöbbum. Meiri orka, minni verkir og styrkur til að endast. Þjálfun sem passar inn í annasamt fjölskyldulíf.",
+    "Einkaþjálfun og fjarþjálfun sniðin að pöbbum. Sérsniðið æfinga- og matarprógram, bein skilaboð til þjálfara og vikulegt check-in. Þjálfun sem passar inn í annasamt fjölskyldulíf.",
 
   contact: {
     email: "aron@sterkirpabbar.is",
     // Stored in full international form so the tel: link works from abroad;
     // Footer strips the spaces to produce tel:+3544567890.
     phone: "+354 456 7890" as string | null,
-    city: "Reykjavík", // TODO(client)
+    // Confirmed by Aron. Not rendered anywhere — the site is online-first and
+    // must not read as a capital-area gym — but it is true, so it lives here.
+    city: "Mosfellsbær",
     // The business is online-first and nationwide (see PRODUCT.md). Anything
     // narrower than this tells 60% of Icelandic fathers the service isn't theirs.
     areaServed: "Ísland",
@@ -55,12 +57,21 @@ export const site = {
   coach: {
     name: "Aron Ingi",
     role: "Einkaþjálfari & pabbi",
-    // TODO(client): confirm/expand bio with Aron — first person, warm.
-    bio: "Ég heiti Aron Ingi, er pabbi og einkaþjálfari. Ég veit hvað það er að þjálfa í kringum svefnlausar nætur, vinnu og fjölskyldu — því byggi ég prógrömm sem virka í alvöru lífi, ekki bara á blaði. Markmiðið er einfalt: að við verðum sterkari saman.",
+    // Aron's own words, supplied by him. Do not paraphrase — this is the only
+    // fully verifiable evidence on the site.
+    bio: "Ég er tveggja barna faðir og Mosfellingur í húð og hár. Ég sérhæfi mig í einkaþjálfun og fjarþjálfun fyrir bæði byrjendur og lengra komna. Markmiðið er einfaldlega að koma þér í þitt besta form eða styrkjast svo þú getir verið fyrirmynd fyrir þá sem skipta þér mestu máli.",
     credentials: "ÍAK einkaþjálfari", // TODO(client): confirm real certification
   },
 
   priceRange: "$$", // schema hint, not shown to users
+
+  // Build credit. Rendered once, in the footer's bottom rule — quiet enough
+  // that it never competes with the client's own name above it.
+  credit: {
+    label: "Búið til af",
+    name: "einargudni.com",
+    url: "https://einargudni.com",
+  },
 } as const;
 
 export const nav = [
@@ -80,23 +91,28 @@ export const hero = {
   // href intentionally absent: every CTA destination comes from lib/booking.ts
   primaryCta: { label: "Bókaðu ókeypis spjall" },
   secondaryCta: { label: "Sjá þjálfunarleiðir", href: "#thjalfun" },
-  proof: [
-    { value: "3×", label: "æfingar á viku" },
-    { value: "30–45", label: "mínútur í senn" },
-    { value: "12 vikur", label: "að finna mun" },
-  ],
+  /**
+   * The stat rail ("3× æfingar á viku · 30–45 mínútur · 12 vikur") was removed
+   * at Aron's request, along with every other fixed prescription on the page.
+   * Every prógram is built around the individual, so a standard weekly dose
+   * stated as a headline fact contradicted the product. It also cannot be
+   * replaced with a different set of numbers — there is no verified data yet.
+   */
 } as const;
 
 /**
- * Order is the price ladder: the featured entry point first, then ascending.
+ * Two tiers, in ascending price order, both delivered online and nationwide.
  *
- * `featured` moved from Einkaþjálfun to Æfingaprógram. The 1:1 tier was taking
- * the large panel and the primary button, which put the most expensive,
- * capital-area-flavoured option in front of a father who has not trained in
- * years — and demoted the app-delivered programs that are, per PRODUCT.md, the
- * main business and the only tier available outside Reykjavík.
+ * Pabbahópur and Einkaþjálfun 1:1 were removed at Aron's request. What is sold
+ * on this page is a prógram: training alone, or training plus nutrition. Aron
+ * still does 1:1 and fjarþjálfun (see `coachIntro`), but neither is a packaged
+ * tier with a public price, so neither is listed as one.
  *
- * Every tag is now true by construction rather than a claim about popularity.
+ * `featured` stays on Æfingaprógram: it is the lower-friction entry point for a
+ * father who has not trained in years.
+ *
+ * Direct messaging and the weekly check-in are in BOTH tiers, deliberately.
+ * They are not an upsell — they are what makes either prógram work.
  */
 export const offerings = [
   {
@@ -105,43 +121,28 @@ export const offerings = [
     // States availability where the visitor outside Reykjavík will actually
     // see it. Previously nothing on the page said the service reaches him.
     tag: "Um allt land",
-    price: "frá 9.900 kr/mán",
-    summary: "Prógram sniðið að þér. Þú færð það í símann og æfir þegar þér hentar.",
+    price: "15.900 kr/mán",
+    summary:
+      "Sérsniðið æfingaprógram eftir þínum markmiðum. Þú færð það í símann og æfir þegar þér hentar.",
     features: [
-      "Vikulegt prógram í appi",
+      "Sérsniðið æfingaprógram í appi",
       "Myndbönd fyrir hverja æfingu",
-      "Aðlagað eftir framvindu",
+      "Bein skilaboð til mín",
+      "Vikulegt check-in",
     ],
     featured: true,
   },
   {
-    id: "hopur",
-    name: "Pabbahópur",
-    // Says plainly that this one is in person, so nobody outside the capital
-    // area works out too late that two of three options were never available.
-    tag: "Á staðnum",
-    price: "frá 14.900 kr/mán",
-    summary: "Lítill hópur pabba á föstum tímum. Aðhald, félagsskapur og gott grín.",
+    id: "aefinga-og-matarprogram",
+    name: "Æfinga- og matarprógram",
+    tag: "Allt utanumhaldið",
+    price: "24.900 kr/mán",
+    summary: "Þú færð sérsniðið matar- og æfingaprógram eftir þínum markmiðum.",
     features: [
-      "2 tímar í viku í litlum hóp",
-      "Fastir tímar, bókað fyrirfram",
-      "Sami hópur, raunverulegt aðhald",
-    ],
-    featured: false,
-  },
-  {
-    id: "einka",
-    name: "Einkaþjálfun 1:1",
-    // Was "Vinsælast" — an unverifiable claim on the most expensive tier, on a
-    // page whose credibility depends on refusing to overclaim. This one is true
-    // by construction: it is the tier with the most contact.
-    tag: "Mest aðhald",
-    price: "frá 24.900 kr/mán",
-    summary: "Við æfum saman, í sal eða á netinu. Þú mætir, ég sé um afganginn.",
-    features: [
-      "Vikulegir tímar með þjálfara",
-      "Persónulegt prógram + næring",
-      "Bein skilaboð milli tíma",
+      "Sérsniðið æfingaprógram í appi",
+      "Sérsniðið matarprógram",
+      "Bein skilaboð til mín",
+      "Vikulegt check-in",
     ],
     featured: false,
   },
@@ -157,9 +158,12 @@ export const offerings = [
  */
 export const coachIntro = {
   title: "Ég heiti Aron Ingi",
+  // Aron's own wording, split for long-form setting. Nothing added, nothing
+  // rephrased — the first paragraph gets the brightest treatment in Coach.astro.
   paragraphs: [
-    "Ég er pabbi og einkaþjálfari. Ég veit hvað það er að þjálfa í kringum svefnlausar nætur, vinnu og fjölskyldu.",
-    "Þess vegna byggi ég prógrömm sem virka í alvöru lífi, ekki bara á blaði. Markmiðið er einfalt: að við verðum sterkari saman.",
+    "Ég er tveggja barna faðir og Mosfellingur í húð og hár.",
+    "Ég sérhæfi mig í einkaþjálfun og fjarþjálfun fyrir bæði byrjendur og lengra komna.",
+    "Markmiðið er einfaldlega að koma þér í þitt besta form eða styrkjast svo þú getir verið fyrirmynd fyrir þá sem skipta þér mestu máli.",
   ],
   // Deliberately no credential line. "ÍAK einkaþjálfari" is unconfirmed, and the
   // bio is stronger evidence to this audience than a certificate would be.
@@ -177,13 +181,15 @@ export const method = {
     },
     {
       n: "02",
-      title: "Þú færð plan sem passar lífinu",
-      body: "Stutt og markviss: 30–45 mínútur, 2–3 sinnum í viku. Byggt til að halda þegar vikan fer úr skorðum.",
+      title: "Þú færð prógram sem passar lífinu",
+      // No fixed dose here any more. The promise is that the prógram is built
+      // around his week, so naming a standard week undercut it.
+      body: "Sérsniðið eftir markmiðum þínum, búnaðinum sem þú hefur og þeim tíma sem þú átt í raun. Byggt til að halda þegar vikan fer úr skorðum.",
     },
     {
       n: "03",
       title: "Við aðlögum eftir því sem þú styrkist",
-      body: "Þú segir mér hvernig gengur og ég stilli af. Framvinda, ekki stöðnun.",
+      body: "Vikulegt check-in og bein skilaboð til mín þess á milli. Þú segir mér hvernig gengur og ég stilli af. Framvinda, ekki stöðnun.",
     },
   ],
 } as const;
@@ -219,19 +225,26 @@ export const faq = [
   },
   {
     q: "Hvað þarf ég að hafa mikinn tíma?",
-    a: "Flest prógrömm eru 30–45 mínútur, tvisvar til þrisvar í viku. Þau eru hönnuð til að passa inn í annasama viku, ekki taka hana yfir.",
+    a: "Prógrammið er byggt í kringum þann tíma sem þú átt í raun og veru. Við förum yfir vikuna þína í ókeypis spjalli og sníðum æfingarnar að henni — ekki öfugt.",
   },
   {
     q: "Þarf ég að vera með aðgang að líkamsræktarstöð?",
     a: "Nei. Ég byggi prógrammið í kringum þann búnað sem þú hefur, hvort sem það er full stöð, lítið heimatæki eða bara líkamsþyngd og teygjur.",
   },
   {
-    q: "Æfum við saman eða fæ ég plan til að fylgja?",
-    a: "Bæði er í boði. Í einkaþjálfun æfum við saman (í sal eða á netinu). Í æfingaprógrammi færðu planið í símann og æfir sjálfur, með aðhaldi frá mér.",
+    q: "Hver er munurinn á prógrömmunum tveimur?",
+    a: "Í æfingaprógrammi færðu sérsniðið æfingaprógram í símann. Í æfinga- og matarprógrammi bætist sérsniðið matarprógram við. Í báðum ertu í beinu sambandi við mig og við tökum vikulegt check-in.",
+  },
+  {
+    // Aron's bio says he specialises in einkaþjálfun as well as fjarþjálfun,
+    // but 1:1 is no longer a packaged tier with a public price. This answers
+    // the question that gap creates without inventing a number.
+    q: "Býðurðu upp á einkaþjálfun?",
+    a: "Já. Ég sérhæfi mig í bæði einkaþjálfun og fjarþjálfun, fyrir byrjendur og lengra komna. Hafðu samband og við finnum út hvað hentar þér best.",
   },
   {
     q: "Hvað kostar þetta?",
-    a: "Æfingaprógram byrja í 9.900 kr á mánuði, pabbahópur í 14.900 kr og einkaþjálfun 1:1 í 24.900 kr. Við finnum leiðina sem passar þér í ókeypis spjalli.",
+    a: "Æfingaprógram kostar 15.900 kr á mánuði og æfinga- og matarprógram 24.900 kr á mánuði. Í báðum eru bein skilaboð til mín og vikulegt check-in innifalin. Við finnum leiðina sem passar þér í ókeypis spjalli.",
   },
 ] as const;
 

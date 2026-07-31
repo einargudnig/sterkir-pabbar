@@ -1,4 +1,4 @@
-import { site, faq } from "../config/site";
+import { site, faq, offerings } from "../config/site";
 
 /**
  * Builds a JSON-LD @graph for AEO / rich results.
@@ -45,24 +45,30 @@ export const buildJsonLd = () => {
         founder: { "@id": personId },
         employee: { "@id": personId },
         sameAs: Object.values(site.social),
-        makesOffer: [
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Einkaþjálfun fyrir pabba",
-              serviceType: "Personal training",
-            },
+        /**
+         * Generated from `offerings` so the structured data can never disagree
+         * with the prices on the page. `price` is parsed out of the display
+         * string rather than duplicated as a number — one place to edit.
+         */
+        makesOffer: offerings.map((o) => ({
+          "@type": "Offer",
+          name: o.name,
+          price: o.price.replace(/[^\d]/g, ""),
+          priceCurrency: "ISK",
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            price: o.price.replace(/[^\d]/g, ""),
+            priceCurrency: "ISK",
+            unitCode: "MON",
           },
-          {
-            "@type": "Offer",
-            itemOffered: {
-              "@type": "Service",
-              name: "Æfingaprógram fyrir pabba",
-              serviceType: "Fitness program",
-            },
+          itemOffered: {
+            "@type": "Service",
+            name: o.name,
+            description: o.summary,
+            serviceType: "Fitness program",
+            provider: { "@id": orgId },
           },
-        ],
+        })),
       },
       {
         "@type": "Person",

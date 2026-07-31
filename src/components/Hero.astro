@@ -43,18 +43,12 @@ const [before, after] = hero.headline.split(hero.emphasis);
     </div>
   </div>
 
-  <div class="shell">
-    <dl class="hero-proof rise" style="animation-delay: 640ms">
-      {
-        hero.proof.map((p) => (
-          <div class="proof-item">
-            <dt>{p.value}</dt>
-            <dd>{p.label}</dd>
-          </div>
-        ))
-      }
-    </dl>
-  </div>
+  {/*
+    The stat rail that sat here (3× á viku · 30–45 mínútur · 12 vikur) is gone
+    — see the note on `hero.proof` in config/site.ts. Nothing replaces it: the
+    hero now ends on the action, and the first real claim the visitor meets is
+    Aron in his own words.
+  */}
 </section>
 
 <style>
@@ -172,42 +166,10 @@ const [before, after] = hero.headline.split(hero.emphasis);
     margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
   }
 
-  /* Masthead rule — the three facts that answer "what does this cost me?" */
-  .hero-proof {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-top: clamp(2.25rem, 1.5rem + 2.5vw, 3.5rem);
-    padding-top: clamp(1.25rem, 1rem + 1vw, 1.75rem);
-    border-top: 1px solid var(--color-line);
-  }
-  .proof-item dt {
-    font-family: var(--font-display);
-    font-size: clamp(1.25rem, 0.9rem + 1.4vw, 1.85rem);
-    font-weight: 460;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    color: var(--color-bronze);
-    font-variant-numeric: lining-nums tabular-nums;
-  }
-  .proof-item dd {
-    margin-top: 0.6rem;
-    font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
-    line-height: 1.4;
-    color: var(--color-text-muted);
-    max-width: 18ch;
-  }
-
   @media (min-width: 900px) {
     .hero-crest {
       right: -8%;
       width: min(52vw, 44rem);
-    }
-    .hero-proof {
-      grid-template-columns: repeat(3, minmax(0, 14rem));
-      gap: 3rem;
     }
   }
 </style>

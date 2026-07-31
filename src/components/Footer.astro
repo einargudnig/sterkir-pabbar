@@ -51,6 +51,12 @@ const year = new Date().getFullYear();
     {/* Was "Reykjavík, Ísland" — the page's final fact told a father in
         Akureyri the service was not for him. */}
     <span>Þjálfun um allt land</span>
+    <span class="footer-credit">
+      {site.credit.label}{" "}
+      <a href={site.credit.url} rel="noopener noreferrer" target="_blank">
+        {site.credit.name}
+      </a>
+    </span>
   </div>
 </footer>
 
@@ -131,6 +137,25 @@ const year = new Date().getFullYear();
     border-top: 1px solid var(--color-line-soft);
     font-size: 0.82rem;
     color: var(--color-text-muted);
+  }
+
+  /* Underlined rather than coloured: in a muted bar the only affordance left
+     is the rule under the text, and the credit must not read as brighter than
+     the client's own name two lines above it. */
+  .footer-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+    text-underline-offset: 0.25em;
+    transition:
+      color 200ms ease,
+      text-decoration-color 200ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .footer-credit a:hover {
+      color: var(--color-bronze);
+      text-decoration-color: currentColor;
+    }
   }
 
   @media (min-width: 760px) {

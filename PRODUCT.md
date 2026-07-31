@@ -33,37 +33,60 @@ The single conversion goal of the site is booking the **free intro chat**
 
 **Aron is a dad training dads.** He lives the constraint he programs around, so
 the programming comes from inside the problem rather than from a textbook.
-Training is designed _around_ a chaotic family week, not in spite of it —
-30–45 minutes, 2–3 times a week, built to keep going when the week collapses.
+Training is designed _around_ a chaotic family week, not in spite of it, and
+built to keep going when the week collapses.
 
 A neighbouring trainer can copy the schedule but cannot truthfully claim the
 same vantage point.
 
+**No fixed dose appears anywhere on the site.** Aron removed every standard
+prescription — "3× á viku", "30–45 mínútur", "12 vikur" — because every prógram
+is built around the individual, and a headline number contradicts that. The
+hero stat rail was deleted rather than repopulated; there is no verified data to
+put in its place. Do not reintroduce a session count, session length, or
+time-to-result anywhere, including copy that merely implies one.
+
+Aron's own words, supplied by him and used verbatim in `coachIntro` and
+`site.coach.bio`: two-child father, Mosfellingur, specialising in
+**einkaþjálfun and fjarþjálfun** for beginners and advanced alike. The goal is
+stated as being **a role model for the people who matter most to you**.
+
 ## Operating Context
 
 **Online-first and nationwide.** Confirmed at init; the local-business framing
-the code originally carried has been removed:
+the code originally carried has been removed. Aron is based in Mosfellsbær, but
+that is not a service boundary and is not rendered on the site.
 
-- **Æfingaprógram** (app-delivered programs) is the main business and the tier
-  that scales beyond the capital area. It serves dads anywhere in Iceland.
-- **Einkaþjálfun 1:1** is the smaller premium tier.
-- **Pabbahópur** is a small fixed peer group.
+**Two tiers, both delivered online, both nationwide** (set by Aron):
+
+| Tier                         | Price         | Contains                                          |
+| ---------------------------- | ------------- | ------------------------------------------------- |
+| **Æfingaprógram** (featured) | 15.900 kr/mán | Tailored training prógram in the app              |
+| **Æfinga- og matarprógram**  | 24.900 kr/mán | Tailored nutrition prógram on top of the training |
+
+**Both** tiers include **direct messaging to Aron** and a **weekly check-in**.
+These are not upsell levers — they are what makes either prógram work, so they
+appear in both feature lists and in the pricing FAQ.
+
+Removed by Aron, do not reinstate without him asking:
+
+- **Pabbahópur** (the in-person peer group) — gone entirely.
+- **Einkaþjálfun 1:1** as a _packaged tier with a public price_ — gone. Note the
+  distinction: Aron still does 1:1 and says so in his own bio, so the FAQ has a
+  "Býðurðu upp á einkaþjálfun?" entry pointing to the free chat. What was
+  removed is the priced tier, not the service.
 
 Consequences future work must respect:
 
-- The service area is **Iceland**, not `Höfuðborgarsvæðið`. The site now emits
-  `ProfessionalService` with `areaServed: Ísland` and no `PostalAddress`;
-  do not reintroduce a `LocalBusiness` type or a street address.
-- The offering hierarchy now matches: **Æfingaprógram is the featured tier**,
-  taking the large panel and the primary button. It is the main business, the
-  lowest-friction entry point, and the only tier available outside the capital
-  area. Einkaþjálfun 1:1 and Pabbahópur follow as lighter rows in ascending
-  price order.
-- Tier tags state availability rather than popularity — "Um allt land",
-  "Á staðnum", "Mest aðhald" — so a visitor outside Reykjavík can tell at a
-  glance which options are actually open to him. **If Aron wants the 1:1 tier
-  featured for margin reasons, that is his call to reverse; the reasoning above
-  is why it is not the default.**
+- The service area is **Iceland**, not `Höfuðborgarsvæðið`. The site emits
+  `ProfessionalService` with `areaServed: Ísland` and no `PostalAddress`; do not
+  reintroduce a `LocalBusiness` type or a street address.
+- **Æfingaprógram is the featured tier**, taking the large panel and the primary
+  button — the lower-friction entry point for a father who has not trained in
+  years. Æfinga- og matarprógram follows as a lighter row.
+- `makesOffer` in `lib/jsonLd.ts` is **generated from `offerings`**, so prices in
+  the structured data cannot drift from the prices on the page. Keep that
+  property; do not hand-write offer nodes.
 
 ## Capabilities and Constraints
 
@@ -79,7 +102,7 @@ Consequences future work must respect:
 
 - Email **aron@sterkirpabbar.is**, phone **+354 456 7890**.
 - The free chat is booked by email. `site.bookingUrl` is a `mailto:` with the
-  subject "Ég vil bóka ókeypis spjall" prefilled; the three offering CTAs use
+  subject "Ég vil bóka ókeypis spjall" prefilled; the offering CTAs use
   `enquiryHref()` to prefill the tier name instead. All CTA destinations resolve
   through `src/lib/booking.ts` — there is exactly one place to change when a
   real booking system arrives.
@@ -87,7 +110,8 @@ Consequences future work must respect:
 **Still undecided. Do not treat as true and do not invent values:**
 
 - Final domain (`sterkirpabbar.is` is unconfirmed)
-- City / whether a physical address should appear at all, given online-first.
+- Whether any city should appear at all, given online-first. Aron is in
+  Mosfellsbær (`site.contact.city`), but nothing renders it today.
 - Legal entity name / kennitala.
 - Whether a booking tool (Calendly, Noona, a form) replaces the mailto.
 
@@ -111,8 +135,14 @@ placeholder and must not be presented, cited, or reasoned about as fact:**
 - **Testimonials** — "Gunnar" and "Kristján" were invented. They have been
   **removed** from the site along with the section that rendered them. Do not
   reinstate them; only real, permissioned quotes go back in.
-- **Pricing** — 9.900 / 14.900 / 24.900 kr per month are provisional.
-- **Credential** — "ÍAK einkaþjálfari" is unconfirmed.
+- **Credential** — "ÍAK einkaþjálfari" is unconfirmed and is not rendered.
+
+**Now confirmed by Aron, treat as fact:**
+
+- **Pricing** — 15.900 kr and 24.900 kr per month. No longer provisional and no
+  longer written as "frá X"; these are the prices.
+- **Aron's bio** — supplied by him verbatim. This remains the only fully
+  verifiable evidence on the site. Do not paraphrase it.
 
 **Absences future work must not paper over:**
 
