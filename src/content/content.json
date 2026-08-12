@@ -1,0 +1,128 @@
+{
+  "hero": {
+    "headline": "Meiri orka. Fleiri góð ár með börnunum.",
+    "emphasis": "orka",
+    "sub": "Þjálfun sem passar inn í annasamt fjölskyldulíf, byggð til að þú endist.",
+    "primaryCtaLabel": "Bókaðu ókeypis spjall",
+    "secondaryCtaLabel": "Sjá þjálfunarleiðir"
+  },
+  "offeringsTitle": "Tvær leiðir. Eitt markmið.",
+  "offeringsLead": "Æfingar einar og sér, eða æfingar og mataræði saman. Í báðum ertu í beinu sambandi við mig.",
+  "offerings": [
+    {
+      "name": "Æfingaprógram",
+      "tag": "Um allt land",
+      "price": "15.900 kr/mán",
+      "summary": "Sérsniðið æfingaprógram eftir þínum markmiðum. Þú færð það í símann og æfir þegar þér hentar.",
+      "features": [
+        "Sérsniðið æfingaprógram í appi",
+        "Myndbönd fyrir hverja æfingu",
+        "Bein skilaboð til mín",
+        "Vikulegt check-in"
+      ],
+      "featured": true
+    },
+    {
+      "name": "Æfinga- og matarprógram",
+      "tag": "Allt utanumhaldið",
+      "price": "24.900 kr/mán",
+      "summary": "Þú færð sérsniðið matar- og æfingaprógram eftir þínum markmiðum.",
+      "features": [
+        "Sérsniðið æfingaprógram í appi",
+        "Sérsniðið matarprógram",
+        "Bein skilaboð til mín",
+        "Vikulegt check-in"
+      ],
+      "featured": false
+    }
+  ],
+  "method": {
+    "title": "Enginn galdur. Bara plan sem heldur.",
+    "intro": "Flest prógrömm gera ráð fyrir að þú hafir klukkutíma á dag og enga krakka. Þetta gerir það ekki.",
+    "steps": [
+      {
+        "n": "01",
+        "title": "Við byrjum á stöðunni þinni",
+        "body": "Ókeypis spjall um markmið, meiðsli og hvað þú hefur raunverulega tíma í."
+      },
+      {
+        "n": "02",
+        "title": "Þú færð prógram sem passar lífinu",
+        "body": "Sérsniðið eftir markmiðum þínum, búnaðinum sem þú hefur og þeim tíma sem þú átt í raun. Byggt til að halda þegar vikan fer úr skorðum."
+      },
+      {
+        "n": "03",
+        "title": "Við aðlögum eftir því sem þú styrkist",
+        "body": "Vikulegt check-in og bein skilaboð til mín þess á milli. Þú segir mér hvernig gengur og ég stilli af. Framvinda, ekki stöðnun."
+      }
+    ]
+  },
+  "forDads": {
+    "title": "Því þú ert fyrirmyndin — hvort sem þú ætlar það eða ekki",
+    "points": [
+      "Orka til að vera til staðar eftir langan dag.",
+      "Bak og hné sem þola að lyfta, bera og elta.",
+      "Börnin læra af þér að hreyfing sé sjálfsögð.",
+      "Hraustur pabbi núna, hraustur afi seinna."
+    ]
+  },
+  "coachIntro": {
+    "title": "Ég heiti Aron Ingi",
+    "paragraphs": [
+      "Ég er tveggja barna faðir og Mosfellingur í húð og hár.",
+      "Ég sérhæfi mig í einkaþjálfun og fjarþjálfun fyrir bæði byrjendur og lengra komna.",
+      "Markmiðið er einfaldlega að koma þér í þitt besta form eða styrkjast svo þú getir verið fyrirmynd fyrir þá sem skipta þér mestu máli."
+    ]
+  },
+  "faqTitle": "Það sem pabbar spyrja fyrst",
+  "faq": [
+    {
+      "q": "Ég hef varla æft í mörg ár — er þetta fyrir mig?",
+      "a": "Já, einmitt þá. Flestir sem byrja hjá mér hafa ekki æft reglulega í langan tíma. Við byrjum þar sem þú ert og byggjum upp hægt og örugglega. Engin þörf á að vera í formi fyrir fram."
+    },
+    {
+      "q": "Hvað þarf ég að hafa mikinn tíma?",
+      "a": "Prógrammið er byggt í kringum þann tíma sem þú átt í raun og veru. Við förum yfir vikuna þína í ókeypis spjalli og sníðum æfingarnar að henni — ekki öfugt."
+    },
+    {
+      "q": "Þarf ég að vera með aðgang að líkamsræktarstöð?",
+      "a": "Nei. Ég byggi prógrammið í kringum þann búnað sem þú hefur, hvort sem það er full stöð, lítið heimatæki eða bara líkamsþyngd og teygjur."
+    },
+    {
+      "q": "Hver er munurinn á prógrömmunum tveimur?",
+      "a": "Í æfingaprógrammi færðu sérsniðið æfingaprógram í símann. Í æfinga- og matarprógrammi bætist sérsniðið matarprógram við. Í báðum ertu í beinu sambandi við mig og við tökum vikulegt check-in."
+    },
+    {
+      "q": "Býðurðu upp á einkaþjálfun?",
+      "a": "Já. Ég sérhæfi mig í bæði einkaþjálfun og fjarþjálfun, fyrir byrjendur og lengra komna. Hafðu samband og við finnum út hvað hentar þér best."
+    },
+    {
+      "q": "Hvað kostar þetta?",
+      "a": "Æfingaprógram kostar 15.900 kr á mánuði og æfinga- og matarprógram 24.900 kr á mánuði. Í báðum eru bein skilaboð til mín og vikulegt check-in innifalin. Við finnum leiðina sem passar þér í ókeypis spjalli."
+    }
+  ],
+  "finalCta": {
+    "title": "Byrjum á spjalli — það kostar ekkert",
+    "body": "Fimmtán mínútur, engin skuldbinding. Við förum yfir hvar þú ert og hvert þú vilt fara.",
+    "ctaLabel": "Bókaðu ókeypis spjall"
+  },
+  "general": {
+    "tagline": "Verðum sterkari saman",
+    "description": "Einkaþjálfun og fjarþjálfun sniðin að pöbbum. Sérsniðið æfinga- og matarprógram, bein skilaboð til þjálfara og vikulegt check-in. Þjálfun sem passar inn í annasamt fjölskyldulíf."
+  },
+  "contact": {
+    "email": "aron@sterkirpabbar.is",
+    "phone": "+354 456 7890",
+    "city": "Mosfellsbær"
+  },
+  "coach": {
+    "name": "Aron Ingi",
+    "role": "Einkaþjálfari & pabbi",
+    "bio": "Ég er tveggja barna faðir og Mosfellingur í húð og hár. Ég sérhæfi mig í einkaþjálfun og fjarþjálfun fyrir bæði byrjendur og lengra komna. Markmiðið er einfaldlega að koma þér í þitt besta form eða styrkjast svo þú getir verið fyrirmynd fyrir þá sem skipta þér mestu máli.",
+    "credentials": "ÍAK einkaþjálfari"
+  },
+  "social": {
+    "instagram": "https://instagram.com/sterkirpabbar",
+    "facebook": "https://facebook.com/sterkirpabbar"
+  }
+}

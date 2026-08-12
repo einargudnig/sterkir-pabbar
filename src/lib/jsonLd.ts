@@ -44,7 +44,9 @@ export const buildJsonLd = () => {
         areaServed: { "@type": "Country", name: site.contact.areaServed },
         founder: { "@id": personId },
         employee: { "@id": personId },
-        sameAs: Object.values(site.social),
+        // Handles are optional in the CMS — a blank one must not become an
+        // empty string in `sameAs`, which invalidates the node.
+        sameAs: Object.values(site.social).filter(Boolean),
         /**
          * Generated from `offerings` so the structured data can never disagree
          * with the prices on the page. `price` is parsed out of the display

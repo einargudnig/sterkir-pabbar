@@ -1,5 +1,5 @@
 ---
-import { offerings } from "../config/site";
+import { offerings, sections } from "../config/site";
 import { enquiryHref } from "../lib/booking";
 
 // The page argues for one recommended path plus the fuller version of it, so
@@ -12,11 +12,8 @@ const rest = offerings.filter((o) => !o.featured);
 <section class="section" id="thjalfun">
   <div class="shell">
     <header class="section-head">
-      <h2 class="section-title">Tvær leiðir. Eitt markmið.</h2>
-      <p class="section-lead">
-        Æfingar einar og sér, eða æfingar og mataræði saman. Í báðum ertu í beinu
-        sambandi við mig.
-      </p>
+      <h2 class="section-title">{sections.offeringsTitle}</h2>
+      <p class="section-lead">{sections.offeringsLead}</p>
     </header>
 
     <div class="offer-layout">

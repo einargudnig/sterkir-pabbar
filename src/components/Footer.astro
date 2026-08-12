@@ -35,13 +35,23 @@ const year = new Date().getFullYear();
           </a>
         )
       }
+      {/* Each handle is optional in the CMS: an empty field removes the link
+          rather than rendering an anchor pointing at nothing. */}
       <div class="footer-social">
-        <a href={site.social.instagram} rel="me noopener noreferrer" target="_blank">
-          Instagram
-        </a>
-        <a href={site.social.facebook} rel="me noopener noreferrer" target="_blank">
-          Facebook
-        </a>
+        {
+          site.social.instagram && (
+            <a href={site.social.instagram} rel="me noopener noreferrer" target="_blank">
+              Instagram
+            </a>
+          )
+        }
+        {
+          site.social.facebook && (
+            <a href={site.social.facebook} rel="me noopener noreferrer" target="_blank">
+              Facebook
+            </a>
+          )
+        }
       </div>
     </div>
   </div>
