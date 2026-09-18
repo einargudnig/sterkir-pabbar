@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "dist/",
+    "innri/build/**",
+    "innri/.react-router/**",
+    ".agents/",
+    ".impeccable/",
+    ".claude/",
+    "tools/oxlint/anti-slop/**",
+    "src/content/content.json",
+    "innri/app/lib/sanity.types.ts"
+  ]
+}

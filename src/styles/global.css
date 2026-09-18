@@ -69,6 +69,11 @@
      slashed zero, so "01" reads as "Ø1" — never set digits in it. */
   --font-mark: "Orbitron", var(--font-sans);
 
+  /* Eyebrow / label tracking for --font-mark. Added for the members' area,
+     which repeats this treatment; 0.16em matches the most common value the
+     landing page already sets by hand in raw CSS. */
+  --tracking-mark: 0.16em;
+
   /* Fluid type scale (mobile → desktop) */
   /* Capped so the three-line headline plus the proof rule still clear a
      900px-tall viewport — the masthead has to survive the fold. */

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "sanity dev",
     "build": "sanity build",
-    "deploy": "sanity deploy"
+    "deploy": "sanity deploy",
+    "schema:extract": "sanity schema extract --enforce-required-fields --force",
+    "typegen": "sanity schema extract --enforce-required-fields --force && sanity typegen generate"
   },
   "dependencies": {
     "@sanity/vision": "^6.9.0",

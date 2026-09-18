@@ -1,11 +1,41 @@
 {
   "version": 1,
   "skills": {
+    "create-verification-skill": {
+      "source": "michael-denyer/pstack-claude",
+      "sourceType": "github",
+      "skillPath": "plugins/pstack/skills/create-verification-skill/SKILL.md",
+      "computedHash": "eaf1e261d9fac630680c6dc2e0c0d88b2e0e3a29ab056ddde0b0404e1c07eb5e"
+    },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",
       "skillPath": ".agents/skills/impeccable/SKILL.md",
       "computedHash": "c082ccee1fd78f3f1c6c1c4fae1e401ca4b5b241f03b3219f08abcce7bf6bd99"
+    },
+    "maintain-verification-skill": {
+      "source": "michael-denyer/pstack-claude",
+      "sourceType": "github",
+      "skillPath": "plugins/pstack/skills/maintain-verification-skill/SKILL.md",
+      "computedHash": "fa1948665cc5c52bedb0e53e72f80748d2f17f7454b894b6cdee521218169fb9"
+    },
+    "principle-prove-it-works": {
+      "source": "michael-denyer/pstack-claude",
+      "sourceType": "github",
+      "skillPath": "plugins/pstack/skills/principle-prove-it-works/SKILL.md",
+      "computedHash": "e48615189291ff6c1188d61bb6b81be0581375aa92ce01cf6597c19a4741a345"
+    },
+    "setup-pstack": {
+      "source": "michael-denyer/pstack-claude",
+      "sourceType": "github",
+      "skillPath": "plugins/pstack/skills/setup-pstack/SKILL.md",
+      "computedHash": "ff4d76981a86d5dc93f605eb4389ed50602d2d4acfe0288a73816aea9135645d"
+    },
+    "show-me-your-work": {
+      "source": "michael-denyer/pstack-claude",
+      "sourceType": "github",
+      "skillPath": "plugins/pstack/skills/show-me-your-work/SKILL.md",
+      "computedHash": "be119a3dc37cffdad65ec6a5babd250b8857339b573b40fb2923a7e0e784dee8"
     }
   }
 }

@@ -41,3 +41,71 @@ export const priceMustBeMachineReadable: CustomValidator<string | undefined> = (
   }
   return true;
 };
+
+/**
+ * Exercise videos are embedded, not linked. A Google Drive or Dropbox share URL
+ * looks fine in the Studio and renders as a broken player for every member, so
+ * the host is checked at edit time rather than discovered in production.
+ */
+const EMBEDDABLE_VIDEO_HOSTS = [
+  "vimeo.com",
+  "player.vimeo.com",
+  "youtube.com",
+  "www.youtube.com",
+  "youtu.be",
+];
+
+export const videoUrlMustBeEmbeddable: CustomValidator<string | undefined> = (url) => {
+  if (!url) return true; // optional — the app shows "Myndband kemur" instead
+
+  let host: string;
+
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    return "Þetta er ekki gild slóð.";
+  }
+
+  if (!EMBEDDABLE_VIDEO_HOSTS.includes(host)) {
+    return "Myndbandið verður að vera á Vimeo eða YouTube. Slóðir af Google Drive, Dropbox eða iCloud spilast ekki inni á síðunni.";
+  }
+
+  return true;
+};
+
+/**
+ * The app finds a member's plan by querying for one exact pair of goal +
+ * sessionsPerWeek. Two published plans sharing a pair means the query returns
+ * both and the app shows whichever came back first — a member could get a
+ * different plan than the one Aron meant, with nothing visibly wrong anywhere.
+ *
+ * Checked against published documents only. Two drafts may coexist while Aron
+ * is still writing; the clash matters at publish time.
+ */
+export const planCombinationMustBeUnique: CustomValidator<string | undefined> = async (
+  goal,
+  context,
+) => {
+  const parent = context.parent as { sessionsPerWeek?: number } | undefined;
+  const frequency = parent?.sessionsPerWeek;
+
+  if (!goal || typeof frequency !== "number") return true; // their own `required()` reports this
+
+  const id = context.document?._id;
+
+  if (!id) return true;
+
+  const publishedId = id.replace(/^drafts\./, "");
+  const client = context.getClient({ apiVersion: "2024-01-01" });
+
+  const clash = await client.fetch<string | null>(
+    `*[_type == "trainingPlan" && goal == $goal && sessionsPerWeek == $frequency && !(_id in $ids)][0].title`,
+    { goal, frequency, ids: [publishedId, `drafts.${publishedId}`] },
+  );
+
+  if (clash) {
+    return `Það er þegar til plan fyrir þessa samsetningu: „${clash}“. Hver samsetning af markmiði og tíðni má aðeins eiga eitt plan.`;
+  }
+
+  return true;
+};

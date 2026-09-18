@@ -1,0 +1,6 @@
+{
+  "path": "../innri/app/**/*.{ts,tsx}",
+  "schema": "./schema.json",
+  "generates": "../innri/app/lib/sanity.types.ts",
+  "overloadClientMethods": true
+}

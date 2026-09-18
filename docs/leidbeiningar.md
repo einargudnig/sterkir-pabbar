@@ -4,18 +4,18 @@ Hvert einasta orð á sterkirpabbar.is kemur úr einu skjali sem þú átt. Þú
 ýtir á **Publish**, og síðan uppfærist sjálf um mínútu síðar. Þú þarft ekki að hafa
 samband við neinn til að laga verð, orðalag eða spurningu.
 
-> **Meðan lénið er ekki komið yfir** birtist nýja síðan á
-> <https://sterkir-pabbar.vercel.app> — ekki á sterkirpabbar.is, sem sýnir enn gömlu
-> síðuna. Publish virkar samt eins og lýst er hér að neðan.
-
 ## Fyrsta skiptið
 
 1. **Taktu boðinu.** Þú fékkst boð í tölvupósti á `aroningi99@gmail.com`. Smelltu á
    hlekkinn í póstinum og samþykktu. Þetta þarf bara að gera einu sinni.
 2. **Skráðu þig inn.** Farðu á <https://sterkirpabbar.sanity.studio> og veldu
-   *Continue with Google*. Notaðu sama netfang og boðið fór á.
-3. **Opnaðu skjalið.** Vinstra megin stendur **Efni síðunnar**. Smelltu á það. Þetta
-   er eina skjalið sem til er — það er ekkert annað þarna til að ruglast á.
+   _Continue with Google_. Notaðu sama netfang og boðið fór á.
+3. **Opnaðu skjalið.** Vinstra megin stendur **Efni síðunnar**. Smelltu á það. Það
+   stýrir öllu á sterkirpabbar.is.
+
+Fyrir neðan það eru þrjár nýjar tegundir — **Æfing**, **Æfingaplan** og **Fróðleikur**.
+Þær stýra engu á sterkirpabbar.is. Þær eru efnið inni á læsta svæðinu, innri hringnum,
+og um þær er sérkafli neðst í þessum leiðbeiningum.
 
 ## Gullna reglan
 
@@ -28,21 +28,21 @@ Síðan breytist ekki neitt á meðan.
 Þegar þú ert ánægður ýtirðu á **Publish** neðst til hægri. Þá fer allt í loftið í einu
 og ný útgáfa af síðunni er komin upp eftir svona mínútu.
 
-## Hvar er hvað
+## Hvar er hvað á sterkirpabbar.is
 
 Efst í skjalinu eru flipar. Hver flipi er einn kafli á síðunni, í sömu röð og þeir
 birtast.
 
-| Flipi | Hverju hann stýrir |
-| --- | --- |
-| Forsíðutexti | Stóri textinn efst, undirtextinn og textinn á hnöppunum tveimur. |
-| Pakkar | Nöfn, verð, lýsingar og það sem er innifalið í hvorum pakka. |
-| Aðferðin | Skrefin þrjú — „Við byrjum á stöðunni þinni“ og hin tvö. |
-| Fyrir pabba | Punktarnir um af hverju þetta skiptir máli. |
-| Um mig | Þín eigin orð. Fyrsta málsgreinin fær stærsta letrið á síðunni. |
-| Spurningar | Algengar spurningar og svör. Þessar birtast líka beint í Google. |
-| Lokakall | Textinn neðst, rétt fyrir ofan síðasta hnappinn. |
-| Almennt og tengiliðir | Netfang, sími, slagorð, Google-lýsingin og samfélagsmiðlar. |
+| Flipi                 | Hverju hann stýrir                                               |
+| --------------------- | ---------------------------------------------------------------- |
+| Forsíðutexti          | Stóri textinn efst, undirtextinn og textinn á hnöppunum tveimur. |
+| Pakkar                | Nöfn, verð, lýsingar og það sem er innifalið í hvorum pakka.     |
+| Aðferðin              | Skrefin þrjú — „Við byrjum á stöðunni þinni“ og hin tvö.         |
+| Fyrir pabba           | Punktarnir um af hverju þetta skiptir máli.                      |
+| Um mig                | Þín eigin orð. Fyrsta málsgreinin fær stærsta letrið á síðunni.  |
+| Spurningar            | Algengar spurningar og svör. Þessar birtast líka beint í Google. |
+| Lokakall              | Textinn neðst, rétt fyrir ofan síðasta hnappinn.                 |
+| Almennt og tengiliðir | Netfang, sími, slagorð, Google-lýsingin og samfélagsmiðlar.      |
 
 ## Reglurnar sem kerfið passar upp á
 
@@ -50,13 +50,13 @@ Sumu má ekki breyta hvernig sem er — ekki til að stýra þér, heldur af þv
 útlitið eða Google brotnar annars. Studioið stoppar þig og skrifar með rauðu hvað er að.
 Þú getur ekki birt síðu sem er í ólagi.
 
-| Reitur | Reglan | Af hverju |
-| --- | --- | --- |
-| Aðalfyrirsögn | Mest 60 stafir | Lengri fyrirsögn brotnar í þrjár línur í stærsta letri síðunnar og eyðileggur útlitið efst. |
-| Áhersluorð | Verður að standa stafrétt í fyrirsögninni | Þetta er orðið sem birtist skáletrað. Finnist það ekki í fyrirsögninni hverfur skáletrunin þegjandi. |
-| Verð | Nákvæmlega `15.900 kr/mán` | Google les verðið beint úr þessum reit. Annað form gefur rangt verð — eða ekkert — í leitarniðurstöðum. |
-| Mælt með | Nákvæmlega einn pakki | Sá pakki fær stóra rammann. Enginn merktur skilur eftir tóman ramma; tveir merktir fela annan. |
-| Lýsing fyrir Google | 70–160 stafir | Þetta er textinn sem birtist undir titlinum í leitarniðurstöðum. |
+| Reitur              | Reglan                                    | Af hverju                                                                                               |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Aðalfyrirsögn       | Mest 60 stafir                            | Lengri fyrirsögn brotnar í þrjár línur í stærsta letri síðunnar og eyðileggur útlitið efst.             |
+| Áhersluorð          | Verður að standa stafrétt í fyrirsögninni | Þetta er orðið sem birtist skáletrað. Finnist það ekki í fyrirsögninni hverfur skáletrunin þegjandi.    |
+| Verð                | Nákvæmlega `15.900 kr/mán`                | Google les verðið beint úr þessum reit. Annað form gefur rangt verð — eða ekkert — í leitarniðurstöðum. |
+| Mælt með            | Nákvæmlega einn pakki                     | Sá pakki fær stóra rammann. Enginn merktur skilur eftir tóman ramma; tveir merktir fela annan.          |
+| Lýsing fyrir Google | 70–160 stafir                             | Þetta er textinn sem birtist undir titlinum í leitarniðurstöðum.                                        |
 
 ## Þú getur ekki eyðilagt síðuna
 
@@ -76,6 +76,61 @@ Sumu má ekki breyta hvernig sem er — ekki til að stýra þér, heldur af þv
 - Stendur eitthvað rautt undir reit? Þá er sá reitur ekki í lagi — lestu skilaboðin,
   lagaðu, og birtu aftur.
 - Annars: sendu Einari skilaboð. Ekkert sem þú gerir í studioinu er óafturkræft.
+
+## Innri hringurinn — efnið á læsta svæðinu
+
+Þetta er nýtt og aðskilið frá síðunni sjálfri. Ekkert sem þú skrifar hér birtist á
+sterkirpabbar.is — það sést eingöngu þeim sem eru komnir inn fyrir.
+
+### Þrjár tegundir, og röðin skiptir máli
+
+**1. Æfing** — ein æfing, skrifuð einu sinni og notuð í eins mörgum plönum og þú vilt.
+Lagarðu ábendingu eða skiptir um myndband uppfærist það alls staðar í einu.
+
+| Reitur        | Hvað á að standa                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Heiti æfingar | Eins og þú myndir segja það upphátt — „Hnébeygja“.                                                                        |
+| Vöðvahópur    | Bara til að flokka listann hér í Studio. Sést ekki hjá meðlimum.                                                          |
+| Ábending      | Eitt atriði sem skiptir mestu. Sleppt ef myndbandið segir allt. Mest 140 stafir — þetta er lesið standandi á milli setta. |
+| Myndband      | Slóð á **óskráð** myndband á Vimeo eða YouTube.                                                                           |
+
+**2. Æfingaplan** — dagarnir, og hvaða æfingar eru á hverjum degi. Búðu æfingarnar til
+fyrst; þú getur ekki sett æfingu í plan sem er ekki til.
+
+**3. Fróðleikur** — greinarnar sem meðlimir lesa. Þessar eru sjálfstæðar, þú mátt bæta
+við þeim hvenær sem er.
+
+### Reglurnar sem kerfið passar upp á hér
+
+| Reglan                                                           | Af hverju                                                                                                                                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bara **eitt plan** fyrir hverja samsetningu af markmiði og tíðni | Kerfið finnur plan meðlims með því að leita að nákvæmlega einni samsetningu. Séu tvö birt fær hann hitt planið en þú ætlaðir — og ekkert lítur út fyrir að vera að. |
+| Myndbönd bara af **Vimeo eða YouTube**                           | Slóðir af Google Drive, Dropbox eða iCloud líta rétt út hér en spilast ekki hjá meðlimum.                                                                           |
+| Slóð greinar breytist ekki eftir birtingu                        | Þá hætta hlekkir sem þú varst búinn að senda að virka.                                                                                                              |
+
+### Þú stýrir sjálfur hvað fer í loftið
+
+Meðlimur velur hversu oft hann vill æfa — **en hann sér bara þær tíðnir sem eiga birt
+plan**. Birtirðu eingöngu plan fyrir þrisvar í viku er það eini valkosturinn sem hann
+fær. Enginn sér valkost sem leiðir ekki neitt.
+
+Það þýðir að þú getur farið af stað með eitt plan og bætt hinum við jafnóðum og þú
+filmar. Þú þarft ekki að bíða eftir að allt sé tilbúið, og ekkert þarf að forrita þegar
+þú bætir við.
+
+### Vantar myndband?
+
+Í listanum yfir æfingar stendur **„myndband vantar“** aftan við hverja æfingu sem á
+ekkert myndband. Þannig sérðu í einni svipan hvað er eftir að filma.
+
+Æfingin birtist meðlimum þótt myndbandið vanti — þá stendur „Myndband kemur“. Það er í
+lagi tímabundið, en það er líka það eina sem stendur á milli þín og þess að geta hleypt
+fólki inn.
+
+### Það sem ég myndi gera fyrst
+
+Eitt plan. **Þrisvar í viku, fitutap.** Það eru svona 18 æfingar að filma — ekki 60.
+Búðu æfingarnar til hér jafnóðum og þú filmar, settu svo planið saman úr þeim.
 
 ---
 
