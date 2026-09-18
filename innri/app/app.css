@@ -1,0 +1,263 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@clerk/ui/themes/shadcn.css";
+
+/* ==================================================================== *
+ * DERIVED FILE — do not diverge.                                       *
+ *                                                                      *
+ * The @font-face and @theme blocks below are copied verbatim from      *
+ * ../src/styles/global.css, which is the canonical source of the       *
+ * Sterkir pabbar design system. If a token changes there, copy it      *
+ * here. If you need a new token, add it there first.                   *
+ *                                                                      *
+ * Below those, shadcn's semantic tokens (--background, --primary, …)   *
+ * are MAPPED ONTO the brand tokens rather than given their own values. *
+ * `shadcn init` ships a white/neutral-grey palette and Geist; both were *
+ * removed. shadcn components reference the semantic names, so they      *
+ * inherit the brand automatically and there is exactly one palette.     *
+ *                                                                      *
+ * @shadcn/lint enforces that nothing styles outside these tokens —     *
+ * see docs/solutions/agent-tooling.md.                                 *
+ * ==================================================================== */
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ *
+ * Self-hosted variable fonts (latin-ext → full Icelandic coverage)    *
+ * ------------------------------------------------------------------ */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/fraunces-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/fraunces-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/hanken-normal.woff2") format("woff2");
+}
+/* Wordmark + numerals only — brand continuity with the current identity */
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("/fonts/orbitron-normal.woff2") format("woff2");
+}
+
+/* ------------------------------------------------------------------ *
+ * Design tokens — "Espresso & bronze".                                *
+ * Warm dark surfaces, one true accent (bronze), one cool anchor       *
+ * (slate, inherited from the crest's navy). OKLCH throughout so the   *
+ * neutrals stay tinted toward the brand hue instead of going grey.    *
+ * ------------------------------------------------------------------ */
+@theme {
+  /* Surfaces — espresso, warm hue ~57. Never pure black. */
+  --color-base: oklch(0.176 0.014 57);
+  --color-raised: oklch(0.227 0.016 56);
+  --color-sunken: oklch(0.144 0.012 56);
+  /* Cool anchor: the crest's navy, heavily muted. Used sparingly, as a
+     surface — never as a glow. */
+  --color-slate: oklch(0.252 0.038 248);
+
+  --color-line: oklch(0.305 0.014 58);
+  --color-line-soft: oklch(0.245 0.012 57);
+
+  /* Text — warm cream, never pure white */
+  --color-text: oklch(0.945 0.012 82);
+  --color-text-soft: oklch(0.775 0.016 76);
+  --color-text-muted: oklch(0.645 0.018 70);
+
+  /* Accent — bronze. Enough chroma to actually read as metal. */
+  --color-bronze: oklch(0.745 0.105 68);
+  --color-bronze-bright: oklch(0.858 0.078 80);
+  --color-bronze-deep: oklch(0.605 0.098 58);
+  --color-bronze-dim: oklch(0.415 0.058 55);
+
+  /* Typography */
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  /* Orbitron carries the wordmark and all-caps labels only. It draws a
+     slashed zero, so "01" reads as "Ø1" — never set digits in it. */
+  --font-mark: "Orbitron", var(--font-sans);
+
+  /* Eyebrow / label tracking for --font-mark. Added for the members' area,
+     which repeats this treatment; 0.16em matches the most common value the
+     landing page already sets by hand in raw CSS. */
+  --tracking-mark: 0.16em;
+
+  /* Fluid type scale (mobile → desktop) */
+  /* Capped so the three-line headline plus the proof rule still clear a
+     900px-tall viewport — the masthead has to survive the fold. */
+  --text-hero: clamp(2.75rem, 1.1rem + 6.2vw, 6rem);
+  --text-display: clamp(2.15rem, 1.3rem + 4.2vw, 4.25rem);
+  --text-title: clamp(1.6rem, 1.15rem + 2.2vw, 2.6rem);
+  --text-subtitle: clamp(1.2rem, 1.05rem + 0.9vw, 1.55rem);
+  --text-lead: clamp(1.1rem, 1rem + 0.55vw, 1.3rem);
+
+  /* Motion — exponential deceleration. No bounce, no elastic.
+     Tailwind ships --animate-bounce in its default theme and emits it even
+     though nothing here uses it; `initial` removes it from the output so the
+     stylesheet cannot be read as endorsing bounce easing. */
+  --animate-bounce: initial;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Layout rhythm — deliberately generous. */
+  --spacing-gutter: clamp(1.25rem, 0.5rem + 3vw, 3.5rem);
+  --spacing-section: clamp(4.5rem, 2.5rem + 8vw, 9.5rem);
+  --spacing-block: clamp(2rem, 1.25rem + 3vw, 4rem);
+}
+
+/* ------------------------------------------------------------------ *
+ * shadcn bridge. Names shadcn components expect → brand values.        *
+ * --font-sans and --font-heading are deliberately absent from the      *
+ * inline block so the brand @theme above wins; shadcn's generated      *
+ * `--font-sans: 'Geist Variable'` would otherwise silently replace     *
+ * Hanken Grotesk.                                                      *
+ * ------------------------------------------------------------------ */
+@theme inline {
+  --font-heading: var(--font-display);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* The members' area is dark-only, like the landing page. There is no light
+   palette to switch to, so these are defined once rather than duplicated into
+   a .dark block — and components must not use `dark:` variants. */
+:root {
+  --background: var(--color-base);
+  --foreground: var(--color-text);
+
+  --card: var(--color-raised);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-raised);
+  --popover-foreground: var(--color-text);
+
+  /* Bronze is the one accent. Its foreground is the darkest surface, not
+     cream — cream on bronze fails contrast at body sizes. */
+  --primary: var(--color-bronze);
+  --primary-foreground: var(--color-sunken);
+
+  --secondary: var(--color-slate);
+  --secondary-foreground: var(--color-text);
+
+  --muted: var(--color-sunken);
+  --muted-foreground: var(--color-text-muted);
+
+  --accent: var(--color-bronze-dim);
+  --accent-foreground: var(--color-text);
+
+  /* The only hue outside the brand ramp. Failure has to read as failure. */
+  --destructive: oklch(0.637 0.208 25.3);
+
+  --border: var(--color-line);
+  --input: var(--color-line-soft);
+  --ring: var(--color-bronze);
+
+  --chart-1: var(--color-bronze);
+  --chart-2: var(--color-bronze-bright);
+  --chart-3: var(--color-bronze-deep);
+  --chart-4: var(--color-bronze-dim);
+  --chart-5: var(--color-slate);
+
+  --sidebar: var(--color-sunken);
+  --sidebar-foreground: var(--color-text);
+  --sidebar-primary: var(--color-bronze);
+  --sidebar-primary-foreground: var(--color-sunken);
+  --sidebar-accent: var(--color-raised);
+  --sidebar-accent-foreground: var(--color-text);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-bronze);
+
+  --radius: 0.625rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Brand crest — one asset, recoloured per context via --crest-color.  *
+ * The webp's alpha channel is used as a mask, so the mark can be any  *
+ * colour at any scale without shipping variants.                      *
+ * ------------------------------------------------------------------ */
+:root {
+  --crest-src: url("/logo/crest-cream.webp");
+  --crest-color: var(--color-bronze);
+}
+.crest-mark {
+  display: inline-block;
+  flex: none;
+  background-color: var(--crest-color);
+  -webkit-mask: var(--crest-src) center / contain no-repeat;
+  mask: var(--crest-src) center / contain no-repeat;
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+  aspect-ratio: 600 / 543;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    font-optical-sizing: auto;
+  }
+}
