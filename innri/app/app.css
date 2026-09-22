@@ -202,16 +202,14 @@
 
   --border: var(--color-line);
   /**
-   * The BOUNDARY of an interactive control — a text field's outline, an
-   * unchecked radio or checkbox — not a divider. WCAG 1.4.11 asks 3:1 for it,
-   * and `line-soft` measures 1.05:1 against `raised`: an unchecked radio was
-   * literally invisible until tapped. `bronze-deep` measures 4.29:1 and keeps
-   * the control inside the accent family instead of reading as neutral text.
-   *
-   * Dividers and card edges keep `line` / `line-soft` — they are decoration and
-   * the rule does not apply to them.
+   * Left as a surface value on purpose. Clerk's `shadcn` theme reads `--input`
+   * as the FILL of its fields, while shadcn's own components read it as a
+   * BORDER — one token, two meanings across the two systems. Remapping it to an
+   * accent to fix the border contrast turned Clerk's sign-in field solid
+   * bronze. The control boundary is fixed in the components instead, where only
+   * one of the two systems is listening.
    */
-  --input: var(--color-bronze-deep);
+  --input: var(--color-line-soft);
   --ring: var(--color-bronze);
 
   --chart-1: var(--color-bronze);

@@ -375,10 +375,17 @@ so the only way to test the step machine is for it not to need one.
 
 ### Three defects found by driving the real app, not by reading the diff
 
-1. **Unchecked radios were invisible.** `--input` mapped to `line-soft`, which measures
+1. **Unchecked radios were invisible.** `--input` resolves to `line-soft`, which measures
    **1.05:1** against `bg-raised` — WCAG 1.4.11 asks 3:1 for a control boundary. Nobody could
-   see the radio until they tapped it. `--input` now maps to `bronze-deep`: 4.29:1 on radios,
-   4.75:1 on text fields. Dividers keep `line`/`line-soft`; the rule does not apply to them.
+   see the radio until they tapped it. Fixed to `border-bronze-deep` in `input.tsx` and
+   `radio-group.tsx`: 4.29:1 on radios, 4.75:1 on text fields.
+
+   **Do not fix this by remapping `--input`.** That was the first attempt and it broke the
+   sign-in screen: Clerk's `shadcn` theme reads `--input` as the FILL of its fields while
+   shadcn's own components read it as a BORDER, so the email field rendered solid bronze. One
+   token, two meanings across the two systems — the fix belongs in the components, where only
+   one of them is listening.
+
 2. **`toLocaleString("is-IS")` cannot be used in a component.** Chrome builds ship partial ICU;
    where `is-IS` is missing the call does not throw, it silently returns `en-GB`, so a member
    saw "1,812" where the server rendered "1.812" — wrong for an Icelandic reader _and_ a React
