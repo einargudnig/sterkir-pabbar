@@ -58,9 +58,11 @@ a type that mirrors a schema, you are working around the wrong thing.
 only. Members' area content is queried from Sanity at request time in loaders, so Aron never
 triggers a rebuild to fix a typo.
 
-**Money and access, once phase 6 lands:** a browser redirect never grants access — only a
-verified HMAC-SHA256 webhook does. `requireActiveAccess` reads the local Postgres mirror, never
-a live Kling call.
+**Money and access, once phase 6 lands:** a browser redirect never grants access, and neither
+does a webhook body. Repeat does not sign its webhooks, so a delivery is only a nudge: the
+handler checks a shared-secret header, then re-fetches the subscription from Repeat's API with
+the server key and writes _that_ to the mirror. `requireActiveAccess` reads the local Postgres
+mirror, never a live Repeat call.
 
 **Three gate levels, defined in `innri/app/lib/auth.server.ts`.** Public is `/sign-in` and
 `/sign-up`. Signed-in-only is `/subscribe`, `/onboarding` and `/admin` — they sit outside the

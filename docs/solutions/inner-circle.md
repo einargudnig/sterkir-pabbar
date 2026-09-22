@@ -45,9 +45,9 @@ studio/                 Sanity Studio, content for both
     (identity)         (subscription mirror,     (plans, exercises,
                         answers, macros)          articles, copy)
                             ▲
-                            │ webhook, HMAC-SHA256 (X-Kling-Signature)
-                            │
-                          Kling  (/v1/subscriptions, /v1/checkout/sessions)
+                            │ webhook = nudge only (unsigned, secret header)
+                            │ → re-fetch GET /subscriptions/{uuid}/
+                         Repeat  (repeat.is/api/v1 — /orders/, /subscriptions/)
 ```
 
 ## Stack
@@ -59,7 +59,7 @@ studio/                 Sanity Studio, content for both
 | Auth       | Clerk (`@clerk/react-router`) — email + password, plus Google |
 | Database   | Neon Postgres + Drizzle                                       |
 | Content    | Sanity, queried server-side in loaders                        |
-| Payments   | Kling (`kling.is`) — real recurring subscriptions             |
+| Payments   | Repeat (`repeat.is`) — real recurring subscriptions           |
 | Email      | Resend — **held**, see Open questions                         |
 | Components | shadcn/ui on Base UI (the default since July 2026)            |
 | Validation | Zod — env vars, form parsing, webhook payloads                |
@@ -77,15 +77,18 @@ studio/                 Sanity Studio, content for both
    webhooks and cron. A second service would add CORS, service-to-service auth, a network
    hop and duplicated types, for no benefit at one client and one developer.
 
-4. **Kling for payments, real subscriptions — not a 30-day pass.** Stripe does not support
+4. **Repeat for payments, real subscriptions — not a 30-day pass.** Stripe does not support
    Iceland (verified on stripe.com/global). Rapyd's hosted page would have meant building the
-   billing state machine by hand (~30–40h). Kling provides `/v1/subscriptions` with a real
-   lifecycle, retry logic, HMAC-signed webhooks, and an isolated test mode. See
+   billing state machine by hand (~30–40h). Repeat runs the recurring billing, daily retries,
+   failure rules, cancellation policy and customer emails, on top of whichever Icelandic
+   acquirer Aron signs with. Replaced Kling on 2026-09-22. See
    `docs/solutions/payments-iceland.md`.
 
-5. **Subscription state is mirrored into Postgres from webhooks.** `requireActiveAccess`
-   reads only the local mirror, never a live Kling call. Keeps access fast, keeps it working
-   through a Kling outage, and means we own the customer list rather than renting it.
+5. **Subscription state is mirrored into Postgres, fetched — never pushed.** Webhooks and a
+   reconciliation cron both trigger a server-side `GET` of the subscription from Repeat, and
+   only that response is written. `requireActiveAccess` reads only the local mirror, never a
+   live Repeat call. Keeps access fast, keeps it working through a Repeat outage, and means we
+   own the customer list rather than renting it.
 
 6. **Macros are stored as a snapshot, not recomputed on read.** If the formula changes later,
    existing members' numbers must not silently shift under them — and there needs to be an
@@ -110,7 +113,7 @@ Paths and filenames are English; every word a member reads on the page is Icelan
                                 else → /dashboard
 /sign-in              Clerk sign-in
 /sign-up              Clerk sign-up
-/subscribe            subscription state + Kling checkout
+/subscribe            subscription state + Repeat card widget → order
 /onboarding           wizard; step in the URL (?step=health|measurements|goal|frequency)
 /dashboard            redirects to the first tab
 /dashboard/workouts   Mínar æfingar
@@ -120,7 +123,8 @@ Paths and filenames are English; every word a member reads on the page is Icelan
 /settings             account, cancel subscription
 /admin                Aron — manual grant, comps, fix failed payments
 
-/api/kling/webhook    HMAC-SHA256 verified, updates the local mirror
+/api/repeat/webhook   secret-header checked, re-fetches from Repeat, updates the mirror
+/api/cron/repeat-sync reconciles every mirrored subscription (Repeat never retries a webhook)
 /api/clerk/webhook    user created/deleted → sync users table
 ```
 
@@ -142,8 +146,9 @@ visitor takes two hops to `/sign-in` instead of one.
 
 Implemented in `innri/app/db/schema.ts`; migration `drizzle/0000_*.sql` generated offline.
 
-- `users` — `clerk_user_id` unique, plus the Kling mirror: `subscription_status`
-  (`trialing|active|past_due|canceled`), `current_period_end`, `kling_subscription_id`,
+- `users` — `clerk_user_id` unique, plus the Repeat mirror: `subscription_status`
+  (`trialing|active|past_due|canceled` — Kling's lifecycle, remapped in phase 6),
+  `current_period_end`, `repeat_subscription_id`,
   and `is_admin`. Also `access_granted_until`, kept **separate** from `current_period_end` so a
   later webhook cannot silently wipe a manual grant Aron made.
 - `onboarding` — goal, sessions_per_week, weight_kg, height_cm, age, sex, activity_level, and
@@ -151,8 +156,8 @@ Implemented in `innri/app/db/schema.ts`; migration `drizzle/0000_*.sql` generate
 - `macro_targets` — kcal, protein_g, carbs_g, fat_g, `formula_version`, and the
   `onboarding_id` the numbers were computed from.
 - `plan_assignments` — sanity_plan_id, assigned_at.
-- `kling_events` — `kling_event_id` unique (the whole idempotency strategy), event_type,
-  amount_isk, raw `payload` jsonb.
+- `repeat_events` — `repeat_delivery_id` unique, webhook_type, amount_isk, raw `payload`
+  jsonb. An audit log, **not** the idempotency strategy — see Payments switched to Repeat.
 
 Three refinements made while implementing:
 
@@ -162,8 +167,8 @@ Three refinements made while implementing:
    are health numbers, so it has to be answerable.
 2. **`formula_version` on every macro row.** Bumped whenever the formula, deficit or safety
    floor changes, so an old number traces to the rules in force when it was given.
-3. **`payments` became `kling_events`.** It logs the whole subscription lifecycle, not just
-   payments — `subscription.canceled` matters as much as a capture.
+3. **`payments` became `kling_events`, now `repeat_events`.** It logs the whole subscription
+   lifecycle, not just payments — a deactivation matters as much as a capture.
 
 `amount_isk` is whole krónur. ISK has no minor unit, so there is no ×100 and no rounding to get
 wrong — do not copy the store-money-in-cents habit from Stripe examples.
@@ -208,14 +213,14 @@ fix a typo.
 | 3   | Onboarding — health screen, metrics, macro calc, plan assignment                   | 12–18        |
 | 4   | Inner circle — Mínar æfingar / Mín macros / Fróðleikur, video embeds               | 20–28        |
 | 5   | Admin page — manual grant, comps, ops tooling                                      | 3–4          |
-| 6   | Kling — checkout, HMAC webhook, subscription mirror **(spike-gated)**              | 12–18        |
+| 6   | Repeat — card widget checkout, webhook + reconcile, mirror **(spike-gated)**       | 12–18        |
 | 7   | Landing page sales section + Sanity fields                                         | 6–10         |
 | 8   | QA, mobile, handover                                                               | 10–14        |
 |     | **Total**                                                                          | **91–135 h** |
 
 At 8,000 ISK/hr: **728,000 – 1,080,000 ISK**. Resend held, AI assistant excluded.
 
-Phases 0–5 are unblocked and fully specified. Phase 6 waits on the Kling spike.
+Phases 0–5 are unblocked and fully specified. Phase 6 waits on the Repeat spike.
 
 ## Tests that matter
 
@@ -223,8 +228,10 @@ Not coverage — these five carry almost all the risk:
 
 1. **Macro calculation** — property tests on the floors: no input combination may produce a
    target below the safety floor.
-2. **Kling webhook HMAC verification** — including a forged-signature rejection.
-3. **Webhook idempotency** — the same event delivered twice must apply once.
+2. **Repeat webhook trust** — a missing or wrong secret header is rejected, and a body
+   claiming `active: true` for a subscription Repeat's API says is inactive grants nothing.
+3. **Webhook idempotency** — the same delivery, and a dashboard replay of it (which arrives
+   with a fresh delivery id), must leave the mirror exactly as one delivery would.
 4. **`requireActiveAccess`** — across `trialing`/`active`/`past_due`/`canceled` and the exact
    period boundary.
 5. **Plan assignment** — including when no published plan exists for the chosen frequency.
@@ -242,9 +249,13 @@ cuts filming load by ~80%.
 CDN. Escalation if it ever bites: snapshot the assigned plan into Postgres at assignment time,
 at the cost of plan updates no longer propagating.
 
-**Kling is small and young.** No legal entity or kennitala published on their site, and
-`docs.kling.is` serves a Traefik default certificate. Not disqualifying, but they will hold the
-client's recurring revenue. Mitigated architecturally by decision 5.
+**Repeat does not sign or retry webhooks.** A lost `subscription_deactivated` would leave a
+lapsed member with access indefinitely. Mitigated by decision 5: the reconciliation cron
+bounds that to one sync interval, and access is never granted from a delivery body.
+
+**Repeat holds the client's recurring revenue.** It is not the acquirer — Aron signs with
+Teya or Straumur directly — but the card tokens live with Repeat. Mitigated architecturally by
+decision 5; data portability is a spike question.
 
 **Scale is not a risk.** At 10x this is still a few thousand rows and cached CDN reads. The
 binding constraint is Aron's filming schedule, not infrastructure.
@@ -254,15 +265,15 @@ binding constraint is Aron's filming schedule, not infrastructure.
 
 ## Open questions
 
-| Open                                                                           | Owner             | Blocks                      |
-| ------------------------------------------------------------------------------ | ----------------- | --------------------------- |
-| Kling spike — legal entity, VSK/MoR, data portability, heimabanki billing      | Einar, 2–3h       | Phase 6                     |
-| Trial period yes/no                                                            | Aron              | Phase 6                     |
-| Monthly price + VSK treatment                                                  | Aron + accountant | Go-live                     |
-| Legal position on prescribing macros in Iceland                                | Aron              | Go-live, disclaimer wording |
-| Resend — deliberately held until Kling's coverage of receipts/dunning is known | Einar             | Nothing                     |
-| ehf./kennitala — still `TODO(client)` in `src/config/site.ts`                  | Aron              | Go-live                     |
-| 40–60 exercise videos                                                          | Aron              | Phase 4 content             |
+| Open                                                                          | Owner             | Blocks                      |
+| ----------------------------------------------------------------------------- | ----------------- | --------------------------- |
+| Repeat spike — see `payments-iceland.md`                                      | Einar, 2–3h       | Phase 6                     |
+| Trial period yes/no                                                           | Aron              | Phase 6                     |
+| Monthly price + VSK treatment                                                 | Aron + accountant | Go-live                     |
+| Legal position on prescribing macros in Iceland                               | Aron              | Go-live, disclaimer wording |
+| Resend — likely unneeded: Repeat sends receipts, dunning, cancellation emails | Einar             | Nothing                     |
+| ehf./kennitala — still `TODO(client)` in `src/config/site.ts`                 | Aron              | Go-live                     |
+| 40–60 exercise videos                                                         | Aron              | Phase 4 content             |
 
 ## Written by Einar, not the agent
 
@@ -405,3 +416,53 @@ and every member route redirects an un-onboarded member to the wizard.
 
 **Still open:** Aron's formula numbers; `/settings` still cannot edit measurements, so a member
 who changes weight has no way to rewrite it yet (the append-only schema is ready for it).
+
+## Payments switched to Repeat — 2026-09-22
+
+Einar's call: Kling is out, [Repeat](https://repeat.is) is in. Phase 6 has not started, so the
+code change was renames only — `kling_events` → `repeat_events`, `kling_subscription_id` →
+`repeat_subscription_id` (migration `0002_repeat.sql`, pure `RENAME`s). The provider comparison
+and the spike list are in `payments-iceland.md`. What changes in the phase 6 design:
+
+**The webhook is a nudge, not a message.** Repeat does not sign deliveries — its docs say to
+authenticate with a custom header you configure per event. So the handler (1) rejects anything
+without `REPEAT_WEBHOOK_SECRET` in that header, compared in constant time, (2) logs the delivery,
+(3) takes only the subscription uuid from the body and `GET`s `/subscriptions/{uuid}/` with the
+server key, and (4) writes that response to the mirror — against the user named by the
+_fetched_ record's `external_ref`, or the row that already holds that subscription id, never
+by anything in the body. A forged body — even one carrying the right secret — can at most make
+us re-read the truth. This is stronger than HMAC, not weaker:
+an HMAC'd body is still the provider's claim at send time; the `GET` is its state now.
+
+**Idempotency comes from overwrite, not from dedupe.** Every delivery attempt has its own
+`X-Repeat-Delivery-Id`, and a dashboard replay gets a fresh one, so a unique delivery id cannot
+stop the same news being applied twice. It does not need to: writing the fetched state is
+idempotent by construction.
+
+**A reconciliation cron is required, not optional.** Repeat never retries a failed delivery.
+`/api/cron/repeat-sync` (Vercel cron) re-fetches every mirrored subscription. That bounds a lost
+`subscription_deactivated` to one sync interval.
+
+**Checkout is headless, on our page.** `@teamrepeat/card-token` renders Repeat's PCI-safe card
+iframe (3-D Secure inside it); our action receives only a token and calls `POST /orders/` with
+the server key, the Clerk email, and `external_ref` = `users.id`. We create the order, so we
+know whose it is — no matching a Repeat customer to a Clerk user by email after the fact. The
+mirror is written from the order response before the redirect, so a new member never waits on a
+webhook to get in. The hosted checkout (`/repeat_checkout/<shop>/`) is the fallback; its cost is
+exactly that email-matching problem. **New dependency — needs Einar's OK.**
+
+**The status enum is Kling's lifecycle and does not fit.** Repeat has `active`, `is_paused`,
+`wants_to_cancel`/`resign_date` and deactivation; there is no `past_due` — a subscription stays
+active through up to 15 daily retries until one of Aron's failure rules (Reglur) cancels it.
+Proposed mapping, decided when phase 6 starts: `active` → active, `is_paused` → a new `paused`
+value (no access), inactive → canceled; `trialing` only if Aron wants a trial. A scheduled
+cancellation keeps access until `resign_date`, which is what Repeat itself does.
+
+**Cancel from `/settings`** goes through `POST /subscriptions/{uuid}/cancel/` — never
+`PATCH active: false`, which Repeat documents as an admin kill switch that skips the notice
+period, the commitment and Aron's cancellation statistics. `GET` on the same path previews the
+outcome, which is what the confirm dialog should show.
+
+**Repeat also has a gated-content library with HLS video** (`REPEAT_MEDIA`, bearer = an active
+subscription uuid). That would answer the video-privacy gap in `deployment.md` without Mux.
+Noted, not adopted — content stays in Sanity.
