@@ -82,12 +82,46 @@ rule deactivates it. How long a non-paying member keeps access is therefore **Ar
 setting**, not our code — it needs choosing deliberately, not left at "retry 15 days, never
 cancel".
 
+**Default failure rules — chosen 2026-09-22, Aron may change them.** Einar asked for a sane
+default rather than an open question:
+
+- **Retries:** `retry_payment_count` = **7** (Repeat's default is 15). One attempt per day.
+- **Reglur:** trigger _payment attempt failed_, condition _failed attempts ≥ 7_, action
+  **cancel the subscription**.
+- **Reminders:** payment-failure email on, at most every **3 days** (default 7), so a member
+  hears at least twice inside the window. The email links to Repeat's hosted card-update page.
+- **No bank-claim conversion** — claims need a signed contract Aron does not have yet.
+
+So a member whose card stops working keeps access for about a week, gets two or three
+reminders, and is then canceled by Repeat. `GRACE_DAYS = 8` in `innri/app/lib/repeat.ts` is
+that week plus one day for the nightly sync; **change both together**. A week is the
+conventional window for a monthly consumer subscription: long enough to survive an expired
+card and a payday, short enough that "free month by not paying" does not work.
+
+**Product settings** that the code assumes:
+
+- One SUBSCRIPTION product, monthly, ISK, VAT 24% (Repeat's default — confirm with the
+  accountant). Its uuid is `REPEAT_PRODUCT_UUID`; its price is what `/subscribe` shows.
+- **Cancel policy: deactivate just before the next payment**, so a member who cancels keeps what
+  they paid for. Cancel notice 0, no commitment period.
+- Automation on, base date = the customer's signup day.
+
 **Two traps in the API:**
 
 - `PATCH /subscriptions/{uuid}/` with `active: false` is an admin kill switch — it skips the
   cancel notice, the commitment and the cancellation statistics. A member's cancel goes through
   `POST /subscriptions/{uuid}/cancel/`.
 - Card payments' legacy `amount` is ISK ×100. Read `amount_major` (whole krónur).
+
+**The card widget (`@teamrepeat/card-token` 1.1.0) — read before trusting it.** It is one
+~50-line component, pinned to an exact version:
+
+- Its `message` listener **does not check `event.origin`**, so any frame could post it a
+  token. Harmless for us: the server charges the token through Repeat, and a token that is not
+  real simply fails. Worth an upstream report.
+- It registers the listener once on mount and keeps the callbacks it was given then.
+  `/subscribe` reads the name through a ref for this reason.
+- It is not loadable by Node as an external — see `deployment.md`, pitfall 6.
 
 ## Kling — chosen 2026-09-15, replaced 2026-09-22
 
@@ -119,14 +153,18 @@ list and the access truth rather than renting them.
 Build the real flow in Straumur test mode. Ask `hjalp@repeat.is`:
 
 1. **Legal entity and kennitala** — cross-check against fyrirtækjaskrá.
-2. **Does an order's `external_ref` carry over to the subscription it creates?** The schema has
-   the field on both; the docs do not say. If not, we store Repeat's customer uuid at order time
-   and link on that.
-3. **Card widget on preview deploys** — it only works on domains listed in shop settings. Can a
+2. ~~Does an order's `external_ref` carry over to the subscription?~~ No longer blocking:
+   `POST /orders/` returns `subscriptions_created`, and checkout writes that id to the member
+   directly. `external_ref` remains a fallback lookup. Still worth confirming.
+3. **What does `POST /orders/` return for a declined card?** The code assumes a non-2xx means
+   nothing was charged, and treats a timeout as "unknown" (the member is told not to retry, and
+   the paywall looks up their email in Repeat before showing the form again). Confirm both with
+   the test card and a decline test card.
+4. **Card widget on preview deploys** — it only works on domains listed in shop settings. Can a
    wildcard like `*.vercel.app` be listed, or does the payment flow only test on production?
-4. **What does `upcoming_charge_dates` do after a failed charge?** Decides whether it can back a
+5. **What does `upcoming_charge_dates` do after a failed charge?** Decides whether it can back a
    fail-closed `current_period_end`.
-5. **Data portability** — if Aron leaves or Repeat folds, can subscriptions and card tokens move
+6. **Data portability** — if Aron leaves or Repeat folds, can subscriptions and card tokens move
    to another provider or the acquirer, and in what format?
-6. **Merchant of record and VSK** — presumably Aron, since he holds the acquirer agreement.
+7. **Merchant of record and VSK** — presumably Aron, since he holds the acquirer agreement.
    Confirm, and confirm how VAT on the product is reported.

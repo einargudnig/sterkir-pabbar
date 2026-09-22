@@ -213,7 +213,7 @@ fix a typo.
 | 3   | Onboarding — health screen, metrics, macro calc, plan assignment                   | 12–18        |
 | 4   | Inner circle — Mínar æfingar / Mín macros / Fróðleikur, video embeds               | 20–28        |
 | 5   | Admin page — manual grant, comps, ops tooling                                      | 3–4          |
-| 6   | Repeat — card widget checkout, webhook + reconcile, mirror **(spike-gated)**       | 12–18        |
+| 6   | 🔶 Repeat — built and unit-tested; not yet run against a Repeat shop               | 12–18        |
 | 7   | Landing page sales section + Sanity fields                                         | 6–10         |
 | 8   | QA, mobile, handover                                                               | 10–14        |
 |     | **Total**                                                                          | **91–135 h** |
@@ -466,3 +466,35 @@ outcome, which is what the confirm dialog should show.
 **Repeat also has a gated-content library with HLS video** (`REPEAT_MEDIA`, bearer = an active
 subscription uuid). That would answer the video-privacy gap in `deployment.md` without Mux.
 Noted, not adopted — content stays in Sanity.
+
+## Phase 6 built — 2026-09-22
+
+Built against Repeat's documented API. **Not yet run against a real Repeat shop** — none exists
+yet — so the paths that talk to Repeat are verified by unit tests and by reading the OpenAPI
+schema, not by a live order. The rejection paths (401 without the secret or bearer, 400 on a
+junk body, signed-out redirects) were driven against a local production build.
+
+- **Paid gate is live in code.** `requireActiveAccess` (in `subscription.server.ts`) guards the
+  member layout and the entry redirect. The rule itself is `hasActiveAccess` in
+  `app/lib/access.ts`: admin, a live manual grant, or `active` with the lease running. Once
+  this merges, **everyone without one of those is sent to `/subscribe`** — including the test
+  account.
+- **The status enum is now `active | paused | canceled`** (migration `0003`). `current_period_end`
+  is a lease: next charge + `GRACE_DAYS`, or the scheduled cancellation date. If sync stops,
+  access runs out on its own.
+- **Checkout** (`/subscribe`): Repeat's card widget → our action → `POST /orders/` with
+  `external_ref = users.id` → the new subscription id written first, then fetched and mirrored.
+  The price shown comes from the Repeat product; no price, no widget.
+- **Double charges** are guarded three ways: an atomic `checkout_claimed_at` claim (Repeat has
+  no idempotency key, and the codebase never holds a transaction across a network call); a
+  timeout is reported as "unknown, do not retry" with the claim left to expire; and the paywall
+  asks Repeat for active subscriptions under the member's email before showing the form.
+- **Webhook** (`/api/repeat/webhook`) and **nightly sweep** (`/api/cron/repeat-sync`) exactly as
+  designed above. `shouldApply` stops a re-subscriber's old subscription from overwriting the
+  new one.
+- **Cancel** in `/settings`: a preview from Repeat's dry-run endpoint, then `POST …/cancel/`.
+- **Failure rules:** default chosen — 7 daily retries, then cancel. See `payments-iceland.md`.
+
+**To go live:** create the Repeat shop and product, set the five env vars, apply migrations
+`0002` and `0003` to Neon, configure the webhooks (`deployment.md`, "Repeat dashboard setup"),
+then run one real order with the test card end to end.

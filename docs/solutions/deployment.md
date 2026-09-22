@@ -73,6 +73,25 @@ resolvers cache the negative answer afterwards and will lie to you for a while.
 `https://app.sterkirpabbar.is` does not. Send Aron the custom domain — a deployment URL looks
 broken to anyone without Vercel access.
 
+**6. A dependency Node cannot load passes the whole of `bun run check`.**
+
+`@teamrepeat/card-token` is ESM with extensionless relative imports (`./useCardToken`). Vite
+resolves those; Node's ESM loader does not. Left external, the server bundle's top-level
+import throws at boot — every route down, not only the one that uses it. Typecheck, tests and
+the build were all green.
+
+It is bundled via `resolve.noExternal` in `innri/vite.config.ts`. **Not `ssr.noExternal`**: the
+Vercel preset builds its own server environment (`ssrBundle_nodejs_…`) and top-level `ssr.*`
+only configures the default one — which is also why the `@clerk/react-router` entry there has
+never taken effect (Clerk loads fine as an external, so it was left as is).
+
+After adding any dependency that renders on the server, check the bundle actually loads:
+
+```bash
+cd innri/build/server/nodejs_*/ && node -e "import('./index.js')"
+# "DATABASE_URL is not set" means every import resolved. Anything else is the bug.
+```
+
 ## Environment variables
 
 Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes it.
@@ -85,9 +104,32 @@ Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes i
 | `APP_URL`                                                                                    | set by hand — `https://app.sterkirpabbar.is`, no trailing slash | innri                                                          |
 | `SANITY_READ_TOKEN`                                                                          | Sanity manage, **Viewer** permission                            | **both** — landing page reads it at build time, app at runtime |
 | `SANITY_PROJECT_ID`, `SANITY_DATASET`                                                        | root `.env`                                                     | landing page                                                   |
+| `REPEAT_API_KEY`                                                                             | Repeat → API og vefkrókar, **Læst efni** (full) tier            | innri                                                          |
+| `REPEAT_SHOP_UUID`, `REPEAT_PRODUCT_UUID`                                                    | Repeat dashboard URLs — the shop, and the one subscription      | innri                                                          |
+| `REPEAT_WEBHOOK_SECRET`                                                                      | generate: `openssl rand -hex 32`; same value in Repeat's header | innri                                                          |
+| `CRON_SECRET`                                                                                | generate: `openssl rand -hex 32`; Vercel sends it to the cron   | innri                                                          |
 
 Everything the server needs is declared in `innri/app/lib/env.server.ts` and parsed at the
 boundary. Nothing reads `process.env` directly except the database client and that schema.
+
+**The five Repeat/cron keys are required.** Until they are set, every request fails at the env
+boundary — locally too. Set them in all three Vercel environments before merging phase 6.
+
+## Repeat dashboard setup
+
+1. **Stillingar → domains:** add `app.sterkirpabbar.is` (and `localhost:5173` for dev). The card
+   widget only renders on listed domains. Preview deploys are behind Vercel SSO anyway.
+2. **Straumur, test mode on** until go-live. Test card 4917610000000000, 03/30, CVC 737.
+3. **API og vefkrókar → webhooks:** for each of `subscription_created`,
+   `subscription_deactivated`, `cancellation_requested`, `cancellation_revoked`,
+   `next_date_changed`, `subscription_transaction_created` and `payment_attempted`, set the URL
+   to `https://app.sterkirpabbar.is/api/repeat/webhook` and add a custom header
+   `x-webhook-secret: <REPEAT_WEBHOOK_SECRET>`. Use the test-fire button on one; it should show
+   200 in the delivery log.
+4. **The product** and **failure rules** — the defaults are in `payments-iceland.md`.
+
+The nightly reconciliation runs from `innri/vercel.json` at 05:00 UTC, after Repeat's own
+nightly billing job. A cron on the Hobby plan runs at most once a day, which is all it needs.
 
 ## Open risks
 
