@@ -53,6 +53,16 @@ export const serverEnvSchema = z.object({
 
   SANITY_READ_TOKEN: z.string().min(1),
 
+  /**
+   * Signs the onboarding draft cookie.
+   *
+   * The wizard keeps a member's part-finished answers in a cookie rather than a
+   * draft table, so the cookie is the only thing asserting that they confirmed
+   * being over 18 and acknowledged the health warning. Unsigned, those two
+   * could be handed to the server by anyone willing to edit a cookie.
+   */
+  SESSION_SECRET: z.string().min(32, { message: "SESSION_SECRET must be at least 32 characters" }),
+
   /** Neon's pooled connection, provisioned by the Vercel integration. */
   DATABASE_URL: z
     .string()
@@ -100,4 +110,19 @@ export const parseEnv = (source: EnvSource): ServerEnv => {
     .filter((key) => key.length > 0);
 
   throw new EnvError(`Invalid server environment:\n  ${problems.join("\n  ")}`, keys);
+};
+
+let cached: ServerEnv | null = null;
+
+/**
+ * The parsed environment, read at the first request that needs it.
+ *
+ * Memoised rather than parsed at import time: a serverless instance imports
+ * this module during the build as well as at runtime, and a build has no reason
+ * to hold the production secrets. The first real request is the boundary.
+ */
+export const serverEnv = (): ServerEnv => {
+  cached ??= parseEnv(process.env);
+
+  return cached;
 };

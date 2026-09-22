@@ -346,6 +346,41 @@ export type PlanByGoalAndFrequencyQueryResult = {
 export type AvailableFrequenciesQueryResult = Array<1 | 2 | 3 | 4 | 5>;
 
 // Source: ../innri/app/lib/sanity.server.ts
+// Variable: planByIdQuery
+// Query: *[_type == "trainingPlan" && _id == $id][0]{    _id,    title,    goal,    sessionsPerWeek,    intro,    sessions[]{      _key,      title,      exercises[]{        _key,        sets,        reps,        note,        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }      }    }  }
+export type PlanByIdQueryResult = {
+  _id: string;
+  title: string;
+  goal: "fitutap" | "vodvauppbygging";
+  sessionsPerWeek: 1 | 2 | 3 | 4 | 5;
+  intro: string | null;
+  sessions: Array<{
+    _key: string;
+    title: string;
+    exercises: Array<{
+      _key: string;
+      sets: number;
+      reps: string;
+      note: string | null;
+      exercise: {
+        _id: string;
+        name: string;
+        cue: string | null;
+        videoUrl: string | null;
+        muscleGroup:
+          | "allur"
+          | "axlir"
+          | "bak"
+          | "bringa"
+          | "faetur"
+          | "handleggir"
+          | "kjarni";
+      };
+    }>;
+  }>;
+} | null;
+
+// Source: ../innri/app/lib/sanity.server.ts
 // Variable: articlesQuery
 // Query: *[_type == "article"] | order(title asc){    _id,    title,    "slug": slug.current,    category,    excerpt  }
 export type ArticlesQueryResult = Array<{
@@ -393,6 +428,7 @@ declare module "@sanity/client" {
   interface SanityQueries {
     '\n  *[_type == "trainingPlan" && goal == $goal && sessionsPerWeek == $sessionsPerWeek][0]{\n    _id,\n    title,\n    goal,\n    sessionsPerWeek,\n    intro,\n    sessions[]{\n      _key,\n      title,\n      exercises[]{\n        _key,\n        sets,\n        reps,\n        note,\n        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }\n      }\n    }\n  }\n': PlanByGoalAndFrequencyQueryResult;
     '\n  array::unique(*[_type == "trainingPlan" && goal == $goal].sessionsPerWeek) | order(@ asc)\n': AvailableFrequenciesQueryResult;
+    '\n  *[_type == "trainingPlan" && _id == $id][0]{\n    _id,\n    title,\n    goal,\n    sessionsPerWeek,\n    intro,\n    sessions[]{\n      _key,\n      title,\n      exercises[]{\n        _key,\n        sets,\n        reps,\n        note,\n        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }\n      }\n    }\n  }\n': PlanByIdQueryResult;
     '\n  *[_type == "article"] | order(title asc){\n    _id,\n    title,\n    "slug": slug.current,\n    category,\n    excerpt\n  }\n': ArticlesQueryResult;
     '\n  *[_type == "article" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    category,\n    excerpt,\n    body\n  }\n': ArticleBySlugQueryResult;
   }

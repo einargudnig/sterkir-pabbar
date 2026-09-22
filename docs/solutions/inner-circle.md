@@ -335,3 +335,73 @@ before launch rather than leaving a known-credential account in production.
 
 `requireUser` also creates the row on first authenticated request, so a missed or delayed
 webhook cannot leave a paying member without one.
+
+## Phase 3 complete — 2026-09-22
+
+Onboarding writes. `onboarding`, `macro_targets` and `plan_assignments` all get a row, in one
+transaction, and the dashboard reads them instead of placeholders.
+
+**The draft lives in a signed cookie, not a draft table.** `onboarding` is documented as one
+row per _completed_ run with every column NOT NULL, and a partial answer set has nowhere to go
+in it. The alternatives were a nullable mirror table or no resume at all. The cookie keeps the
+schema as designed, means no half-answered health data is stored for anyone who opened the
+wizard and thought better of it, and still resumes across a closed tab. The accepted cost: a
+member who switches device restarts. Four steps, all about their own body, so nothing to look
+up. It is signed because it is the only thing asserting the member confirmed being 18 —
+unsigned, the age gate is decoration. `SESSION_SECRET` is in all three Vercel environments.
+
+**Any health flag shows an acknowledgement, then proceeds** — Einar's call, taken against the
+alternative of withholding macros from anyone with eating-disorder history. The
+eating-disorder branch adds a paragraph saying the plan works without looking at the calorie
+numbers. `onboarding.acknowledged_health_at` (migration 0001) records _when_ it was accepted:
+an acknowledgement nobody stored is not evidence, and without the column the decision is
+indistinguishable from ignoring the flags.
+
+**`FORMULA` in `app/lib/macros.ts` holds v1 conservative defaults, not Aron's numbers.**
+1.500 kcal floor, 20% deficit, 10% surplus, 1,8 g/kg protein, 25% fat, and `annad` as the
+midpoint of the two Mifflin-St Jeor constants. They are grouped in one block with their
+reasoning so replacing them is a five-line edit. **Still needs Aron's sign-off before launch**,
+and `formula_version` must be bumped when it comes.
+
+A protein ceiling of 40% of calories was added while implementing: 250 kg at 1,8 g/kg is 450 g
+of protein, which is 1.800 kcal on its own — above the floor, leaving negative carbohydrate.
+`macros.test.ts` sweeps the entire input space and asserts no member can be sent below the
+floor, given a negative macro, or shown a split that does not reconcile to their total.
+
+**Validation and persistence are separate modules.** `onboarding-draft.server.ts` holds the Zod
+schemas and the step machine and imports no database; `onboarding.server.ts` holds the writes.
+The split was forced by a test — `anti-slop/no-module-mocking` rules out faking a connection,
+so the only way to test the step machine is for it not to need one.
+
+### Three defects found by driving the real app, not by reading the diff
+
+1. **Unchecked radios were invisible.** `--input` resolves to `line-soft`, which measures
+   **1.05:1** against `bg-raised` — WCAG 1.4.11 asks 3:1 for a control boundary. Nobody could
+   see the radio until they tapped it. Fixed to `border-bronze-deep` in `input.tsx` and
+   `radio-group.tsx`: 4.29:1 on radios, 4.75:1 on text fields.
+
+   **Do not fix this by remapping `--input`.** That was the first attempt and it broke the
+   sign-in screen: Clerk's `shadcn` theme reads `--input` as the FILL of its fields while
+   shadcn's own components read it as a BORDER, so the email field rendered solid bronze. One
+   token, two meanings across the two systems — the fix belongs in the components, where only
+   one of them is listening.
+
+2. **`toLocaleString("is-IS")` cannot be used in a component.** Chrome builds ship partial ICU;
+   where `is-IS` is missing the call does not throw, it silently returns `en-GB`, so a member
+   saw "1,812" where the server rendered "1.812" — wrong for an Icelandic reader _and_ a React
+   hydration mismatch. `app/lib/format.ts` does it deterministically. Do not reintroduce
+   locale-dependent formatting in rendered output.
+3. **Orbitron was setting digits** in the macro shares and in sets × reps, against the rule in
+   `.impeccable.md` — it draws a slashed zero, so "30%" reads "3Ø%". Both now use the body font.
+
+`Button` gained a `touch` size (h-11). The other sizes are desktop densities; `default` is 32px,
+below the 44px a phone needs for a primary action taken one-handed in the evening.
+
+**Verified end to end against live Neon, live Sanity and a real Clerk session**, not inferred:
+age gate blocks, acknowledgement cannot be skipped, five field errors report at once, the
+Icelandic decimal comma is accepted, back preserves answers, choosing muscle gain reaches the
+"í smíðum" empty state with no dead button, completion writes three rows and clears the cookie,
+and every member route redirects an un-onboarded member to the wizard.
+
+**Still open:** Aron's formula numbers; `/settings` still cannot edit measurements, so a member
+who changes weight has no way to rewrite it yet (the append-only schema is ready for it).

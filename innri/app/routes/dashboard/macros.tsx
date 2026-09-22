@@ -1,36 +1,40 @@
+import { requireUser } from "~/lib/auth.server";
+import { formatWholeNumber } from "~/lib/format";
+import { KCAL_PER_GRAM, type MacroTargets } from "~/lib/macros";
+import { latestMacros } from "~/lib/onboarding.server";
+
 import type { Route } from "./+types/macros";
-
-/**
- * PLACEHOLDER — replaced in phase 3.
- *
- * Macros come from the `macro_targets` table, computed once from the member's
- * onboarding answers and stored. They are deliberately NOT Sanity content:
- * they are per-member, and they are a stored snapshot so that changing the
- * formula never moves an existing member's numbers.
- */
-type MacroTargets = {
-  readonly kcal: number;
-  readonly proteinG: number;
-  readonly carbsG: number;
-  readonly fatG: number;
-};
-
-const placeholderMacros: MacroTargets = {
-  kcal: 2450,
-  proteinG: 175,
-  carbsG: 245,
-  fatG: 82,
-};
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: "Mín macros — Innri hringurinn" }];
 }
 
-export function loader(_args: Route.LoaderArgs) {
-  return { macros: placeholderMacros };
-}
+/**
+ * The member's stored targets — a snapshot, never recomputed on read.
+ *
+ * `macro_targets` is append-only, so the newest row is current and the ones
+ * behind it are the audit trail: the numbers a member was shown in October are
+ * still answerable in March, even if the formula has moved since.
+ */
+export async function loader(args: Route.LoaderArgs) {
+  const user = await requireUser(args);
 
-const KCAL_PER_GRAM = { protein: 4, carbs: 4, fat: 9 } as const;
+  const stored = await latestMacros(user.id);
+
+  if (!stored) {
+    return { macros: null };
+  }
+
+  const macros: MacroTargets = {
+    kcal: stored.kcal,
+    proteinG: stored.proteinG,
+    carbsG: stored.carbsG,
+    fatG: stored.fatG,
+    formulaVersion: stored.formulaVersion,
+  };
+
+  return { macros };
+}
 
 type MacroRow = {
   readonly label: string;
@@ -42,9 +46,10 @@ type MacroRow = {
 /**
  * Shares out the calorie total across the three macros.
  *
- * Phase 3 moves this next to the calculation that produces the targets, where
- * it gets tested against the stored snapshot — the displayed split must always
- * reconcile to the stored kcal, or a member sees numbers that do not add up.
+ * `KCAL_PER_GRAM` comes from the formula module rather than a second copy here:
+ * `macros.test.ts` asserts that the split reconciles to the stored total for
+ * every possible member, and that assertion is worthless if this page divides
+ * by different numbers than the calculation multiplied by.
  */
 const toRows = (macros: MacroTargets): readonly MacroRow[] => [
   {
@@ -67,8 +72,29 @@ const toRows = (macros: MacroTargets): readonly MacroRow[] => [
   },
 ];
 
+const shareOf = (row: MacroRow | undefined, total: number): number =>
+  row === undefined ? 0 : Math.round((row.kcal / total) * 100);
+
 export default function Macros({ loaderData }: Route.ComponentProps) {
   const { macros } = loaderData;
+
+  /**
+   * Reachable when the questionnaire was answered but the targets were not
+   * written — which the completion transaction makes impossible, so this exists
+   * for the member rather than for the happy path.
+   */
+  if (!macros) {
+    return (
+      <div className="max-w-prose">
+        <h1 className="font-display text-title text-text">Mín macros</h1>
+
+        <p className="mt-4 text-text-soft">
+          Við náðum ekki að reikna viðmiðin þín. Sendu Aroni skilaboð og hann kippir því í lag.
+        </p>
+      </div>
+    );
+  }
+
   const rows = toRows(macros);
 
   return (
@@ -87,23 +113,37 @@ export default function Macros({ loaderData }: Route.ComponentProps) {
         </p>
 
         <p className="mt-2 font-display text-display leading-none text-bronze">
-          {macros.kcal.toLocaleString("is-IS")}
+          {formatWholeNumber(macros.kcal)}
         </p>
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        {rows.map((row) => {
-          const share = Math.round((row.kcal / macros.kcal) * 100);
+        {rows.map((row, index) => {
+          /**
+           * The last share is the remainder rather than its own rounding, so
+           * the three add up to 100. Three independent roundings show
+           * 38/38/25 — and a page whose only job is to be trusted cannot print
+           * numbers that sum to 101%.
+           */
+          const share =
+            index === rows.length - 1
+              ? 100 - shareOf(rows[0], macros.kcal) - shareOf(rows[1], macros.kcal)
+              : shareOf(row, macros.kcal);
 
           return (
             <div key={row.label} className="rounded-xl border border-line-soft bg-sunken p-5">
               <div className="flex items-baseline justify-between">
                 <h2 className="text-sm text-text-soft">{row.label}</h2>
 
-                <span className="font-mark text-xs text-text-muted">{share}%</span>
+                {/* Not font-mark: Orbitron draws a slashed zero, so "30%"
+                    renders as "3Ø%". `.impeccable.md` reserves it for the
+                    wordmark and all-caps labels, never for digits. */}
+                <span className="text-xs text-text-muted">{share}%</span>
               </div>
 
-              <p className="mt-1 font-display text-subtitle text-text">{row.grams} g</p>
+              <p className="mt-1 font-display text-subtitle text-text">
+                {formatWholeNumber(row.grams)} g
+              </p>
 
               <p className="mt-2 text-sm text-text-muted">{row.hint}</p>
             </div>

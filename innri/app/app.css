@@ -201,6 +201,14 @@
   --destructive: oklch(0.637 0.208 25.3);
 
   --border: var(--color-line);
+  /**
+   * Left as a surface value on purpose. Clerk's `shadcn` theme reads `--input`
+   * as the FILL of its fields, while shadcn's own components read it as a
+   * BORDER — one token, two meanings across the two systems. Remapping it to an
+   * accent to fix the border contrast turned Clerk's sign-in field solid
+   * bronze. The control boundary is fixed in the components instead, where only
+   * one of the two systems is listening.
+   */
   --input: var(--color-line-soft);
   --ring: var(--color-bronze);
 

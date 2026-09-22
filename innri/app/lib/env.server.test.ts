@@ -11,6 +11,7 @@ const valid = {
   CLERK_WEBHOOK_SIGNING_SECRET: "whsec_example",
   SANITY_PROJECT_ID: "abc123",
   SANITY_READ_TOKEN: "sk_sanity_example",
+  SESSION_SECRET: "0123456789abcdef0123456789abcdef",
 };
 
 describe("parseEnv", () => {
@@ -26,6 +27,15 @@ describe("parseEnv", () => {
     const env = parseEnv(withoutNodeEnv);
 
     expect(env.NODE_ENV).toBe("development");
+  });
+
+  /**
+   * The draft cookie's signature is what makes the age gate and the health
+   * acknowledgement mean anything, so a short secret has to fail at the
+   * boundary rather than produce a cookie anyone can forge.
+   */
+  it("rejects a SESSION_SECRET too short to sign with", () => {
+    expect(() => parseEnv({ ...valid, SESSION_SECRET: "short" })).toThrow(EnvError);
   });
 
   it("rejects a missing APP_URL", () => {
