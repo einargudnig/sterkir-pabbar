@@ -26,12 +26,13 @@ import { ACTIVITY_VALUES, GOAL_VALUES, SEX_VALUES } from "~/lib/onboarding";
  * me 1,800 kcal in October" has to be answerable.
  */
 
-export const subscriptionStatus = pgEnum("subscription_status", [
-  "trialing",
-  "active",
-  "past_due",
-  "canceled",
-]);
+/**
+ * Repeat's states, not Kling's. Repeat has no `past_due`: a subscription stays
+ * active through the retry window until one of Aron's failure rules deactivates
+ * it, and a free first period is an ordinary active subscription whose first
+ * charge is later. So there is nothing for `trialing` or `past_due` to mean.
+ */
+export const subscriptionStatus = pgEnum("subscription_status", ["active", "paused", "canceled"]);
 
 export const goal = pgEnum("goal", GOAL_VALUES);
 
@@ -69,9 +70,10 @@ export const users = pgTable(
     repeatSubscriptionId: text("repeat_subscription_id"),
 
     /**
-     * The moment access lapses. Null means the member has never subscribed.
-     * Access is `currentPeriodEnd > now()` AND status is not `canceled`, so a
-     * member who cancels keeps what they paid for until the period runs out.
+     * The moment access lapses unless the next sync extends it. Null means the
+     * member has never subscribed. Access is `currentPeriodEnd > now()` AND
+     * status `active` — see `app/lib/access.ts`, and `toMirror` in
+     * `app/lib/repeat.ts` for how Repeat's fields become this date.
      */
     currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
 
@@ -83,6 +85,15 @@ export const users = pgTable(
     accessGrantedUntil: timestamp("access_granted_until", { withTimezone: true }),
 
     isAdmin: boolean("is_admin").notNull().default(false),
+
+    /**
+     * Set the moment a checkout starts charging a card, cleared when it ends.
+     * Repeat has no idempotency key, so a double-click would otherwise be two
+     * orders and two charges. Claimed with a conditional UPDATE rather than a
+     * lock, because the charge is a network call and a transaction must not be
+     * held open across one on a one-connection pool.
+     */
+    checkoutClaimedAt: timestamp("checkout_claimed_at", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

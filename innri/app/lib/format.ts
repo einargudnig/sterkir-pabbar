@@ -14,3 +14,26 @@ export const formatWholeNumber = (value: number): string =>
   Math.round(value)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/gu, ".");
+
+const MONTHS = [
+  "janúar",
+  "febrúar",
+  "mars",
+  "apríl",
+  "maí",
+  "júní",
+  "júlí",
+  "ágúst",
+  "september",
+  "október",
+  "nóvember",
+  "desember",
+] as const;
+
+/**
+ * "1. október 2026", for the same reason as above: `toLocaleDateString` would
+ * differ between server and browser. Read in UTC, which is Iceland's time zone
+ * all year — no daylight saving — so the date a member reads is the date it is.
+ */
+export const formatDate = (date: Date): string =>
+  `${date.getUTCDate()}. ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;

@@ -12,6 +12,11 @@ const valid = {
   SANITY_PROJECT_ID: "abc123",
   SANITY_READ_TOKEN: "sk_sanity_example",
   SESSION_SECRET: "0123456789abcdef0123456789abcdef",
+  REPEAT_API_KEY: "repeat_full_example",
+  REPEAT_WEBHOOK_SECRET: "fedcba9876543210fedcba9876543210",
+  REPEAT_SHOP_UUID: "0b6c1d2e-3f40-4a51-9b62-7c83d94ea5f6",
+  REPEAT_PRODUCT_UUID: "1c7d2e3f-4051-4b62-8c73-9d84ea5fb607",
+  CRON_SECRET: "cron_secret_example_value",
 };
 
 describe("parseEnv", () => {
@@ -36,6 +41,14 @@ describe("parseEnv", () => {
    */
   it("rejects a SESSION_SECRET too short to sign with", () => {
     expect(() => parseEnv({ ...valid, SESSION_SECRET: "short" })).toThrow(EnvError);
+  });
+
+  /**
+   * Repeat's webhooks are unsigned, so this header value is the whole of the
+   * endpoint's authentication. A guessable one is an open door.
+   */
+  it("rejects a REPEAT_WEBHOOK_SECRET too short to be a password", () => {
+    expect(() => parseEnv({ ...valid, REPEAT_WEBHOOK_SECRET: "hunter2" })).toThrow(EnvError);
   });
 
   it("rejects a missing APP_URL", () => {
