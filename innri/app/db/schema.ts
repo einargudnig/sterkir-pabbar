@@ -26,12 +26,13 @@ import { ACTIVITY_VALUES, GOAL_VALUES, SEX_VALUES } from "~/lib/onboarding";
  * me 1,800 kcal in October" has to be answerable.
  */
 
-export const subscriptionStatus = pgEnum("subscription_status", [
-  "trialing",
-  "active",
-  "past_due",
-  "canceled",
-]);
+/**
+ * Repeat's states, not Kling's. Repeat has no `past_due`: a subscription stays
+ * active through the retry window until one of Aron's failure rules deactivates
+ * it, and a free first period is an ordinary active subscription whose first
+ * charge is later. So there is nothing for `trialing` or `past_due` to mean.
+ */
+export const subscriptionStatus = pgEnum("subscription_status", ["active", "paused", "canceled"]);
 
 export const goal = pgEnum("goal", GOAL_VALUES);
 
@@ -52,9 +53,11 @@ export const sex = pgEnum("sex", SEX_VALUES);
  * that person the app needs to answer quickly — above all whether they are
  * currently paid up.
  *
- * The subscription columns are a MIRROR of Kling, written only by the webhook
- * handler. `requireActiveAccess` reads them and never calls Kling: access stays
- * fast, keeps working through a Kling outage, and the customer list is ours.
+ * The subscription columns are a MIRROR of Repeat, written only from Repeat's
+ * own API — the webhook and the reconciliation job both re-fetch the
+ * subscription rather than trusting a pushed body. `requireActiveAccess` reads
+ * them and never calls Repeat: access stays fast, keeps working through a
+ * Repeat outage, and the customer list is ours.
  */
 export const users = pgTable(
   "users",
@@ -64,17 +67,18 @@ export const users = pgTable(
     email: text("email"),
 
     subscriptionStatus: subscriptionStatus("subscription_status"),
-    klingSubscriptionId: text("kling_subscription_id"),
+    repeatSubscriptionId: text("repeat_subscription_id"),
 
     /**
-     * The moment access lapses. Null means the member has never subscribed.
-     * Access is `currentPeriodEnd > now()` AND status is not `canceled`, so a
-     * member who cancels keeps what they paid for until the period runs out.
+     * The moment access lapses unless the next sync extends it. Null means the
+     * member has never subscribed. Access is `currentPeriodEnd > now()` AND
+     * status `active` — see `app/lib/access.ts`, and `toMirror` in
+     * `app/lib/repeat.ts` for how Repeat's fields become this date.
      */
     currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
 
     /**
-     * Set by the admin page when Aron comps someone or repairs a payment Kling
+     * Set by the admin page when Aron comps someone or repairs a payment Repeat
      * could not retry. Kept separate from `currentPeriodEnd` so a later webhook
      * cannot silently wipe a manual grant.
      */
@@ -82,11 +86,20 @@ export const users = pgTable(
 
     isAdmin: boolean("is_admin").notNull().default(false),
 
+    /**
+     * Set the moment a checkout starts charging a card, cleared when it ends.
+     * Repeat has no idempotency key, so a double-click would otherwise be two
+     * orders and two charges. Claimed with a conditional UPDATE rather than a
+     * lock, because the charge is a network call and a transaction must not be
+     * held open across one on a one-connection pool.
+     */
+    checkoutClaimedAt: timestamp("checkout_claimed_at", { withTimezone: true }),
+
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex("users_clerk_user_id_idx").on(table.clerkUserId),
-    index("users_kling_subscription_id_idx").on(table.klingSubscriptionId),
+    index("users_repeat_subscription_id_idx").on(table.repeatSubscriptionId),
   ],
 );
 
@@ -196,30 +209,33 @@ export const planAssignments = pgTable(
 );
 
 /**
- * Every webhook Kling has delivered, exactly once.
+ * Every webhook delivery Repeat has made, once per delivery.
  *
- * `klingEventId` is unique, and that is the whole idempotency strategy: Kling
- * guarantees at-least-once delivery, so the same `payment captured` event can
- * arrive twice. Inserting first and letting the unique constraint reject the
- * duplicate is what stops a member getting two months for one payment.
+ * Repeat does not sign deliveries and does not retry them, and a replay from its
+ * dashboard arrives with a FRESH `X-Repeat-Delivery-Id`. So this table is an
+ * audit log, not the idempotency strategy. Idempotency comes from the handler:
+ * it never applies the pushed body, it re-fetches the subscription from Repeat
+ * and overwrites the mirror, so applying the same news twice changes nothing.
+ * The unique delivery id only stops one delivery being logged twice.
  *
- * `payload` keeps the raw body so a dispute can be settled against what Kling
+ * `payload` keeps the raw body so a dispute can be settled against what Repeat
  * actually sent rather than against how we parsed it.
  */
-export const klingEvents = pgTable(
-  "kling_events",
+export const repeatEvents = pgTable(
+  "repeat_events",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    klingEventId: text("kling_event_id").notNull(),
-    eventType: text("event_type").notNull(),
+    repeatDeliveryId: text("repeat_delivery_id").notNull(),
+    webhookType: text("webhook_type").notNull(),
 
     userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
-    klingSubscriptionId: text("kling_subscription_id"),
+    repeatSubscriptionId: text("repeat_subscription_id"),
 
     /**
      * Whole krónur. ISK has no minor unit — there are no aurar in circulation —
      * so there is no ×100 to remember and no rounding to get wrong. Do not copy
-     * the "store money in cents" habit from Stripe examples here.
+     * the "store money in cents" habit from Stripe examples here. Repeat's own
+     * legacy `amount` on card payments IS ×100; read `amount_major` instead.
      */
     amountIsk: integer("amount_isk"),
 
@@ -227,7 +243,7 @@ export const klingEvents = pgTable(
     receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex("kling_events_event_id_idx").on(table.klingEventId),
-    index("kling_events_user_id_idx").on(table.userId),
+    uniqueIndex("repeat_events_delivery_id_idx").on(table.repeatDeliveryId),
+    index("repeat_events_user_id_idx").on(table.userId),
   ],
 );

@@ -37,4 +37,6 @@ export default [
 
   // Resource routes — no component, called by other systems, never by a member.
   route("api/clerk/webhook", "routes/api/clerk-webhook.ts"),
+  route("api/repeat/webhook", "routes/api/repeat-webhook.ts"),
+  route("api/cron/repeat-sync", "routes/api/repeat-sync.ts"),
 ] satisfies RouteConfig;

@@ -1,0 +1,565 @@
+{
+  "id": "97d78293-0fa0-4c7f-9e8f-a863ed26d41a",
+  "prevId": "c5434e44-68ed-495a-8d86-106841e15051",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.macro_targets": {
+      "name": "macro_targets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "onboarding_id": {
+          "name": "onboarding_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kcal": {
+          "name": "kcal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "protein_g": {
+          "name": "protein_g",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carbs_g": {
+          "name": "carbs_g",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fat_g": {
+          "name": "fat_g",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "formula_version": {
+          "name": "formula_version",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "macro_targets_user_id_idx": {
+          "name": "macro_targets_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "macro_targets_user_id_users_id_fk": {
+          "name": "macro_targets_user_id_users_id_fk",
+          "tableFrom": "macro_targets",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "macro_targets_onboarding_id_onboarding_id_fk": {
+          "name": "macro_targets_onboarding_id_onboarding_id_fk",
+          "tableFrom": "macro_targets",
+          "tableTo": "onboarding",
+          "columnsFrom": ["onboarding_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.onboarding": {
+      "name": "onboarding",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "goal": {
+          "name": "goal",
+          "type": "goal",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessions_per_week": {
+          "name": "sessions_per_week",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height_cm": {
+          "name": "height_cm",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "age": {
+          "name": "age",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sex": {
+          "name": "sex",
+          "type": "sex",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activity_level": {
+          "name": "activity_level",
+          "type": "activity_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flagged_chronic_condition": {
+          "name": "flagged_chronic_condition",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "flagged_medication": {
+          "name": "flagged_medication",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "flagged_eating_disorder": {
+          "name": "flagged_eating_disorder",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "flagged_injury": {
+          "name": "flagged_injury",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "confirmed_adult": {
+          "name": "confirmed_adult",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acknowledged_health_at": {
+          "name": "acknowledged_health_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "onboarding_user_id_idx": {
+          "name": "onboarding_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "onboarding_user_id_users_id_fk": {
+          "name": "onboarding_user_id_users_id_fk",
+          "tableFrom": "onboarding",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plan_assignments": {
+      "name": "plan_assignments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sanity_plan_id": {
+          "name": "sanity_plan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "plan_assignments_user_id_idx": {
+          "name": "plan_assignments_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "plan_assignments_user_id_users_id_fk": {
+          "name": "plan_assignments_user_id_users_id_fk",
+          "tableFrom": "plan_assignments",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.repeat_events": {
+      "name": "repeat_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "repeat_delivery_id": {
+          "name": "repeat_delivery_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "webhook_type": {
+          "name": "webhook_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repeat_subscription_id": {
+          "name": "repeat_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_isk": {
+          "name": "amount_isk",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "repeat_events_delivery_id_idx": {
+          "name": "repeat_events_delivery_id_idx",
+          "columns": [
+            {
+              "expression": "repeat_delivery_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "repeat_events_user_id_idx": {
+          "name": "repeat_events_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "repeat_events_user_id_users_id_fk": {
+          "name": "repeat_events_user_id_users_id_fk",
+          "tableFrom": "repeat_events",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "clerk_user_id": {
+          "name": "clerk_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_status": {
+          "name": "subscription_status",
+          "type": "subscription_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repeat_subscription_id": {
+          "name": "repeat_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_period_end": {
+          "name": "current_period_end",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_granted_until": {
+          "name": "access_granted_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_admin": {
+          "name": "is_admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "checkout_claimed_at": {
+          "name": "checkout_claimed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "users_clerk_user_id_idx": {
+          "name": "users_clerk_user_id_idx",
+          "columns": [
+            {
+              "expression": "clerk_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "users_repeat_subscription_id_idx": {
+          "name": "users_repeat_subscription_id_idx",
+          "columns": [
+            {
+              "expression": "repeat_subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.activity_level": {
+      "name": "activity_level",
+      "schema": "public",
+      "values": ["kyrrseta", "lett", "midlungs", "mikil"]
+    },
+    "public.goal": {
+      "name": "goal",
+      "schema": "public",
+      "values": ["fitutap", "vodvauppbygging"]
+    },
+    "public.sex": {
+      "name": "sex",
+      "schema": "public",
+      "values": ["karl", "kona", "annad"]
+    },
+    "public.subscription_status": {
+      "name": "subscription_status",
+      "schema": "public",
+      "values": ["active", "paused", "canceled"]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

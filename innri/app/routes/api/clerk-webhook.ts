@@ -60,7 +60,7 @@ export async function action({ request }: Route.ActionArgs) {
       /**
        * Someone deleting their account expects their data gone. The foreign
        * keys cascade, so onboarding answers, macro snapshots and plan
-       * assignments go with the row. `kling_events` is deliberately NOT
+       * assignments go with the row. `repeat_events` is deliberately NOT
        * cascaded — it sets user_id to null instead, because the payment record
        * is an accounting artefact that has to outlive the account.
        */

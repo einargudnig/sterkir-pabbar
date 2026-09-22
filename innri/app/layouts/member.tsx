@@ -1,8 +1,8 @@
 import { UserButton } from "@clerk/react-router";
 import { NavLink, Outlet, redirect } from "react-router";
 
-import { requireUser } from "~/lib/auth.server";
 import { hasCompletedOnboarding } from "~/lib/onboarding.server";
+import { requireActiveAccess } from "~/lib/subscription.server";
 
 import type { Route } from "./+types/member";
 
@@ -11,16 +11,14 @@ import type { Route } from "./+types/member";
  *
  * The guard lives in this loader, not in the children, so a route added under
  * this layout is gated by existing there rather than by someone remembering to
- * call something. Phase 6 adds the subscription check to the same place.
+ * call something.
  */
 export async function loader(args: Route.LoaderArgs) {
-  const user = await requireUser(args);
-
   /**
-   * Phase 6 adds the subscription check here — `current_period_end > now()` or
-   * a live `access_granted_until` — so it gates this whole subtree in one place
-   * rather than once per route.
+   * The paid gate, for this whole subtree in one place. It reads only the local
+   * mirror — never Repeat — so a Repeat outage does not lock members out.
    */
+  const user = await requireActiveAccess(args);
 
   /**
    * Every page under here renders a plan or numbers derived from the

@@ -15,6 +15,20 @@
       "when": 1790060173998,
       "tag": "0001_steady_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790102543581,
+      "tag": "0002_repeat",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790102975846,
+      "tag": "0003_repeat_states",
+      "breakpoints": true
     }
   ]
 }

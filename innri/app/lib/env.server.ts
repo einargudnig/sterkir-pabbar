@@ -4,17 +4,15 @@ import { z } from "zod";
  * Server environment, parsed once at the boundary.
  *
  * Nothing in the app reads `process.env` directly — an agent (or a person) that
- * invents `PROCESS_ENV_KLING_KEY` gets a type error instead of `undefined` at
- * runtime. Each phase adds its own keys here as it lands:
- *
- *   phase 6  KLING_SECRET_KEY, KLING_WEBHOOK_SECRET
+ * invents `PROCESS_ENV_REPEAT_KEY` gets a type error instead of `undefined` at
+ * runtime. Each phase adds its own keys here as it lands.
  */
 export const serverEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   /**
    * Public origin of the members' area, no trailing slash. Clerk redirects and
-   * Kling's webhook and return URLs are all built from it, so it must be the
+   * Repeat's return URLs are built from it, so it must be the
    * real origin rather than inferred from the request — a forwarded Host header
    * is attacker-controlled.
    */
@@ -62,6 +60,34 @@ export const serverEnvSchema = z.object({
    * could be handed to the server by anyone willing to edit a cookie.
    */
   SESSION_SECRET: z.string().min(32, { message: "SESSION_SECRET must be at least 32 characters" }),
+
+  /**
+   * Repeat's FULL-tier key ("Læst efni"): it creates orders and cancels
+   * subscriptions. Server-only — the card widget needs nothing but the shop id.
+   */
+  REPEAT_API_KEY: z.string().min(1),
+
+  /**
+   * Repeat does not sign webhooks. This is the value we configure as a custom
+   * header on every event in Repeat's dashboard, and the only thing that keeps
+   * a stranger from making us re-read subscriptions on demand. Long, because it
+   * is compared as a password rather than verified as a signature.
+   */
+  REPEAT_WEBHOOK_SECRET: z
+    .string()
+    .min(32, { message: "REPEAT_WEBHOOK_SECRET must be at least 32 characters" }),
+
+  /** Public — the card widget's iframe URL carries it. */
+  REPEAT_SHOP_UUID: z.uuid(),
+
+  /** The one subscription product the paywall sells. Its price lives in Repeat. */
+  REPEAT_PRODUCT_UUID: z.uuid(),
+
+  /**
+   * Vercel sends it as `Authorization: Bearer <CRON_SECRET>` on every cron
+   * invocation. Without the check, anyone could make us sweep Repeat.
+   */
+  CRON_SECRET: z.string().min(16, { message: "CRON_SECRET must be at least 16 characters" }),
 
   /** Neon's pooled connection, provisioned by the Vercel integration. */
   DATABASE_URL: z
