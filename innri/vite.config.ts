@@ -20,6 +20,18 @@ export default defineConfig({
     alias: {
       "~": new URL("./app/", import.meta.url).pathname,
     },
+
+    /**
+     * `@teamrepeat/card-token` is ESM with extensionless relative imports
+     * (`./useCardToken`), which Node's ESM loader refuses: left external, the
+     * server bundle's top-level import throws and takes every route down, not
+     * just /subscribe. Bundling it lets Vite resolve the path instead.
+     *
+     * Under `resolve`, not `ssr`: the Vercel preset builds a server environment
+     * of its own (`ssrBundle_nodejs_…`), and top-level `ssr.*` only configures
+     * the default one. Every environment inherits `resolve`.
+     */
+    noExternal: ["@teamrepeat/card-token"],
   },
 
   ssr: {
