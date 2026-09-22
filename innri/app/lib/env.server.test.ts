@@ -47,7 +47,7 @@ describe("parseEnv", () => {
   });
 
   /**
-   * The trailing slash matters: Kling's return URLs and Clerk's redirects are
+   * The trailing slash matters: Repeat's return URLs and Clerk's redirects are
    * built by concatenation, so `https://host//subscribe` would 404 in production
    * only — never in dev, where the origin is typed by hand.
    */

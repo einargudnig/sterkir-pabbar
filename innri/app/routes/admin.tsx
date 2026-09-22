@@ -28,7 +28,7 @@ export function meta(_args: Route.MetaArgs) {
  * subscription, since Aron will not be paying for his own product.
  *
  * Phase 5 makes these controls real. They exist for comping a friend, fixing a
- * payment that failed in a way Kling could not retry, and extending someone who
+ * payment that failed in a way Repeat could not retry, and extending someone who
  * had a genuinely bad month — not as the primary way anyone gets access.
  */
 export default function Admin() {

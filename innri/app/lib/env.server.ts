@@ -4,17 +4,17 @@ import { z } from "zod";
  * Server environment, parsed once at the boundary.
  *
  * Nothing in the app reads `process.env` directly — an agent (or a person) that
- * invents `PROCESS_ENV_KLING_KEY` gets a type error instead of `undefined` at
+ * invents `PROCESS_ENV_REPEAT_KEY` gets a type error instead of `undefined` at
  * runtime. Each phase adds its own keys here as it lands:
  *
- *   phase 6  KLING_SECRET_KEY, KLING_WEBHOOK_SECRET
+ *   phase 6  REPEAT_API_KEY, REPEAT_WEBHOOK_SECRET
  */
 export const serverEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   /**
    * Public origin of the members' area, no trailing slash. Clerk redirects and
-   * Kling's webhook and return URLs are all built from it, so it must be the
+   * Repeat's return URLs are built from it, so it must be the
    * real origin rather than inferred from the request — a forwarded Host header
    * is attacker-controlled.
    */

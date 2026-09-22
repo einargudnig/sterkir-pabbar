@@ -14,7 +14,7 @@ export function meta(_args: Route.MetaArgs) {
 }
 
 /**
- * Paywall. Phase 6 turns the button into a Kling checkout session and the
+ * Paywall. Phase 6 turns the button into Repeat's card widget and an order, and the
  * loader into a read of the local subscription mirror.
  *
  * The price is deliberately absent rather than invented — Aron has not set it,
