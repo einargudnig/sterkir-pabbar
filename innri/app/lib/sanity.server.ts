@@ -75,6 +75,35 @@ export const availableFrequenciesQuery = defineQuery(`
   array::unique(*[_type == "trainingPlan" && goal == $goal].sessionsPerWeek) | order(@ asc)
 `);
 
+/**
+ * The plan a member is actually assigned, by document id.
+ *
+ * `plan_assignments` stores the id rather than the goal/frequency pair, so this
+ * is the query the dashboard uses. Looking it up by the pair again would give a
+ * member a different plan the moment Aron edits either field on the document —
+ * the assignment is supposed to be the stable thing.
+ */
+export const planByIdQuery = defineQuery(`
+  *[_type == "trainingPlan" && _id == $id][0]{
+    _id,
+    title,
+    goal,
+    sessionsPerWeek,
+    intro,
+    sessions[]{
+      _key,
+      title,
+      exercises[]{
+        _key,
+        sets,
+        reps,
+        note,
+        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }
+      }
+    }
+  }
+`);
+
 export const articlesQuery = defineQuery(`
   *[_type == "article"] | order(title asc){
     _id,

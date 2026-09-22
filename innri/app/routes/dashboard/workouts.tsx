@@ -1,5 +1,7 @@
-import { planByGoalAndFrequencyQuery, sanity } from "~/lib/sanity.server";
-import type { PlanByGoalAndFrequencyQueryResult } from "~/lib/sanity.types";
+import { requireUser } from "~/lib/auth.server";
+import { latestPlanAssignment } from "~/lib/onboarding.server";
+import { planByIdQuery, sanity } from "~/lib/sanity.server";
+import type { PlanByIdQueryResult } from "~/lib/sanity.types";
 
 import type { Route } from "./+types/workouts";
 
@@ -8,20 +10,27 @@ export function meta(_args: Route.MetaArgs) {
 }
 
 /**
- * Phase 3 reads the member's goal and frequency from `plan_assignments` and
- * passes those in. Until onboarding writes that row there is nothing to read,
- * so this asks for the combination the seed data publishes.
+ * The member's own plan, by the document id onboarding assigned them.
+ *
+ * The member layout has already redirected anyone without an assignment to the
+ * questionnaire, so a missing row here means the layout's check and this one
+ * disagree — which the empty state below covers rather than throwing.
  */
-export async function loader(_args: Route.LoaderArgs) {
-  const plan = await sanity.fetch(planByGoalAndFrequencyQuery, {
-    goal: "fitutap",
-    sessionsPerWeek: 3,
-  });
+export async function loader(args: Route.LoaderArgs) {
+  const user = await requireUser(args);
+
+  const assignment = await latestPlanAssignment(user.id);
+
+  if (!assignment) {
+    return { plan: null };
+  }
+
+  const plan = await sanity.fetch(planByIdQuery, { id: assignment.sanityPlanId });
 
   return { plan };
 }
 
-type Session = NonNullable<PlanByGoalAndFrequencyQueryResult>["sessions"];
+type Session = NonNullable<PlanByIdQueryResult>["sessions"];
 
 function SessionCard({ session }: { session: NonNullable<Session>[number] }) {
   return (
@@ -37,7 +46,10 @@ function SessionCard({ session }: { session: NonNullable<Session>[number] }) {
               <div className="flex items-baseline justify-between gap-4">
                 <h3 className="font-medium text-text">{item.exercise?.name ?? "Æfing vantar"}</h3>
 
-                <span className="whitespace-nowrap font-mark text-sm text-bronze">
+                {/* Same rule as the macro shares: Orbitron slashes its zero,
+                    so "3 × 10" would read "3 × 1Ø". Sets and reps are the most
+                    looked-at numbers in the app — they get the body font. */}
+                <span className="whitespace-nowrap text-sm font-medium text-bronze">
                   {item.sets} × {item.reps}
                 </span>
               </div>

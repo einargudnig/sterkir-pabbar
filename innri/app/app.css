@@ -201,7 +201,17 @@
   --destructive: oklch(0.637 0.208 25.3);
 
   --border: var(--color-line);
-  --input: var(--color-line-soft);
+  /**
+   * The BOUNDARY of an interactive control — a text field's outline, an
+   * unchecked radio or checkbox — not a divider. WCAG 1.4.11 asks 3:1 for it,
+   * and `line-soft` measures 1.05:1 against `raised`: an unchecked radio was
+   * literally invisible until tapped. `bronze-deep` measures 4.29:1 and keeps
+   * the control inside the accent family instead of reading as neutral text.
+   *
+   * Dividers and card edges keep `line` / `line-soft` — they are decoration and
+   * the rule does not apply to them.
+   */
+  --input: var(--color-bronze-deep);
   --ring: var(--color-bronze);
 
   --chart-1: var(--color-bronze);

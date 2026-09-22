@@ -1,7 +1,8 @@
 import { UserButton } from "@clerk/react-router";
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, redirect } from "react-router";
 
 import { requireUser } from "~/lib/auth.server";
+import { hasCompletedOnboarding } from "~/lib/onboarding.server";
 
 import type { Route } from "./+types/member";
 
@@ -20,6 +21,17 @@ export async function loader(args: Route.LoaderArgs) {
    * a live `access_granted_until` — so it gates this whole subtree in one place
    * rather than once per route.
    */
+
+  /**
+   * Every page under here renders a plan or numbers derived from the
+   * questionnaire, so a member who has not answered it has nothing to show.
+   * Gating it here rather than per route means a new tab added to the dashboard
+   * cannot forget to check.
+   */
+  if (!(await hasCompletedOnboarding(user.id))) {
+    throw redirect("/onboarding");
+  }
+
   return { userId: user.clerkUserId };
 }
 

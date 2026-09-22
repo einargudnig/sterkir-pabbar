@@ -12,6 +12,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { ACTIVITY_VALUES, GOAL_VALUES, SEX_VALUES } from "~/lib/onboarding";
+
 /**
  * Schema for the members' area. This file is the only place database columns
  * are described — the app's types come from here, never from hand-written
@@ -31,9 +33,9 @@ export const subscriptionStatus = pgEnum("subscription_status", [
   "canceled",
 ]);
 
-export const goal = pgEnum("goal", ["fitutap", "vodvauppbygging"]);
+export const goal = pgEnum("goal", GOAL_VALUES);
 
-export const activityLevel = pgEnum("activity_level", ["kyrrseta", "lett", "midlungs", "mikil"]);
+export const activityLevel = pgEnum("activity_level", ACTIVITY_VALUES);
 
 /**
  * Needed because Mifflin-St Jeor has separate male and female constants.
@@ -43,7 +45,7 @@ export const activityLevel = pgEnum("activity_level", ["kyrrseta", "lett", "midl
  * it is Einar's to make alongside the calorie floor. Recording it honestly here
  * is better than forcing a binary answer in the questionnaire.
  */
-export const sex = pgEnum("sex", ["karl", "kona", "annad"]);
+export const sex = pgEnum("sex", SEX_VALUES);
 
 /**
  * One row per Clerk user. Clerk owns identity; this table owns everything about
@@ -118,6 +120,17 @@ export const onboarding = pgTable(
 
     /** Recorded rather than trusted — the app must not serve under-18s. */
     confirmedAdult: boolean("confirmed_adult").notNull(),
+
+    /**
+     * When the member acknowledged the health warning, or null if they were
+     * never shown one — no flag was checked, so there was nothing to warn about.
+     *
+     * A timestamp rather than a boolean, and a column rather than nothing at
+     * all: the decision on this flow is that any flag shows a warning and then
+     * proceeds, which is only meaningfully different from ignoring the flags if
+     * there is a record that the warning was seen and accepted.
+     */
+    acknowledgedHealthAt: timestamp("acknowledged_health_at", { withTimezone: true }),
 
     completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
   },

@@ -1,0 +1,1 @@
+ALTER TABLE "onboarding" ADD COLUMN "acknowledged_health_at" timestamp with time zone;
