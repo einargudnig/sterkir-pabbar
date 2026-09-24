@@ -52,6 +52,9 @@ const jsonLd = noindex ? null : JSON.stringify(buildJsonLd());
       name="robots"
       content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
     />
+    {site.googleSiteVerification && (
+      <meta name="google-site-verification" content={site.googleSiteVerification} />
+    )}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
