@@ -65,8 +65,11 @@ export default function MemberLayout() {
         </div>
 
         {/* Horizontal rather than a bottom bar: three destinations fit at every
-            width, and a bottom bar would fight the phone's own gesture area. */}
-        <nav className="mx-auto max-w-4xl overflow-x-auto px-4">
+            width, and a bottom bar would fight the phone's own gesture area.
+            No overflow container: the tabs' -mb-px pulls the active underline
+            onto the header border, and a scroll container clips that pixel into
+            a permanent scrollbar. */}
+        <nav className="mx-auto max-w-4xl px-4">
           <ul className="flex gap-1">
             {navigation.map((item) => (
               <li key={item.to}>
