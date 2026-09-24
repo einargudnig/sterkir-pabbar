@@ -4,9 +4,15 @@ import { z } from "zod";
 import { db } from "~/db";
 import { macroTargets, onboarding, planAssignments } from "~/db/schema";
 import { computeMacros } from "~/lib/macros";
-import { ACTIVITY_VALUES, GOAL_VALUES, SEX_VALUES } from "~/lib/onboarding";
+import {
+  ACTIVITY_VALUES,
+  EQUIPMENT_VALUES,
+  EXPERIENCE_VALUES,
+  GOAL_VALUES,
+  SEX_VALUES,
+} from "~/lib/onboarding";
 import type { OnboardingDraft } from "~/lib/onboarding-draft.server";
-import { planByGoalAndFrequencyQuery, sanity } from "~/lib/sanity.server";
+import { matchingPlanQuery, sanity } from "~/lib/sanity.server";
 
 /**
  * Everything the onboarding wizard writes, and everything the dashboard reads
@@ -22,6 +28,7 @@ const completeDraftSchema = z.object({
   medication: z.boolean(),
   eatingDisorder: z.boolean(),
   injury: z.boolean(),
+  limitations: z.string().optional(),
   acknowledgedHealthAt: z.string().optional(),
   weightKg: z.number().int(),
   heightCm: z.number().int(),
@@ -29,6 +36,8 @@ const completeDraftSchema = z.object({
   sex: z.enum(SEX_VALUES),
   activityLevel: z.enum(ACTIVITY_VALUES),
   goal: z.enum(GOAL_VALUES),
+  equipment: z.enum(EQUIPMENT_VALUES),
+  experience: z.enum(EXPERIENCE_VALUES),
   sessionsPerWeek: z.number().int(),
 });
 
@@ -60,8 +69,9 @@ export const completeOnboarding = async (
 
   const answers = parsed.data;
 
-  const plan = await sanity.fetch(planByGoalAndFrequencyQuery, {
+  const plan = await sanity.fetch(matchingPlanQuery, {
     goal: answers.goal,
+    equipment: answers.equipment,
     sessionsPerWeek: answers.sessionsPerWeek,
   });
 
@@ -90,6 +100,8 @@ export const completeOnboarding = async (
         userId,
         goal: answers.goal,
         sessionsPerWeek: answers.sessionsPerWeek,
+        equipment: answers.equipment,
+        experience: answers.experience,
         weightKg: answers.weightKg,
         heightCm: answers.heightCm,
         age: answers.age,
@@ -99,6 +111,7 @@ export const completeOnboarding = async (
         flaggedMedication: answers.medication,
         flaggedEatingDisorder: answers.eatingDisorder,
         flaggedInjury: answers.injury,
+        limitations: answers.limitations ?? null,
         confirmedAdult: answers.confirmedAdult,
         acknowledgedHealthAt:
           answers.acknowledgedHealthAt === undefined

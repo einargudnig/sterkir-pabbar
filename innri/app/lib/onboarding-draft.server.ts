@@ -4,6 +4,8 @@ import { z } from "zod";
 import { serverEnv } from "~/lib/env.server";
 import {
   ACTIVITY_VALUES,
+  EQUIPMENT_VALUES,
+  EXPERIENCE_VALUES,
   GOAL_VALUES,
   type HealthFlags,
   LIMITS,
@@ -29,8 +31,8 @@ import {
  * mirror of a table that is documented as holding completed runs only.
  *
  * The cost is honest: a member who switches device mid-wizard starts again.
- * Four steps, and the answers are about their own body, so there is nothing to
- * look up.
+ * A handful of steps, and the answers are about their own body and habits, so
+ * there is nothing to look up.
  */
 
 const DRAFT_COOKIE = "sp_onboarding";
@@ -68,6 +70,7 @@ const draftSchema = z.object({
   medication: z.boolean().optional(),
   eatingDisorder: z.boolean().optional(),
   injury: z.boolean().optional(),
+  limitations: z.string().optional(),
 
   /** ISO timestamp, set the moment the warning was accepted. */
   acknowledgedHealthAt: z.string().optional(),
@@ -79,6 +82,8 @@ const draftSchema = z.object({
   activityLevel: z.enum(ACTIVITY_VALUES).optional(),
 
   goal: z.enum(GOAL_VALUES).optional(),
+  equipment: z.enum(EQUIPMENT_VALUES).optional(),
+  experience: z.enum(EXPERIENCE_VALUES).optional(),
   sessionsPerWeek: z.number().int().optional(),
 });
 
@@ -167,12 +172,23 @@ const numberField = (label: string, bounds: Bounds) =>
       message: `Sláðu inn ${label} á milli ${bounds.min} og ${bounds.max}`,
     });
 
+/** Free text, optional. Blank is stored as no answer rather than "". */
+const limitationsField = z
+  .string()
+  .optional()
+  .transform((value) => (value ?? "").trim())
+  .refine((value) => value.length <= LIMITS.limitationsChars, {
+    message: `Hámark ${LIMITS.limitationsChars} stafir`,
+  })
+  .transform((value) => (value.length > 0 ? value : undefined));
+
 const healthSchema = z.object({
   confirmedAdult: requiredCheckbox("Þjónustan er fyrir 18 ára og eldri"),
   chronicCondition: optionalCheckbox,
   medication: optionalCheckbox,
   eatingDisorder: optionalCheckbox,
   injury: optionalCheckbox,
+  limitations: limitationsField,
 });
 
 const acknowledgeSchema = z.object({
@@ -189,6 +205,11 @@ const measurementsSchema = z.object({
 
 const goalSchema = z.object({
   goal: z.enum(GOAL_VALUES, { error: "Veldu markmið" }),
+});
+
+const trainingSchema = z.object({
+  equipment: z.enum(EQUIPMENT_VALUES, { error: "Veldu hvaða aðstöðu þú hefur" }),
+  experience: z.enum(EXPERIENCE_VALUES, { error: "Veldu hversu mikla reynslu þú hefur" }),
 });
 
 const frequencySchema = z.object({
@@ -208,6 +229,7 @@ export const FIELD_NAMES = [
   "medication",
   "eatingDisorder",
   "injury",
+  "limitations",
   "acknowledged",
   "weightKg",
   "heightCm",
@@ -215,6 +237,8 @@ export const FIELD_NAMES = [
   "sex",
   "activityLevel",
   "goal",
+  "equipment",
+  "experience",
   "sessionsPerWeek",
 ] as const;
 
@@ -283,12 +307,24 @@ export const submitStep = (step: Step, formData: FormData): StepSubmission => {
     const result = goalSchema.safeParse(values);
 
     /**
-     * Changing the goal clears the frequency. The options are per-goal, so a
-     * member who backs up from "3× fyrir fitutap" and picks muscle gain must
-     * not silently keep a frequency that has no plan behind it.
+     * Changing the goal clears equipment and frequency. Both are offered per
+     * goal, so a member who backs up from "3× fyrir fitutap" and picks muscle
+     * gain must not silently keep an answer that has no plan behind it.
      */
     return result.success
-      ? { ok: true, patch: { goal: result.data.goal, sessionsPerWeek: undefined } }
+      ? {
+          ok: true,
+          patch: { goal: result.data.goal, equipment: undefined, sessionsPerWeek: undefined },
+        }
+      : { ok: false, errors: errorsFrom(result.error) };
+  }
+
+  if (step === "training") {
+    const result = trainingSchema.safeParse(values);
+
+    /** Same reason as the goal step: frequencies are offered per equipment. */
+    return result.success
+      ? { ok: true, patch: { ...result.data, sessionsPerWeek: undefined } }
       : { ok: false, errors: errorsFrom(result.error) };
   }
 
@@ -303,10 +339,22 @@ export const submitStep = (step: Step, formData: FormData): StepSubmission => {
  * Where the member belongs right now.
  *
  * Called by the loader so that a bookmarked or hand-edited `?step=` cannot land
- * someone on the goal step with no measurements behind it — the completion
+ * someone on the measurements step with no plan chosen — the completion
  * handler would reject the draft, and it would do it three clicks later.
  */
 export const firstIncompleteStep = (draft: OnboardingDraft): Step => {
+  if (draft.goal === undefined) {
+    return "goal";
+  }
+
+  if (draft.equipment === undefined || draft.experience === undefined) {
+    return "training";
+  }
+
+  if (draft.sessionsPerWeek === undefined) {
+    return "frequency";
+  }
+
   if (draft.confirmedAdult !== true) {
     return "health";
   }
@@ -315,19 +363,5 @@ export const firstIncompleteStep = (draft: OnboardingDraft): Step => {
     return "acknowledge";
   }
 
-  if (
-    draft.weightKg === undefined ||
-    draft.heightCm === undefined ||
-    draft.age === undefined ||
-    draft.sex === undefined ||
-    draft.activityLevel === undefined
-  ) {
-    return "measurements";
-  }
-
-  if (draft.goal === undefined) {
-    return "goal";
-  }
-
-  return "frequency";
+  return "measurements";
 };

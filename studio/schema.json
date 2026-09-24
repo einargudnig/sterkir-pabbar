@@ -365,6 +365,27 @@
         },
         "optional": false
       },
+      "equipment": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "raektarstod"
+            },
+            {
+              "type": "string",
+              "value": "heima"
+            },
+            {
+              "type": "string",
+              "value": "engin"
+            }
+          ]
+        },
+        "optional": false
+      },
       "sessionsPerWeek": {
         "type": "objectAttribute",
         "value": {

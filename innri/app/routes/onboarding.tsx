@@ -4,14 +4,22 @@ import { Button, buttonVariants } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Textarea } from "~/components/ui/textarea";
 import { requireUser } from "~/lib/auth.server";
 import {
   ACTIVITY_LABELS,
   ACTIVITY_VALUES,
+  type Equipment,
+  EQUIPMENT_LABELS,
+  EQUIPMENT_VALUES,
+  EXPERIENCE_LABELS,
+  EXPERIENCE_VALUES,
   GOAL_LABELS,
   GOAL_VALUES,
   HEALTH_FLAGS,
   isStep,
+  LIMITS,
+  partOf,
   SEX_LABELS,
   SEX_VALUES,
   type Step,
@@ -28,7 +36,7 @@ import {
   submitStep,
 } from "~/lib/onboarding-draft.server";
 import { completeOnboarding, hasCompletedOnboarding } from "~/lib/onboarding.server";
-import { availableFrequenciesQuery, sanity } from "~/lib/sanity.server";
+import { availableEquipmentQuery, availableFrequenciesQuery, sanity } from "~/lib/sanity.server";
 
 import type { Route } from "./+types/onboarding";
 
@@ -78,13 +86,26 @@ export async function loader(args: Route.LoaderArgs) {
       : furthest;
 
   /**
-   * Only frequencies with a published plan behind them, for the goal this
-   * member actually chose. Aron controls launch scope by publishing: an option
-   * never appears without a plan behind it.
+   * Only equipment and frequencies with a published plan behind them, for the
+   * answers this member actually gave. Aron controls launch scope by
+   * publishing: an option never appears without a plan behind it. Equipment is
+   * put in the wizard's order rather than whatever order Sanity returns.
    */
+  const published =
+    step === "training" && draft.goal !== undefined
+      ? await sanity.fetch(availableEquipmentQuery, { goal: draft.goal })
+      : [];
+
+  const equipmentOptions: readonly Equipment[] = EQUIPMENT_VALUES.filter((value) =>
+    published.includes(value),
+  );
+
   const frequencies =
-    step === "frequency" && draft.goal !== undefined
-      ? await sanity.fetch(availableFrequenciesQuery, { goal: draft.goal })
+    step === "frequency" && draft.goal !== undefined && draft.equipment !== undefined
+      ? await sanity.fetch(availableFrequenciesQuery, {
+          goal: draft.goal,
+          equipment: draft.equipment,
+        })
       : [];
 
   /**
@@ -94,7 +115,7 @@ export async function loader(args: Route.LoaderArgs) {
    */
   const planMissing = url.searchParams.get("vantar") === "plan";
 
-  return { step, steps, draft, frequencies, planMissing };
+  return { step, steps, draft, equipmentOptions, frequencies, planMissing };
 }
 
 export async function action(args: Route.ActionArgs) {
@@ -164,6 +185,8 @@ function FieldError({ message }: { message: string | undefined }) {
 function Progress({ step, steps }: { step: Step; steps: readonly Step[] }) {
   const position = steps.indexOf(step);
 
+  const { number, part } = partOf(step);
+
   return (
     <div className="mb-10">
       <div className="flex gap-1.5" aria-hidden="true">
@@ -175,8 +198,14 @@ function Progress({ step, steps }: { step: Step; steps: readonly Step[] }) {
         ))}
       </div>
 
-      <p className="mt-3 font-mark text-xs uppercase tracking-mark text-text-muted">
-        Skref {position + 1} af {steps.length}
+      <p className="mt-3 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mark text-xs uppercase tracking-mark text-text-muted">
+        <span className="whitespace-nowrap">
+          Hluti {number} af 2 · {part.title}
+        </span>
+
+        <span className="whitespace-nowrap">
+          Skref {position + 1} af {steps.length}
+        </span>
       </p>
     </div>
   );
@@ -235,7 +264,7 @@ function ChoiceRow({
 function HealthStep({ draft, errors }: { draft: OnboardingDraft; errors: StepErrors }) {
   return (
     <>
-      <h1 className="font-display text-title text-text">Fyrst — heilsan</h1>
+      <h1 className="font-display text-title text-text">Heilsan</h1>
 
       <p className="mt-3 text-text-soft">
         Þetta er ekki formsatriði. Svörin ráða því hvaða næringarviðmið við gefum þér og hvað Aron
@@ -269,6 +298,25 @@ function HealthStep({ draft, errors }: { draft: OnboardingDraft; errors: StepErr
           </li>
         ))}
       </ul>
+
+      <div className="mt-8 grid gap-2">
+        <Label htmlFor="limitations">Er eitthvað sem takmarkar þig? (valkvætt)</Label>
+
+        <p className="text-xs text-text-muted">
+          Slæmt hné, bakverkir, gömul axlarmeiðsli — hvað sem Aron ætti að vita.
+        </p>
+
+        <Textarea
+          id="limitations"
+          name="limitations"
+          rows={3}
+          maxLength={LIMITS.limitationsChars}
+          defaultValue={draft.limitations}
+          aria-invalid={errors.limitations !== undefined}
+        />
+
+        <FieldError message={errors.limitations} />
+      </div>
 
       <p className="mt-6 text-xs text-text-muted">
         Svörin eru geymd með þínum upplýsingum. Aron sér þau, enginn annar.
@@ -320,10 +368,12 @@ function AcknowledgeStep({ draft, errors }: { draft: OnboardingDraft; errors: St
 function MeasurementsStep({ draft, errors }: { draft: OnboardingDraft; errors: StepErrors }) {
   return (
     <>
-      <h1 className="font-display text-title text-text">Mælingar</h1>
+      <h1 className="font-display text-title text-text">Mælingar fyrir næringarviðmið</h1>
 
       <p className="mt-3 text-text-soft">
-        Án þessara talna eru næringarviðmiðin ágiskun. Þú getur breytt þeim hvenær sem er.
+        Æfingaplanið þitt er klárt. Þessar tölur eru eingöngu notaðar til að reikna næringarviðmiðin
+        þín — hitaeiningar, prótein, kolvetni og fitu. Án þeirra eru viðmiðin ágiskun. Þú getur
+        breytt þeim hvenær sem er.
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -465,6 +515,108 @@ function GoalStep({
   );
 }
 
+function TrainingStep({
+  draft,
+  errors,
+  equipmentOptions,
+}: {
+  draft: OnboardingDraft;
+  errors: StepErrors;
+  equipmentOptions: readonly Equipment[];
+}) {
+  const [onlyOption] = equipmentOptions;
+
+  return (
+    <>
+      <h1 className="font-display text-title text-text">Hvar og hvernig æfirðu?</h1>
+
+      <p className="mt-3 text-text-soft">
+        Svo planið passi við aðstöðuna þína og æfingarnar séu á réttu stigi.
+      </p>
+
+      {equipmentOptions.length === 0 ? (
+        /**
+         * Aron has published no plan for this goal yet. An empty radio group
+         * with a dead "Áfram" button would read as a broken app, so this says
+         * what is actually true and offers the one move that works.
+         */
+        <div className="mt-8 border-l-2 border-bronze-deep pl-5">
+          <p className="text-text-soft">
+            Planið fyrir þetta markmið er í smíðum. Aron er að taka það upp núna.
+          </p>
+
+          <p className="mt-3 text-sm text-text-muted">
+            Farðu til baka og veldu annað markmið í bili, eða komdu aftur síðar.
+          </p>
+        </div>
+      ) : (
+        <>
+          <fieldset className="mt-10">
+            <legend className="text-sm text-text-soft">Hvaða aðstöðu hefurðu?</legend>
+
+            <div className="mt-3">
+              {equipmentOptions.length === 1 && onlyOption !== undefined ? (
+                /**
+                 * One option is not a question. Say what the plan assumes,
+                 * so nobody without a gym discovers it on day one, and send
+                 * the answer along without making them tap it.
+                 */
+                <div className="rounded-lg border border-line-soft bg-raised p-4">
+                  <input type="hidden" name="equipment" value={onlyOption} />
+
+                  <p className="text-text">{EQUIPMENT_LABELS[onlyOption].assumes}</p>
+
+                  <p className="text-sm text-text-muted">
+                    Útgáfur fyrir aðra aðstöðu eru á leiðinni.
+                  </p>
+                </div>
+              ) : (
+                <RadioGroup name="equipment" defaultValue={draft.equipment}>
+                  {equipmentOptions.map((value) => (
+                    <ChoiceRow
+                      key={value}
+                      value={value}
+                      title={EQUIPMENT_LABELS[value].label}
+                      detail={EQUIPMENT_LABELS[value].description}
+                    />
+                  ))}
+                </RadioGroup>
+              )}
+
+              <FieldError message={errors.equipment} />
+            </div>
+          </fieldset>
+
+          <fieldset className="mt-10">
+            <legend className="text-sm text-text-soft">
+              Hversu mikla reynslu hefurðu af æfingum?
+            </legend>
+
+            <p className="mt-1 text-xs text-text-muted">
+              Engin röng svör. Það er betra að byrja of létt en of þungt.
+            </p>
+
+            <div className="mt-3">
+              <RadioGroup name="experience" defaultValue={draft.experience}>
+                {EXPERIENCE_VALUES.map((value) => (
+                  <ChoiceRow
+                    key={value}
+                    value={value}
+                    title={EXPERIENCE_LABELS[value].label}
+                    detail={EXPERIENCE_LABELS[value].description}
+                  />
+                ))}
+              </RadioGroup>
+
+              <FieldError message={errors.experience} />
+            </div>
+          </fieldset>
+        </>
+      )}
+    </>
+  );
+}
+
 function FrequencyStep({
   draft,
   errors,
@@ -484,18 +636,14 @@ function FrequencyStep({
 
       {frequencies.length === 0 ? (
         /**
-         * Aron has published no plan for this goal yet. An empty radio group
-         * with a dead "Áfram" button would read as a broken app, so this says
-         * what is actually true and offers the one move that works.
+         * The training step only offers equipment with a plan behind it, so
+         * this is reached only if Aron unpublished that plan in between.
          */
         <div className="mt-8 border-l-2 border-bronze-deep pl-5">
-          <p className="text-text-soft">
-            Planið fyrir þetta markmið er í smíðum. Aron er að taka það upp núna.
-          </p>
+          <p className="text-text-soft">Planið fyrir þessa aðstöðu er ekki lengur í boði.</p>
 
           <p className="mt-3 text-sm text-text-muted">
-            Veldu annað markmið í bili, eða komdu aftur — við sendum þér skilaboð þegar planið er
-            komið inn.
+            Farðu til baka og veldu aftur — við sýnum þér bara það sem er til.
           </p>
         </div>
       ) : (
@@ -524,7 +672,7 @@ function FrequencyStep({
 }
 
 export default function Onboarding({ loaderData, actionData }: Route.ComponentProps) {
-  const { step, steps, draft, frequencies, planMissing } = loaderData;
+  const { step, steps, draft, equipmentOptions, frequencies, planMissing } = loaderData;
 
   const errors: StepErrors = actionData?.errors ?? {};
 
@@ -534,7 +682,9 @@ export default function Onboarding({ loaderData, actionData }: Route.ComponentPr
 
   const isLast = position === steps.length - 1;
 
-  const canContinue = step !== "frequency" || frequencies.length > 0;
+  const canContinue =
+    (step !== "training" || equipmentOptions.length > 0) &&
+    (step !== "frequency" || frequencies.length > 0);
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
@@ -543,17 +693,21 @@ export default function Onboarding({ loaderData, actionData }: Route.ComponentPr
       <Progress step={step} steps={steps} />
 
       <Form method="post" action={`/onboarding?step=${step}`}>
+        {step === "goal" && <GoalStep draft={draft} errors={errors} planMissing={planMissing} />}
+
+        {step === "training" && (
+          <TrainingStep draft={draft} errors={errors} equipmentOptions={equipmentOptions} />
+        )}
+
+        {step === "frequency" && (
+          <FrequencyStep draft={draft} errors={errors} frequencies={frequencies} />
+        )}
+
         {step === "health" && <HealthStep draft={draft} errors={errors} />}
 
         {step === "acknowledge" && <AcknowledgeStep draft={draft} errors={errors} />}
 
         {step === "measurements" && <MeasurementsStep draft={draft} errors={errors} />}
-
-        {step === "goal" && <GoalStep draft={draft} errors={errors} planMissing={planMissing} />}
-
-        {step === "frequency" && (
-          <FrequencyStep draft={draft} errors={errors} frequencies={frequencies} />
-        )}
 
         <div className="mt-12 flex items-center justify-between gap-4">
           {previous === undefined ? (

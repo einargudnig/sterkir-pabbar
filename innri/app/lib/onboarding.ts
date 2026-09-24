@@ -8,15 +8,53 @@
  * added to the database enum alone would not compile.
  */
 
-export const STEPS = ["health", "acknowledge", "measurements", "goal", "frequency"] as const;
+/**
+ * Two parts, in the order a member meets them. The first is about training and
+ * decides the plan; the second is only the numbers the macro calculation needs,
+ * so it comes last and says so. Equipment is asked before frequency because
+ * the frequencies on offer depend on which plans exist for that equipment.
+ */
+export const STEPS = [
+  "goal",
+  "training",
+  "frequency",
+  "health",
+  "acknowledge",
+  "measurements",
+] as const;
 
 export type Step = (typeof STEPS)[number];
+
+export const PARTS = [
+  { title: "Planið þitt", steps: ["goal", "training", "frequency", "health", "acknowledge"] },
+  { title: "Næringin", steps: ["measurements"] },
+] as const satisfies readonly { readonly title: string; readonly steps: readonly Step[] }[];
+
+export const partOf = (step: Step) => {
+  const index = PARTS.findIndex((part) => part.steps.some((item) => item === step));
+
+  return { number: index + 1, part: PARTS[index] ?? PARTS[0] };
+};
 
 export const isStep = (value: string | null): value is Step => STEPS.some((step) => step === value);
 
 export const GOAL_VALUES = ["fitutap", "vodvauppbygging"] as const;
 
 export type Goal = (typeof GOAL_VALUES)[number];
+
+/**
+ * What a member has to train with. Picks the plan together with goal and
+ * frequency, so a value only appears in the wizard once Aron has published a
+ * plan for it.
+ */
+export const EQUIPMENT_VALUES = ["raektarstod", "heima", "engin"] as const;
+
+export type Equipment = (typeof EQUIPMENT_VALUES)[number];
+
+/** Recorded, not yet used to pick a plan — see docs/solutions/inner-circle.md. */
+export const EXPERIENCE_VALUES = ["byrjandi", "einhver", "vanur"] as const;
+
+export type Experience = (typeof EXPERIENCE_VALUES)[number];
 
 export const SEX_VALUES = ["karl", "kona", "annad"] as const;
 
@@ -67,6 +105,37 @@ export const GOAL_LABELS = {
   vodvauppbygging: { label: "Vöðvauppbygging", description: "Þyngjast og byggja upp styrk." },
 } satisfies Record<Goal, { readonly label: string; readonly description: string }>;
 
+/**
+ * `assumes` is shown instead of a question when only one option has a plan —
+ * so nobody without a gym finds out on their first training day.
+ */
+export const EQUIPMENT_LABELS = {
+  raektarstod: {
+    label: "Líkamsræktarstöð",
+    description: "Aðgangur að tækjasal með lóðum og stöngum.",
+    assumes: "Planið gerir ráð fyrir aðgangi að líkamsræktarstöð.",
+  },
+  heima: {
+    label: "Heima með lóð",
+    description: "Handlóð, teygjur eða lítið heimasett.",
+    assumes: "Planið gerir ráð fyrir handlóðum eða litlu heimasetti.",
+  },
+  engin: {
+    label: "Engin tæki",
+    description: "Bara eigin líkamsþyngd.",
+    assumes: "Planið þarf engin tæki — bara þig.",
+  },
+} satisfies Record<
+  Equipment,
+  { readonly label: string; readonly description: string; readonly assumes: string }
+>;
+
+export const EXPERIENCE_LABELS = {
+  byrjandi: { label: "Byrjandi", description: "Hef lítið æft, eða ekki í nokkur ár." },
+  einhver: { label: "Einhver reynsla", description: "Hef æft áður og kann grunnæfingarnar." },
+  vanur: { label: "Vanur", description: "Æfi reglulega og er öruggur í tækjasalnum." },
+} satisfies Record<Experience, { readonly label: string; readonly description: string }>;
+
 export const SEX_LABELS = {
   karl: "Karl",
   kona: "Kona",
@@ -82,6 +151,7 @@ export const LIMITS = {
   weightKg: { min: 40, max: 250 },
   heightCm: { min: 130, max: 220 },
   age: { min: 18, max: 90 },
+  limitationsChars: 500,
 } as const;
 
 /**

@@ -40,6 +40,8 @@ const answered: OnboardingDraft = {
   sex: "karl",
   activityLevel: "kyrrseta",
   goal: "fitutap",
+  equipment: "raektarstod",
+  experience: "byrjandi",
 };
 
 describe("the health step", () => {
@@ -65,6 +67,73 @@ describe("the health step", () => {
         medication: false,
         eatingDisorder: false,
         injury: true,
+      });
+    }
+  });
+
+  it("keeps what the member wrote about their limitations, trimmed", () => {
+    const result = submitStep(
+      "health",
+      form({ confirmedAdult: "on", limitations: "  Slæmt vinstra hné  " }),
+    );
+
+    expect(result.ok && result.patch.limitations).toBe("Slæmt vinstra hné");
+  });
+
+  /**
+   * A blank textarea is no answer, not an empty one Aron has to read past. The
+   * key must still be in the patch, so clearing an earlier answer erases it.
+   */
+  it("stores a blank limitations box as no answer, overwriting an earlier one", () => {
+    const result = submitStep("health", form({ confirmedAdult: "on", limitations: "   " }));
+
+    expect(result.ok && "limitations" in result.patch).toBe(true);
+    expect(result.ok && result.patch.limitations).toBeUndefined();
+  });
+
+  it("refuses limitations longer than the box allows", () => {
+    const result = submitStep(
+      "health",
+      form({ confirmedAdult: "on", limitations: "a".repeat(501) }),
+    );
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok) {
+      expect(result.errors.limitations).toBe("Hámark 500 stafir");
+    }
+  });
+});
+
+describe("the training step", () => {
+  it("needs both equipment and experience, and says which is missing", () => {
+    const result = submitStep("training", form({ equipment: "heima" }));
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok) {
+      expect(result.errors.experience).toBe("Veldu hversu mikla reynslu þú hefur");
+      expect(result.errors.equipment).toBeUndefined();
+    }
+  });
+
+  it("rejects equipment that is not one of the three", () => {
+    expect(submitStep("training", form({ equipment: "sundlaug", experience: "vanur" })).ok).toBe(
+      false,
+    );
+  });
+
+  /** Frequencies are offered per equipment, so the old one may lead nowhere. */
+  it("clears the frequency chosen for the previous equipment", () => {
+    const result = submitStep("training", form({ equipment: "heima", experience: "vanur" }));
+
+    expect(result.ok).toBe(true);
+
+    if (result.ok) {
+      expect(result.patch).toStrictEqual({
+        equipment: "heima",
+        experience: "vanur",
+        sessionsPerWeek: undefined,
       });
     }
   });
@@ -156,10 +225,10 @@ describe("the measurements step", () => {
 
 describe("changing the goal", () => {
   /**
-   * The frequency options are per-goal. Keeping a frequency across a goal
+   * Equipment and frequency options are per-goal. Keeping either across a goal
    * change is how a member ends up assigned a plan that does not exist.
    */
-  it("clears the frequency chosen for the previous goal", () => {
+  it("clears the equipment and frequency chosen for the previous goal", () => {
     const result = submitStep("goal", form({ goal: "vodvauppbygging" }));
 
     expect(result.ok).toBe(true);
@@ -167,6 +236,7 @@ describe("changing the goal", () => {
     if (result.ok) {
       expect(result.patch).toStrictEqual({
         goal: "vodvauppbygging",
+        equipment: undefined,
         sessionsPerWeek: undefined,
       });
     }
@@ -174,17 +244,45 @@ describe("changing the goal", () => {
 });
 
 describe("where an unfinished member belongs", () => {
-  it("starts at the health screen with an empty draft", () => {
-    expect(firstIncompleteStep({})).toBe("health");
+  const planChosen: OnboardingDraft = {
+    goal: "fitutap",
+    equipment: "raektarstod",
+    experience: "byrjandi",
+    sessionsPerWeek: 3,
+  };
+
+  it("starts at the goal with an empty draft", () => {
+    expect(firstIncompleteStep({})).toBe("goal");
+  });
+
+  it("asks about training once the goal is set", () => {
+    expect(firstIncompleteStep({ goal: "fitutap" })).toBe("training");
+  });
+
+  it("stays on training until both equipment and experience are answered", () => {
+    expect(firstIncompleteStep({ goal: "fitutap", equipment: "heima" })).toBe("training");
+  });
+
+  it("asks for the frequency before any health question", () => {
+    const { sessionsPerWeek: _dropped, ...withoutFrequency } = planChosen;
+
+    expect(firstIncompleteStep(withoutFrequency)).toBe("frequency");
+  });
+
+  it("reaches the health screen once the plan is chosen", () => {
+    expect(firstIncompleteStep(planChosen)).toBe("health");
   });
 
   it("stops at the acknowledgement when a flag was checked", () => {
-    expect(firstIncompleteStep({ confirmedAdult: true, eatingDisorder: true })).toBe("acknowledge");
+    expect(firstIncompleteStep({ ...planChosen, confirmedAdult: true, eatingDisorder: true })).toBe(
+      "acknowledge",
+    );
   });
 
   it("passes the acknowledgement once it carries a timestamp", () => {
     expect(
       firstIncompleteStep({
+        ...planChosen,
         confirmedAdult: true,
         eatingDisorder: true,
         acknowledgedHealthAt: new Date().toISOString(),
@@ -193,17 +291,12 @@ describe("where an unfinished member belongs", () => {
   });
 
   it("never asks for an acknowledgement nobody triggered", () => {
-    expect(firstIncompleteStep({ confirmedAdult: true })).toBe("measurements");
+    expect(firstIncompleteStep({ ...planChosen, confirmedAdult: true })).toBe("measurements");
   });
 
-  it("stops at measurements when one of the five is missing", () => {
-    const { sex: _dropped, ...withoutSex } = answered;
-
-    expect(firstIncompleteStep(withoutSex)).toBe("measurements");
-  });
-
-  it("reaches the frequency step only with everything before it answered", () => {
-    expect(firstIncompleteStep(answered)).toBe("frequency");
+  /** Measurements are the whole second part, so they come last. */
+  it("ends on measurements, with everything before them answered", () => {
+    expect(firstIncompleteStep({ ...answered, sessionsPerWeek: 3 })).toBe("measurements");
   });
 });
 
