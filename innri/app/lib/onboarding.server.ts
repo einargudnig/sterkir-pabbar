@@ -142,6 +142,64 @@ export const completeOnboarding = async (
   return { ok: true };
 };
 
+const measurementsSchema = completeDraftSchema.pick({
+  weightKg: true,
+  heightCm: true,
+  age: true,
+  sex: true,
+  activityLevel: true,
+});
+
+/**
+ * A member changing their numbers from Stillingar.
+ *
+ * Copies the answers in force into a new onboarding row with the measurements
+ * replaced, and stores the targets computed from it — append-only, so the
+ * numbers they were shown before stay traceable to the inputs that produced
+ * them. The plan assignment is untouched: none of these five inputs pick a plan.
+ */
+export const updateMeasurements = async (
+  userId: string,
+  patch: OnboardingDraft,
+): Promise<{ readonly ok: boolean }> => {
+  const parsed = measurementsSchema.safeParse(patch);
+
+  const current = await latestOnboarding(userId);
+
+  if (!parsed.success || !current) {
+    return { ok: false };
+  }
+
+  const measurements = parsed.data;
+
+  const macros = computeMacros({ ...measurements, goal: current.goal });
+
+  await db.transaction(async (tx) => {
+    const inserted = await tx
+      .insert(onboarding)
+      .values({ ...current, ...measurements, id: undefined, completedAt: undefined })
+      .returning({ id: onboarding.id });
+
+    const row = inserted[0];
+
+    if (!row) {
+      throw new Error("Onboarding insert returned no row.");
+    }
+
+    await tx.insert(macroTargets).values({
+      userId,
+      onboardingId: row.id,
+      kcal: macros.kcal,
+      proteinG: macros.proteinG,
+      carbsG: macros.carbsG,
+      fatG: macros.fatG,
+      formulaVersion: macros.formulaVersion,
+    });
+  });
+
+  return { ok: true };
+};
+
 /* ── Reading what was written ─────────────────────────────────────────────── */
 
 /** The answers in force. Append-only table, so the newest row is current. */

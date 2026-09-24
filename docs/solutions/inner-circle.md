@@ -414,8 +414,10 @@ Icelandic decimal comma is accepted, back preserves answers, choosing muscle gai
 "í smíðum" empty state with no dead button, completion writes three rows and clears the cookie,
 and every member route redirects an un-onboarded member to the wizard.
 
-**Still open:** Aron's formula numbers; `/settings` still cannot edit measurements, so a member
-who changes weight has no way to rewrite it yet (the append-only schema is ready for it).
+**Still open:** Aron's formula numbers. `/settings` now edits the five measurements
+(`updateMeasurements`: a new onboarding row copied from the current one, new macros, plan
+untouched). Goal, equipment and frequency are shown there but not editable — changing them means
+a new plan assignment, which is its own decision.
 
 ## Payments switched to Repeat — 2026-09-22
 

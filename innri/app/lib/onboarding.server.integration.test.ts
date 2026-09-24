@@ -14,6 +14,7 @@ import {
   latestMacros,
   latestOnboarding,
   latestPlanAssignment,
+  updateMeasurements,
 } from "./onboarding.server";
 
 /**
@@ -278,5 +279,75 @@ describe("completeOnboarding", () => {
 
     expect(await hasCompletedOnboarding(second.id)).toBe(false);
     expect(await latestMacros(second.id)).toBeUndefined();
+  });
+});
+
+describe("updateMeasurements", () => {
+  const changed: OnboardingDraft = {
+    weightKg: 86,
+    heightCm: 181,
+    age: 42,
+    sex: "karl",
+    activityLevel: "midlungs",
+  };
+
+  it("appends answers and macros from the new numbers, keeping everything else and the plan", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, { ...complete, limitations: "Slæmt vinstra hné" });
+
+    const before = await latestOnboarding(member.id);
+
+    expect(await updateMeasurements(member.id, changed)).toEqual({ ok: true });
+
+    const after = await latestOnboarding(member.id);
+
+    expect(await rowsFor(member.id)).toEqual({
+      onboarding: 2,
+      macroTargets: 2,
+      planAssignments: 1,
+    });
+    expect(after?.id).not.toBe(before?.id);
+    expect(after).toMatchObject({
+      ...changed,
+      goal: "fitutap",
+      equipment: "raektarstod",
+      sessionsPerWeek: 3,
+      limitations: "Slæmt vinstra hné",
+      confirmedAdult: true,
+    });
+    expect(await latestMacros(member.id)).toMatchObject({
+      onboardingId: after?.id,
+      ...computeMacros({
+        weightKg: 86,
+        heightCm: 181,
+        age: 42,
+        sex: "karl",
+        activityLevel: "midlungs",
+        goal: "fitutap",
+      }),
+    });
+  });
+
+  it("writes nothing for a member who never onboarded", async () => {
+    const member = await createMember();
+
+    expect(await updateMeasurements(member.id, changed)).toEqual({ ok: false });
+    expect(await rowsFor(member.id)).toEqual({
+      onboarding: 0,
+      macroTargets: 0,
+      planAssignments: 0,
+    });
+  });
+
+  it("writes nothing when a measurement is missing", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, complete);
+
+    const { age: _, ...withoutAge } = changed;
+
+    expect(await updateMeasurements(member.id, withoutAge)).toEqual({ ok: false });
+    expect((await rowsFor(member.id)).onboarding).toBe(1);
   });
 });
