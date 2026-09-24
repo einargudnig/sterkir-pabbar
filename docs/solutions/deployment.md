@@ -15,7 +15,8 @@ appears in `vercel teams ls` and is sometimes the active scope — pass `--scope
 explicitly rather than relying on whichever is current.
 
 Database: **Neon**, provisioned through the Vercel marketplace integration on the `innri`
-project. It injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` automatically.
+project. It injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` automatically. Local
+development runs against a separate Neon branch — see [Databases](#databases).
 
 ## Three things that broke, and will again
 
@@ -114,6 +115,48 @@ boundary. Nothing reads `process.env` directly except the database client and th
 
 **The five Repeat/cron keys are required.** Until they are set, every request fails at the env
 boundary — locally too. Set them in all three Vercel environments before merging phase 6.
+
+## Databases
+
+Three, and it matters which one a command reaches:
+
+| Database                 | Host                     | Used by                                          |
+| ------------------------ | ------------------------ | ------------------------------------------------ |
+| Neon branch `main`       | `ep-green-pond-…`        | Production **and Preview** deploys               |
+| Neon branch `dev`        | `ep-jolly-sky-…`         | `bun run dev`, and migrations while developing   |
+| Throwaway local Postgres | `127.0.0.1`, random port | integration tests, created and deleted every run |
+
+Neon project `crimson-math-82418529`. `dev` (`br-solitary-boat-aw2u514u`) was branched from
+`main` on 2026-09-23, data included. Vercel holds one `DATABASE_URL` for all three of its
+environments, so a preview deploy still writes to production.
+
+**How `dev` is selected.** `innri/.env.development.local` holds the branch's two connection
+strings. The React Router Vite plugin loads env files with Vite's `loadEnv`, where that file
+outranks `.env.local`, and `vercel env pull` rewrites only `.env.local`, so the override
+survives a pull. Two ways it silently stops working:
+
+- A `DATABASE_URL` exported in your shell beats every env file. `env | rg DATABASE_URL`
+  should print nothing.
+- drizzle-kit reads neither file. It only loads a plain `.env`, which this project does not
+  have — hence the explicit commands below.
+
+**Migrations**, after `bun run db:generate`:
+
+```bash
+cd innri
+bun --bun run db:migrate                                  # dev branch: bun loads .env.development.local
+(set -a; . ./.env.local; set +a; bun run db:migrate)      # production: .env.local exported, in a subshell
+```
+
+Plain `bun run db:migrate` gets an empty URL and fails, which is the point: nothing reaches
+production without saying so. Apply to `dev` first, drive the change locally, then production.
+
+**Resetting `dev`** to production's current state: `npx neonctl branches reset dev --parent
+--project-id crimson-math-82418529` (needs `npx neonctl auth` once).
+
+**Tests** never touch Neon. `innri/test/postgres.ts` starts a fresh Postgres, preferring
+Homebrew's `postgresql@18` to match Neon's major version, and `test/integration-env.ts`
+refuses any host that is not localhost.
 
 ## Repeat dashboard setup
 
@@ -215,7 +258,7 @@ A hang on the first with a response on the second is this, not an outage.
 
 ```bash
 bun run check                  # lint + format + astro check + typecheck + tests + build
-cd innri && bun run db:migrate # apply migrations (uses DATABASE_URL_UNPOOLED)
+cd innri && bun --bun run db:migrate # apply migrations to the dev branch — production: see Databases
 cd studio && bun run deploy    # publish the Studio
 bun run types:sanity           # regenerate content types after a schema change
 ```
