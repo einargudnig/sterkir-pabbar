@@ -109,6 +109,7 @@ Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes i
 | `REPEAT_SHOP_UUID`, `REPEAT_PRODUCT_UUID`                                                    | Repeat dashboard URLs — the shop, and the one subscription      | innri                                                          |
 | `REPEAT_WEBHOOK_SECRET`                                                                      | generate: `openssl rand -hex 32`; same value in Repeat's header | innri                                                          |
 | `CRON_SECRET`                                                                                | generate: `openssl rand -hex 32`; Vercel sends it to the cron   | innri                                                          |
+| `OPEN_ACCESS_UNTIL`                                                                          | optional; ISO datetime — paywall open to all until then         | innri — **remove once Repeat is live**                         |
 
 Everything the server needs is declared in `innri/app/lib/env.server.ts` and parsed at the
 boundary. Nothing reads `process.env` directly except the database client and that schema.
@@ -144,7 +145,7 @@ survives a pull. Two ways it silently stops working:
 
 ```bash
 cd innri
-bun --bun run db:migrate                                  # dev branch: bun loads .env.development.local
+bun --env-file=.env.development.local run db:migrate      # dev branch
 (set -a; . ./.env.local; set +a; bun run db:migrate)      # production: .env.local exported, in a subshell
 ```
 
@@ -258,7 +259,7 @@ A hang on the first with a response on the second is this, not an outage.
 
 ```bash
 bun run check                  # lint + format + astro check + typecheck + tests + build
-cd innri && bun --bun run db:migrate # apply migrations to the dev branch — production: see Databases
+cd innri && bun --env-file=.env.development.local run db:migrate # apply migrations to the dev branch — production: see Databases
 cd studio && bun run deploy    # publish the Studio
 bun run types:sanity           # regenerate content types after a schema change
 ```

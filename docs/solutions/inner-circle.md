@@ -498,3 +498,43 @@ junk body, signed-out redirects) were driven against a local production build.
 **To go live:** create the Repeat shop and product, set the five env vars, apply migrations
 `0002` and `0003` to Neon, configure the webhooks (`deployment.md`, "Repeat dashboard setup"),
 then run one real order with the test card end to end.
+
+## Testing window before Repeat — 2026-09-24
+
+No Repeat shop exists yet, so every signed-in tester would stop at `/subscribe`. Einar's call:
+bypass the paywall so Aron and testers can use sign-up → questionnaire → plan now.
+
+`OPEN_ACCESS_UNTIL` (optional, ISO datetime) lets every signed-in member through until that
+instant. It is a **date, not a flag**, so if nobody remembers to unset it, the paywall closes
+on its own rather than giving the product away after launch. The check is `isOpenAccess` in
+`app/lib/access.ts`, kept apart from `hasActiveAccess` so the rule that launches is untouched;
+`canEnter` in `subscription.server.ts` combines the two. To hook Repeat in: unset the variable,
+then delete `isOpenAccess` and `canEnter`.
+
+## Questionnaire matches Aron's brief — 2026-09-24
+
+Aron asked for goal, frequency, experience, equipment and limitations. The wizard now asks all
+five, in two parts:
+
+1. **Planið þitt** — goal → training (equipment + experience) → frequency → health → acknowledge
+2. **Næringin** — measurements, introduced as used only for the macro calculation
+
+**Equipment picks the plan; experience does not.** A plan is now found by goal + equipment +
+frequency. Making experience a fourth key would multiply Aron's filming load (2 goals × 3
+frequencies × 3 levels × 3 equipment = 54 plans) when the biggest risk is already that he will
+not produce 10. Experience is recorded — it is what an AI assistant would adjust a plan by later.
+Equipment comes before frequency because frequencies are offered per goal + equipment. With
+only one equipment option published, the step states what the plan assumes instead of asking a
+one-option question, and submits it as a hidden field.
+
+**Limitations are free text on the health step**, optional, 500 characters, stored in
+`onboarding.limitations` for Aron to read. Nothing acts on it; the admin page that would show it
+is still inert.
+
+`equipment` and `experience` are **nullable** columns (migration `0004`): rows completed before
+the questions existed have no honest answer, and backfilling one would invent it.
+`completeOnboarding` refuses any new draft without both.
+
+**Plans without an `equipment` field are gym plans.** Every GROQ query and the Studio's
+uniqueness validator use `coalesce(equipment, "raektarstod")`, so the seed plan already in the
+dataset keeps working with no content migration.
