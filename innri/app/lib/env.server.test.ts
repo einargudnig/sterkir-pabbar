@@ -51,6 +51,17 @@ describe("parseEnv", () => {
     expect(() => parseEnv({ ...valid, REPEAT_WEBHOOK_SECRET: "hunter2" })).toThrow(EnvError);
   });
 
+  it("parses OPEN_ACCESS_UNTIL into a Date", () => {
+    const env = parseEnv({ ...valid, OPEN_ACCESS_UNTIL: "2026-10-15T00:00:00Z" });
+
+    expect(env.OPEN_ACCESS_UNTIL).toEqual(new Date("2026-10-15T00:00:00Z"));
+  });
+
+  /** A bare date has no time zone, so when the window closes would be a guess. */
+  it("rejects an OPEN_ACCESS_UNTIL without a time and offset", () => {
+    expect(() => parseEnv({ ...valid, OPEN_ACCESS_UNTIL: "2026-10-15" })).toThrow(EnvError);
+  });
+
   it("rejects a missing APP_URL", () => {
     expect(() => parseEnv({})).toThrow(EnvError);
   });

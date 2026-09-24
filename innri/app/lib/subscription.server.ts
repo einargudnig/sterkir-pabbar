@@ -4,8 +4,9 @@ import { z } from "zod";
 
 import { db } from "~/db";
 import { repeatEvents, users } from "~/db/schema";
-import { hasActiveAccess } from "~/lib/access";
+import { hasActiveAccess, isOpenAccess } from "~/lib/access";
 import { requireUser } from "~/lib/auth.server";
+import { serverEnv } from "~/lib/env.server";
 import { type Mirror, type RepeatSubscription, shouldApply, toMirror } from "~/lib/repeat";
 import type { WebhookNudge } from "~/lib/repeat";
 import { findActiveSubscriptionIds, getSubscription } from "~/lib/repeat.server";
@@ -22,6 +23,10 @@ type UserRow = typeof users.$inferSelect;
 
 type AuthArgs = Parameters<typeof requireUser>[0];
 
+/** Past the paywall: a paying member, or anyone during the testing window. */
+export const canEnter = (user: UserRow, now: Date): boolean =>
+  isOpenAccess(serverEnv().OPEN_ACCESS_UNTIL, now) || hasActiveAccess(user, now);
+
 /**
  * The paid gate. Called by the member layout, so everything under it is
  * covered, and by the entry redirect so an unpaid member lands on the paywall
@@ -30,7 +35,7 @@ type AuthArgs = Parameters<typeof requireUser>[0];
 export const requireActiveAccess = async (args: AuthArgs): Promise<UserRow> => {
   const user = await requireUser(args);
 
-  if (!hasActiveAccess(user, new Date())) {
+  if (!canEnter(user, new Date())) {
     throw redirect("/subscribe");
   }
 
