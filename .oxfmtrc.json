@@ -5,6 +5,7 @@
     "dist/",
     "innri/build/**",
     "innri/.react-router/**",
+    "innri/coverage/**",
     ".agents/",
     ".impeccable/",
     ".claude/",

@@ -27,6 +27,13 @@ export const site = {
   locale: "is_IS",
   lang: "is",
 
+  /**
+   * Google Search Console HTML-tag verification string.
+   * Paste the value from GSC (the `content` attribute of the meta tag) here.
+   * Leave as null until you have it — the tag is only rendered when set.
+   */
+  googleSiteVerification: null as string | null,
+
   // Short description reused in <meta description> and schema.
   description: content.general.description,
 
