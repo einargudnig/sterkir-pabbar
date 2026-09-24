@@ -29,7 +29,7 @@ const buttonVariants = cva(
          * `default` is 32px tall, below the 44px touch target a phone needs, and
          * every primary action in the app is taken one-handed in the evening.
          */
-        touch: "h-11 gap-2 px-5 text-base",
+        touch: "h-11 gap-2 px-5 text-(length:--text-base)",
         icon: "size-8",
         "icon-xs":
           "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
