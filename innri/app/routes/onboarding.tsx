@@ -1,14 +1,12 @@
 import { Form, Link, redirect } from "react-router";
 
+import { ChoiceRow, FieldError, MeasurementFields } from "~/components/measurement-fields";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { RadioGroup } from "~/components/ui/radio-group";
 import { Textarea } from "~/components/ui/textarea";
 import { requireUser } from "~/lib/auth.server";
 import {
-  ACTIVITY_LABELS,
-  ACTIVITY_VALUES,
   type Equipment,
   EQUIPMENT_LABELS,
   EQUIPMENT_VALUES,
@@ -20,8 +18,6 @@ import {
   isStep,
   LIMITS,
   partOf,
-  SEX_LABELS,
-  SEX_VALUES,
   type Step,
   stepsFor,
 } from "~/lib/onboarding";
@@ -170,18 +166,6 @@ export function meta(_args: Route.MetaArgs) {
   return [{ title: "Upphaf — Innri hringurinn" }];
 }
 
-function FieldError({ message }: { message: string | undefined }) {
-  if (message === undefined) {
-    return null;
-  }
-
-  return (
-    <p role="alert" className="text-sm text-destructive">
-      {message}
-    </p>
-  );
-}
-
 function Progress({ step, steps }: { step: Step; steps: readonly Step[] }) {
   const position = steps.indexOf(step);
 
@@ -235,28 +219,6 @@ function CheckRow({
       />
 
       <span className="text-sm text-text-soft">{label}</span>
-    </label>
-  );
-}
-
-function ChoiceRow({
-  value,
-  title,
-  detail,
-}: {
-  value: string;
-  title: string;
-  detail: string | undefined;
-}) {
-  return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line-soft bg-raised p-4 transition-colors hover:border-line">
-      <RadioGroupItem value={value} className="mt-1" />
-
-      <span>
-        <span className="block text-text">{title}</span>
-
-        {detail !== undefined && <span className="block text-sm text-text-muted">{detail}</span>}
-      </span>
     </label>
   );
 }
@@ -376,99 +338,9 @@ function MeasurementsStep({ draft, errors }: { draft: OnboardingDraft; errors: S
         breytt þeim hvenær sem er.
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="grid gap-2">
-          <Label htmlFor="weightKg">Þyngd (kg)</Label>
-
-          <Input
-            id="weightKg"
-            name="weightKg"
-            type="text"
-            inputMode="decimal"
-            autoComplete="off"
-            defaultValue={draft.weightKg}
-            aria-invalid={errors.weightKg !== undefined}
-            className="h-11"
-          />
-
-          <FieldError message={errors.weightKg} />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="heightCm">Hæð (cm)</Label>
-
-          <Input
-            id="heightCm"
-            name="heightCm"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            defaultValue={draft.heightCm}
-            aria-invalid={errors.heightCm !== undefined}
-            className="h-11"
-          />
-
-          <FieldError message={errors.heightCm} />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="age">Aldur</Label>
-
-          <Input
-            id="age"
-            name="age"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            defaultValue={draft.age}
-            aria-invalid={errors.age !== undefined}
-            className="h-11"
-          />
-
-          <FieldError message={errors.age} />
-        </div>
+      <div className="mt-8">
+        <MeasurementFields defaults={draft} errors={errors} />
       </div>
-
-      <fieldset className="mt-10">
-        <legend className="text-sm text-text-soft">Kyn</legend>
-
-        <p className="mt-1 text-xs text-text-muted">
-          Formúlan fyrir grunnbrennslu notar þetta. Það er eina ástæðan fyrir spurningunni.
-        </p>
-
-        <div className="mt-3">
-          <RadioGroup name="sex" defaultValue={draft.sex}>
-            {SEX_VALUES.map((value) => (
-              <ChoiceRow key={value} value={value} title={SEX_LABELS[value]} detail={undefined} />
-            ))}
-          </RadioGroup>
-
-          <FieldError message={errors.sex} />
-        </div>
-      </fieldset>
-
-      <fieldset className="mt-10">
-        <legend className="text-sm text-text-soft">Hversu virkur ertu dags daglega?</legend>
-
-        <p className="mt-1 text-xs text-text-muted">
-          Utan æfinga. Veldu það sem lýsir venjulegum degi hjá þér.
-        </p>
-
-        <div className="mt-3">
-          <RadioGroup name="activityLevel" defaultValue={draft.activityLevel}>
-            {ACTIVITY_VALUES.map((value) => (
-              <ChoiceRow
-                key={value}
-                value={value}
-                title={ACTIVITY_LABELS[value].label}
-                detail={ACTIVITY_LABELS[value].example}
-              />
-            ))}
-          </RadioGroup>
-
-          <FieldError message={errors.activityLevel} />
-        </div>
-      </fieldset>
     </>
   );
 }
