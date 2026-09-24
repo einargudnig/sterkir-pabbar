@@ -6,7 +6,6 @@ import { z } from "zod";
 
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { hasActiveAccess } from "~/lib/access";
 import { requireUser } from "~/lib/auth.server";
 import { serverEnv } from "~/lib/env.server";
 import { formatWholeNumber } from "~/lib/format";
@@ -14,6 +13,7 @@ import { createOrder, getProduct, getSubscription, RepeatError } from "~/lib/rep
 import {
   adoptSubscription,
   applySubscription,
+  canEnter,
   claimCheckout,
   recoverSubscription,
   releaseCheckout,
@@ -36,7 +36,7 @@ import type { Route } from "./+types/subscribe";
 export async function loader(args: Route.LoaderArgs) {
   const user = await requireUser(args);
 
-  if (hasActiveAccess(user, new Date())) {
+  if (canEnter(user, new Date())) {
     throw redirect("/");
   }
 
@@ -61,7 +61,7 @@ export async function loader(args: Route.LoaderArgs) {
       )
     : true;
 
-  if (recovered && hasActiveAccess(await requireUser(args), new Date())) {
+  if (recovered && canEnter(await requireUser(args), new Date())) {
     throw redirect("/");
   }
 
@@ -91,7 +91,7 @@ type ActionResult = { readonly error: string };
 export async function action(args: Route.ActionArgs): Promise<ActionResult | Response> {
   const user = await requireUser(args);
 
-  if (hasActiveAccess(user, new Date())) {
+  if (canEnter(user, new Date())) {
     return redirect("/");
   }
 

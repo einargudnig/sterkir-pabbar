@@ -74,9 +74,9 @@ export const videoUrlMustBeEmbeddable: CustomValidator<string | undefined> = (ur
 };
 
 /**
- * The app finds a member's plan by querying for one exact pair of goal +
- * sessionsPerWeek. Two published plans sharing a pair means the query returns
- * both and the app shows whichever came back first — a member could get a
+ * The app finds a member's plan by querying for one exact combination of goal +
+ * equipment + sessionsPerWeek. Two published plans sharing one means the query
+ * returns both and the app shows whichever came back first — a member could get a
  * different plan than the one Aron meant, with nothing visibly wrong anywhere.
  *
  * Checked against published documents only. Two drafts may coexist while Aron
@@ -86,8 +86,11 @@ export const planCombinationMustBeUnique: CustomValidator<string | undefined> = 
   goal,
   context,
 ) => {
-  const parent = context.parent as { sessionsPerWeek?: number } | undefined;
+  const parent = context.parent as { sessionsPerWeek?: number; equipment?: string } | undefined;
   const frequency = parent?.sessionsPerWeek;
+
+  /** Plans written before the field existed count as gym plans — same rule as the app's queries. */
+  const equipment = parent?.equipment ?? "raektarstod";
 
   if (!goal || typeof frequency !== "number") return true; // their own `required()` reports this
 
@@ -99,12 +102,12 @@ export const planCombinationMustBeUnique: CustomValidator<string | undefined> = 
   const client = context.getClient({ apiVersion: "2024-01-01" });
 
   const clash = await client.fetch<string | null>(
-    `*[_type == "trainingPlan" && goal == $goal && sessionsPerWeek == $frequency && !(_id in $ids)][0].title`,
-    { goal, frequency, ids: [publishedId, `drafts.${publishedId}`] },
+    `*[_type == "trainingPlan" && goal == $goal && sessionsPerWeek == $frequency && coalesce(equipment, "raektarstod") == $equipment && !(_id in $ids)][0].title`,
+    { goal, frequency, equipment, ids: [publishedId, `drafts.${publishedId}`] },
   );
 
   if (clash) {
-    return `Það er þegar til plan fyrir þessa samsetningu: „${clash}“. Hver samsetning af markmiði og tíðni má aðeins eiga eitt plan.`;
+    return `Það er þegar til plan fyrir þessa samsetningu: „${clash}“. Hver samsetning af markmiði, aðstöðu og tíðni má aðeins eiga eitt plan.`;
   }
 
   return true;

@@ -37,3 +37,11 @@ export const hasActiveAccess = (user: AccessFields, now: Date): boolean => {
     user.currentPeriodEnd > now
   );
 };
+
+/**
+ * The pre-launch testing window from `OPEN_ACCESS_UNTIL`. Separate from
+ * `hasActiveAccess` so the real rule stays exactly what launches, and this
+ * one deletes cleanly once Repeat is live.
+ */
+export const isOpenAccess = (openUntil: Date | undefined, now: Date): boolean =>
+  openUntil !== undefined && openUntil > now;

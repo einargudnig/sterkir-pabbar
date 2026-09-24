@@ -89,6 +89,17 @@ export const serverEnvSchema = z.object({
    */
   CRON_SECRET: z.string().min(16, { message: "CRON_SECRET must be at least 16 characters" }),
 
+  /**
+   * Pre-launch testing window: until this instant, every signed-in member is
+   * let past the paywall. A date rather than an on/off flag so a forgotten
+   * setting closes itself instead of giving the product away after launch.
+   * Unset once Repeat is live. ISO 8601, e.g. 2026-10-15T00:00:00Z.
+   */
+  OPEN_ACCESS_UNTIL: z.iso
+    .datetime({ offset: true })
+    .transform((value) => new Date(value))
+    .optional(),
+
   /** Neon's pooled connection, provisioned by the Vercel integration. */
   DATABASE_URL: z
     .string()

@@ -39,13 +39,24 @@ export const sanity = createClient({
 });
 
 /**
- * A member's plan, found by the two answers they gave in onboarding.
- *
- * `studio/schemas/validators.ts` enforces that this pair matches at most one
- * published plan, so taking [0] is safe rather than arbitrary.
+ * `coalesce(equipment, "raektarstod")` in the three queries below: plans
+ * published before the equipment field existed are gym plans. The Studio's
+ * uniqueness validator applies the same rule, so the two cannot disagree.
  */
-export const planByGoalAndFrequencyQuery = defineQuery(`
-  *[_type == "trainingPlan" && goal == $goal && sessionsPerWeek == $sessionsPerWeek][0]{
+
+/**
+ * A member's plan, found by the three answers that pick it in onboarding.
+ *
+ * `studio/schemas/validators.ts` enforces that this combination matches at most
+ * one published plan, so taking [0] is safe rather than arbitrary.
+ */
+export const matchingPlanQuery = defineQuery(`
+  *[
+    _type == "trainingPlan" &&
+    goal == $goal &&
+    coalesce(equipment, "raektarstod") == $equipment &&
+    sessionsPerWeek == $sessionsPerWeek
+  ][0]{
     _id,
     title,
     goal,
@@ -66,13 +77,29 @@ export const planByGoalAndFrequencyQuery = defineQuery(`
 `);
 
 /**
- * Which frequencies a member may choose, for a given goal.
+ * Which equipment options a member may choose, for a given goal.
+ *
+ * Like frequencies: the wizard renders only these, so an option never appears
+ * without a plan behind it, and Aron adds home plans by publishing one.
+ */
+export const availableEquipmentQuery = defineQuery(`
+  array::unique(*[_type == "trainingPlan" && goal == $goal]{
+    "equipment": coalesce(equipment, "raektarstod")
+  }.equipment)
+`);
+
+/**
+ * Which frequencies a member may choose, for their goal and equipment.
  *
  * The onboarding wizard renders only these, so Aron controls launch scope by
  * publishing: an option never appears without a plan behind it.
  */
 export const availableFrequenciesQuery = defineQuery(`
-  array::unique(*[_type == "trainingPlan" && goal == $goal].sessionsPerWeek) | order(@ asc)
+  array::unique(*[
+    _type == "trainingPlan" &&
+    goal == $goal &&
+    coalesce(equipment, "raektarstod") == $equipment
+  ].sessionsPerWeek) | order(@ asc)
 `);
 
 /**

@@ -33,6 +33,8 @@ const complete: OnboardingDraft = {
   sex: "karl",
   activityLevel: "lett",
   goal: "fitutap",
+  equipment: "raektarstod",
+  experience: "einhver",
   sessionsPerWeek: 3,
 };
 
@@ -75,12 +77,13 @@ beforeEach(async () => {
 });
 
 describe("completeOnboarding", () => {
-  it("looks up the plan by the goal and frequency the member chose", async () => {
+  it("looks up the plan by the goal, equipment and frequency the member chose", async () => {
     const member = await createMember();
 
     await completeOnboarding(member.id, {
       ...complete,
       goal: "vodvauppbygging",
+      equipment: "heima",
       sessionsPerWeek: 4,
     });
 
@@ -88,7 +91,48 @@ describe("completeOnboarding", () => {
 
     expect(sanity.queries).toHaveLength(1);
     expect(query?.params.get("goal")).toBe('"vodvauppbygging"');
+    expect(query?.params.get("equipment")).toBe('"heima"');
     expect(query?.params.get("sessionsPerWeek")).toBe("4");
+  });
+
+  /** Experience is recorded for Aron, and must not narrow the plan lookup yet. */
+  it("does not pick the plan by experience", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, complete);
+
+    expect(sanity.queries[0]?.params.has("experience")).toBe(false);
+  });
+
+  it("records equipment, experience and limitations with the answers", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, { ...complete, limitations: "Slæmt vinstra hné" });
+
+    expect(await latestOnboarding(member.id)).toMatchObject({
+      equipment: "raektarstod",
+      experience: "einhver",
+      limitations: "Slæmt vinstra hné",
+    });
+  });
+
+  it("stores no limitations as null, not an empty string", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, complete);
+
+    expect((await latestOnboarding(member.id))?.limitations).toBeNull();
+  });
+
+  it("refuses a draft that skipped the training questions, without asking Sanity", async () => {
+    const member = await createMember();
+    const { experience: _, ...withoutExperience } = complete;
+
+    expect(await completeOnboarding(member.id, withoutExperience)).toEqual({
+      ok: false,
+      reason: "incomplete",
+    });
+    expect(sanity.queries).toEqual([]);
   });
 
   it("writes the answers, the macros computed from them, and the plan, linked together", async () => {

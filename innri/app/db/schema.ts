@@ -12,7 +12,13 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import { ACTIVITY_VALUES, GOAL_VALUES, SEX_VALUES } from "~/lib/onboarding";
+import {
+  ACTIVITY_VALUES,
+  EQUIPMENT_VALUES,
+  EXPERIENCE_VALUES,
+  GOAL_VALUES,
+  SEX_VALUES,
+} from "~/lib/onboarding";
 
 /**
  * Schema for the members' area. This file is the only place database columns
@@ -37,6 +43,10 @@ export const subscriptionStatus = pgEnum("subscription_status", ["active", "paus
 export const goal = pgEnum("goal", GOAL_VALUES);
 
 export const activityLevel = pgEnum("activity_level", ACTIVITY_VALUES);
+
+export const equipment = pgEnum("equipment", EQUIPMENT_VALUES);
+
+export const experience = pgEnum("experience", EXPERIENCE_VALUES);
 
 /**
  * Needed because Mifflin-St Jeor has separate male and female constants.
@@ -120,6 +130,14 @@ export const onboarding = pgTable(
     goal: goal("goal").notNull(),
     sessionsPerWeek: smallint("sessions_per_week").notNull(),
 
+    /**
+     * Nullable only for rows completed before the wizard asked. Every new run
+     * must answer both — `completeOnboarding` refuses a draft without them —
+     * and backfilling a guess would be inventing a member's answer.
+     */
+    equipment: equipment("equipment"),
+    experience: experience("experience"),
+
     weightKg: smallint("weight_kg").notNull(),
     heightCm: smallint("height_cm").notNull(),
     age: smallint("age").notNull(),
@@ -130,6 +148,9 @@ export const onboarding = pgTable(
     flaggedMedication: boolean("flagged_medication").notNull().default(false),
     flaggedEatingDisorder: boolean("flagged_eating_disorder").notNull().default(false),
     flaggedInjury: boolean("flagged_injury").notNull().default(false),
+
+    /** The member's own words on what limits them, for Aron to read. Optional. */
+    limitations: text("limitations"),
 
     /** Recorded rather than trusted — the app must not serve under-18s. */
     confirmedAdult: boolean("confirmed_adult").notNull(),

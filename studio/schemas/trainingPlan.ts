@@ -3,10 +3,10 @@ import { defineArrayMember, defineField, defineType } from "sanity";
 import { planCombinationMustBeUnique } from "./validators";
 
 /**
- * A training plan, looked up by the two answers a member gives in onboarding:
- * goal + how often they can train.
+ * A training plan, looked up by three answers a member gives in onboarding:
+ * goal + what equipment they have + how often they can train.
  *
- * The app finds a plan by querying for that exact pair, so the pair has to
+ * The app finds a plan by querying for that exact combination, so it has to
  * identify exactly one published plan — see `planCombinationMustBeUnique`.
  *
  * Publishing is also how Aron controls launch scope. The onboarding wizard only
@@ -41,6 +41,24 @@ export const trainingPlan = defineType({
         layout: "radio",
       },
       validation: (Rule) => Rule.required().custom(planCombinationMustBeUnique),
+    }),
+
+    defineField({
+      name: "equipment",
+      title: "Aðstaða",
+      description:
+        "Hvað meðlimurinn þarf til að fylgja planinu. Meðlimir sjá aðeins þá aðstöðu sem á birt plan.",
+      type: "string",
+      initialValue: "raektarstod",
+      options: {
+        list: [
+          { title: "Líkamsræktarstöð", value: "raektarstod" },
+          { title: "Heima með lóð", value: "heima" },
+          { title: "Engin tæki", value: "engin" },
+        ],
+        layout: "radio",
+      },
+      validation: (Rule) => Rule.required(),
     }),
 
     defineField({
@@ -161,11 +179,13 @@ export const trainingPlan = defineType({
   ],
 
   preview: {
-    select: { title: "title", goal: "goal", frequency: "sessionsPerWeek" },
-    prepare({ title, goal, frequency }) {
+    select: { title: "title", goal: "goal", frequency: "sessionsPerWeek", equipment: "equipment" },
+    prepare({ title, goal, frequency, equipment }) {
       const goalLabel = goal === "fitutap" ? "Fitutap" : "Vöðvauppbygging";
+      const equipmentLabel =
+        equipment === "heima" ? "Heima" : equipment === "engin" ? "Engin tæki" : "Stöð";
 
-      return { title, subtitle: `${goalLabel} · ${frequency}× í viku` };
+      return { title, subtitle: `${goalLabel} · ${equipmentLabel} · ${frequency}× í viku` };
     },
   },
 });

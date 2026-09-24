@@ -102,17 +102,22 @@ við þeim hvenær sem er.
 
 ### Reglurnar sem kerfið passar upp á hér
 
-| Reglan                                                           | Af hverju                                                                                                                                                           |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bara **eitt plan** fyrir hverja samsetningu af markmiði og tíðni | Kerfið finnur plan meðlims með því að leita að nákvæmlega einni samsetningu. Séu tvö birt fær hann hitt planið en þú ætlaðir — og ekkert lítur út fyrir að vera að. |
-| Myndbönd bara af **Vimeo eða YouTube**                           | Slóðir af Google Drive, Dropbox eða iCloud líta rétt út hér en spilast ekki hjá meðlimum.                                                                           |
-| Slóð greinar breytist ekki eftir birtingu                        | Þá hætta hlekkir sem þú varst búinn að senda að virka.                                                                                                              |
+| Reglan                                                                    | Af hverju                                                                                                                                                           |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bara **eitt plan** fyrir hverja samsetningu af markmiði, aðstöðu og tíðni | Kerfið finnur plan meðlims með því að leita að nákvæmlega einni samsetningu. Séu tvö birt fær hann hitt planið en þú ætlaðir — og ekkert lítur út fyrir að vera að. |
+| Myndbönd bara af **Vimeo eða YouTube**                                    | Slóðir af Google Drive, Dropbox eða iCloud líta rétt út hér en spilast ekki hjá meðlimum.                                                                           |
+| Slóð greinar breytist ekki eftir birtingu                                 | Þá hætta hlekkir sem þú varst búinn að senda að virka.                                                                                                              |
 
 ### Þú stýrir sjálfur hvað fer í loftið
 
-Meðlimur velur hversu oft hann vill æfa — **en hann sér bara þær tíðnir sem eiga birt
-plan**. Birtirðu eingöngu plan fyrir þrisvar í viku er það eini valkosturinn sem hann
-fær. Enginn sér valkost sem leiðir ekki neitt.
+Meðlimur velur aðstöðu (líkamsræktarstöð, heima með lóð eða engin tæki) og hversu oft
+hann vill æfa — **en hann sér bara þá valkosti sem eiga birt plan**. Birtirðu eingöngu
+plan fyrir líkamsræktarstöð, þrisvar í viku, er það eini valkosturinn sem hann fær.
+Enginn sér valkost sem leiðir ekki neitt.
+
+Reiturinn **Aðstaða** á hverju plani segir hvað meðlimurinn þarf til að fylgja því. Sé
+bara ein aðstaða í boði er ekki spurt, heldur sér meðlimurinn hvað planið gerir ráð fyrir.
+Heimaplan bætist við um leið og þú birtir það.
 
 Það þýðir að þú getur farið af stað með eitt plan og bætt hinum við jafnóðum og þú
 filmar. Þú þarft ekki að bíða eftir að allt sé tilbúið, og ekkert þarf að forrita þegar
