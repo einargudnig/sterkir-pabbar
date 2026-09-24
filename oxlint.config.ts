@@ -113,6 +113,7 @@ export default defineConfig({
     "dist/",
     "innri/build/**",
     "innri/.react-router/**",
+    "innri/coverage/**",
     "**/*.d.ts",
     ".agents/",
     ".impeccable/",
