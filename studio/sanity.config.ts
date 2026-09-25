@@ -31,6 +31,10 @@ export default defineConfig({
               .title("Efni síðunnar")
               .id(SINGLETON_ID)
               .child(S.document().schemaType(SINGLETON_ID).documentId(SINGLETON_ID)),
+            S.divider(),
+            S.documentTypeListItem("exercise"),
+            S.documentTypeListItem("trainingPlan"),
+            S.documentTypeListItem("article"),
           ]),
     }),
     visionTool(),
