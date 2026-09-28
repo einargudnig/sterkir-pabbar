@@ -12,7 +12,7 @@ import {
   SEX_VALUES,
 } from "~/lib/onboarding";
 import type { OnboardingDraft } from "~/lib/onboarding-draft.server";
-import { matchingPlanQuery, sanity } from "~/lib/sanity.server";
+import { matchingPlanQuery, planByIdQuery, sanity } from "~/lib/sanity.server";
 
 /**
  * Everything the onboarding wizard writes, and everything the dashboard reads
@@ -220,6 +220,20 @@ export const latestPlanAssignment = async (userId: string) =>
     where: eq(planAssignments.userId, userId),
     orderBy: [desc(planAssignments.assignedAt)],
   });
+
+/**
+ * The Sanity plan a member is assigned, or null when there is no assignment or
+ * the document it points at is no longer published.
+ */
+export const assignedPlan = async (userId: string) => {
+  const assignment = await latestPlanAssignment(userId);
+
+  if (!assignment) {
+    return null;
+  }
+
+  return sanity.fetch(planByIdQuery, { id: assignment.sanityPlanId });
+};
 
 /**
  * Whether this member has been through the wizard.
