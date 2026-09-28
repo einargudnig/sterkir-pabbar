@@ -572,3 +572,20 @@ sign-up → /onboarding … measurements → ready (name, kennitala, phone) → 
   `/waiting` unreachable until it closed. Testers keep access through a one-off grant:
   `update users set access_granted_until = '2026-10-15T00:00:00Z' where id in (select user_id
 from plan_assignments)`.
+
+### /admin — 2026-09-28
+
+Phase 5, made real for manual invoicing. `requireAdmin` gates on `users.is_admin` and answers a
+404 to anyone else. Set once, for Aron: `update users set is_admin = true where email = '…'`.
+
+- Four groups from one pure `memberStatus` (`app/lib/members.ts`): waiting for a first claim,
+  running out within 7 days, lapsed, active. It goes through `hasActiveAccess`, so the page
+  cannot disagree with the paywall.
+- **Greitt** extends from whichever is later, now or the current end — paying early keeps the
+  days left, paying late does not backdate. Default 30 days, editable, 1–366.
+- **A double-click extends once.** The form carries the end date the page showed; the UPDATE
+  applies only if that is still the stored value (compared at millisecond precision, because a
+  grant set by hand in SQL has microseconds), else it reports stale.
+- **Afturkalla** clears the grant, so a mistaken one sends the member back to the queue rather
+  than showing them as lapsed.
+- Only `access_granted_until` is ever written here, never the Repeat mirror.

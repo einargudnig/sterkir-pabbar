@@ -73,3 +73,7 @@ export const parseKennitala = (input: string): KennitalaResult => {
 
   return { ok: true, kennitala: digits };
 };
+
+/** "0101302989" → "010130-2989", the way it is written on a claim. */
+export const formatKennitala = (digits: string): string =>
+  `${digits.slice(0, 6)}-${digits.slice(6)}`;
