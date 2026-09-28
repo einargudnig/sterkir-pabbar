@@ -9,9 +9,9 @@ import { users } from "~/db/schema";
  * There are three levels of gate in this app, and they are easy to confuse:
  *
  *   public              /sign-in, /sign-up
- *   signed in           /subscribe, /onboarding, /admin — you must have an
- *                       account to subscribe, to answer the questionnaire, or
- *                       to be Aron
+ *   signed in           /subscribe, /onboarding, /waiting, /admin — you must
+ *                       have an account to answer the questionnaire, to wait
+ *                       for Aron's claim to be paid, or to be Aron
  *   signed in + paid    everything under layouts/member.tsx
  *
  * The third is enforced by the member layout's loader. The second is

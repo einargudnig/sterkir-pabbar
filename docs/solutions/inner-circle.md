@@ -503,6 +503,9 @@ then run one real order with the test card end to end.
 
 ## Testing window before Repeat — 2026-09-24
 
+**Superseded 2026-09-28** by "Manual invoicing before Repeat" below: `OPEN_ACCESS_UNTIL`,
+`isOpenAccess` and `canEnter` are gone.
+
 No Repeat shop exists yet, so every signed-in tester would stop at `/subscribe`. Einar's call:
 bypass the paywall so Aron and testers can use sign-up → questionnaire → plan now.
 
@@ -540,3 +543,32 @@ the questions existed have no honest answer, and backfilling one would invent it
 **Plans without an `equipment` field are gym plans.** Every GROQ query and the Studio's
 uniqueness validator use `coalesce(equipment, "raektarstod")`, so the seed plan already in the
 dataset keeps working with no content migration.
+
+## Manual invoicing before Repeat — 2026-09-28
+
+Aron's call: launch without card payments. He invoices each member by a claim (krafa) in their
+online bank and switches access on once it is paid. Repeat goes live at 50–100 members; its
+code stays in place, dormant, and `/subscribe` is no longer linked from anywhere.
+
+```
+sign-up → /onboarding … measurements → ready (name, kennitala, phone) → "Hell YEAH"
+            completeOnboarding: plan + macros as before, plus users.name/kennitala/phone/ready_at
+        → /waiting                       (Aron sends the claim)
+        → /admin "Greitt" → users.access_granted_until → /dashboard
+```
+
+- **Questionnaire before payment.** `requireActiveAccess` now checks onboarding first, then
+  access, and sends the unpaid to `/waiting` instead of `/subscribe`. Finishing the
+  questionnaire is how a member asks to be invoiced.
+- **Plan and macros are still assigned automatically on completion.** "Setting a member up" is
+  only granting access — there is nothing per member for Aron to configure.
+- **Who to invoice lives on `users`**, not `onboarding`: it describes the person, and
+  `onboarding` is append-only. The kennitala is checksum-verified (`app/lib/kennitala.ts`) —
+  a mistyped one is a claim that goes to nobody — and must be personal, not a company's. Phone
+  is optional; a claim needs only the kennitala.
+- **`ready_at` is the queue.** Set once with `coalesce`, so a second completion cannot move a
+  member to the back, and it is what the admin page orders by.
+- **The testing window is removed rather than left to expire.** Leaving it would make
+  `/waiting` unreachable until it closed. Testers keep access through a one-off grant:
+  `update users set access_granted_until = '2026-10-15T00:00:00Z' where id in (select user_id
+from plan_assignments)`.

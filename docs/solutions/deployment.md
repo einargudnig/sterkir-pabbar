@@ -109,7 +109,6 @@ Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes i
 | `REPEAT_SHOP_UUID`, `REPEAT_PRODUCT_UUID`                                                    | Repeat dashboard URLs — the shop, and the one subscription      | innri                                                          |
 | `REPEAT_WEBHOOK_SECRET`                                                                      | generate: `openssl rand -hex 32`; same value in Repeat's header | innri                                                          |
 | `CRON_SECRET`                                                                                | generate: `openssl rand -hex 32`; Vercel sends it to the cron   | innri                                                          |
-| `OPEN_ACCESS_UNTIL`                                                                          | optional; ISO datetime — paywall open to all until then         | innri — **remove once Repeat is live**                         |
 
 Everything the server needs is declared in `innri/app/lib/env.server.ts` and parsed at the
 boundary. Nothing reads `process.env` directly except the database client and that schema.

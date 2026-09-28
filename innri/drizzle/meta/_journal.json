@@ -36,6 +36,13 @@
       "when": 1790247207035,
       "tag": "0004_questionnaire",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790572063982,
+      "tag": "0005_manual_invoicing",
+      "breakpoints": true
     }
   ]
 }

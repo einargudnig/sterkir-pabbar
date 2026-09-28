@@ -4,9 +4,9 @@ import { z } from "zod";
 
 import { db } from "~/db";
 import { repeatEvents, users } from "~/db/schema";
-import { hasActiveAccess, isOpenAccess } from "~/lib/access";
+import { hasActiveAccess } from "~/lib/access";
 import { requireUser } from "~/lib/auth.server";
-import { serverEnv } from "~/lib/env.server";
+import { hasCompletedOnboarding } from "~/lib/onboarding.server";
 import { type Mirror, type RepeatSubscription, shouldApply, toMirror } from "~/lib/repeat";
 import type { WebhookNudge } from "~/lib/repeat";
 import { findActiveSubscriptionIds, getSubscription } from "~/lib/repeat.server";
@@ -23,20 +23,24 @@ type UserRow = typeof users.$inferSelect;
 
 type AuthArgs = Parameters<typeof requireUser>[0];
 
-/** Past the paywall: a paying member, or anyone during the testing window. */
-export const canEnter = (user: UserRow, now: Date): boolean =>
-  isOpenAccess(serverEnv().OPEN_ACCESS_UNTIL, now) || hasActiveAccess(user, now);
-
 /**
- * The paid gate. Called by the member layout, so everything under it is
- * covered, and by the entry redirect so an unpaid member lands on the paywall
- * in one hop.
+ * The member gate, in the order a new member meets it: the questionnaire
+ * first, then payment. Called by the member layout, so everything under it is
+ * covered, and by the entry redirect so each stage is one hop away.
+ *
+ * Questionnaire before payment because, until Repeat is live, finishing it is
+ * how a member asks to be invoiced — it puts them in Aron's queue on /admin,
+ * and /waiting is where they wait for the claim to be paid.
  */
 export const requireActiveAccess = async (args: AuthArgs): Promise<UserRow> => {
   const user = await requireUser(args);
 
-  if (!canEnter(user, new Date())) {
-    throw redirect("/subscribe");
+  if (!(await hasCompletedOnboarding(user.id))) {
+    throw redirect("/onboarding");
+  }
+
+  if (!hasActiveAccess(user, new Date())) {
+    throw redirect("/waiting");
   }
 
   return user;

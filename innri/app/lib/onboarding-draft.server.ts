@@ -2,6 +2,7 @@ import { createCookie } from "react-router";
 import { z } from "zod";
 
 import { serverEnv } from "~/lib/env.server";
+import { parseKennitala } from "~/lib/kennitala";
 import {
   ACTIVITY_VALUES,
   EQUIPMENT_VALUES,
@@ -85,6 +86,10 @@ const draftSchema = z.object({
   equipment: z.enum(EQUIPMENT_VALUES).optional(),
   experience: z.enum(EXPERIENCE_VALUES).optional(),
   sessionsPerWeek: z.number().int().optional(),
+
+  name: z.string().optional(),
+  kennitala: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 export type OnboardingDraft = z.infer<typeof draftSchema>;
@@ -216,6 +221,58 @@ const frequencySchema = z.object({
   sessionsPerWeek: numberField("fjölda æfinga", { min: 1, max: 7 }),
 });
 
+const KENNITALA_MESSAGES = {
+  format: "Kennitala er 10 tölustafir",
+  checksum: "Þessi kennitala stenst ekki — athugaðu hvort tölustafur hafi misritast",
+  company: "Sláðu inn þína eigin kennitölu, ekki fyrirtækis",
+} as const;
+
+/**
+ * Checked here rather than left to the bank: a mistyped kennitala is a claim
+ * that goes to nobody, and the member only finds out when Aron chases them.
+ */
+const kennitalaField = z
+  .string()
+  .optional()
+  .transform((value, context) => {
+    const result = parseKennitala(value ?? "");
+
+    if (!result.ok) {
+      context.addIssue({ code: "custom", message: KENNITALA_MESSAGES[result.reason] });
+
+      return z.NEVER;
+    }
+
+    return result.kennitala;
+  });
+
+/**
+ * Optional, because a claim needs only the kennitala and every extra required
+ * field costs sign-ups. When given, an Icelandic seven-digit number, with or
+ * without +354, stored as the bare seven digits.
+ */
+const phoneField = z
+  .string()
+  .optional()
+  .transform((value) => (value ?? "").replace(/[\s-]/gu, "").replace(/^(\+|00)354/u, ""))
+  .refine((value) => value.length === 0 || /^\d{7}$/u.test(value), {
+    message: "Símanúmer er 7 tölustafir",
+  })
+  .transform((value) => (value.length > 0 ? value : undefined));
+
+const readySchema = z.object({
+  name: z
+    .string()
+    .optional()
+    .transform((value) => (value ?? "").trim())
+    .refine((value) => value.length > 0, { message: "Sláðu inn nafnið þitt" })
+    .refine((value) => value.length <= LIMITS.nameChars, {
+      message: `Hámark ${LIMITS.nameChars} stafir`,
+    }),
+  kennitala: kennitalaField,
+  phone: phoneField,
+});
+
 /**
  * Every field name any step can submit.
  *
@@ -240,6 +297,9 @@ export const FIELD_NAMES = [
   "equipment",
   "experience",
   "sessionsPerWeek",
+  "name",
+  "kennitala",
+  "phone",
 ] as const;
 
 export type FieldName = (typeof FIELD_NAMES)[number];
@@ -328,6 +388,14 @@ export const submitStep = (step: Step, formData: FormData): StepSubmission => {
       : { ok: false, errors: errorsFrom(result.error) };
   }
 
+  if (step === "ready") {
+    const result = readySchema.safeParse(values);
+
+    return result.success
+      ? { ok: true, patch: result.data }
+      : { ok: false, errors: errorsFrom(result.error) };
+  }
+
   const result = frequencySchema.safeParse(values);
 
   return result.success
@@ -363,5 +431,15 @@ export const firstIncompleteStep = (draft: OnboardingDraft): Step => {
     return "acknowledge";
   }
 
-  return "measurements";
+  if (
+    draft.weightKg === undefined ||
+    draft.heightCm === undefined ||
+    draft.age === undefined ||
+    draft.sex === undefined ||
+    draft.activityLevel === undefined
+  ) {
+    return "measurements";
+  }
+
+  return "ready";
 };

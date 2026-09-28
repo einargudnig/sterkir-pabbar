@@ -1,7 +1,7 @@
 import { count, eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { createMember, resetDatabase } from "../../test/db";
+import { createMember, reload, resetDatabase } from "../../test/db";
 import { startFakeSanity } from "../../test/fake-sanity";
 import { db } from "~/db";
 import { macroTargets, onboarding, planAssignments } from "~/db/schema";
@@ -37,6 +37,8 @@ const complete: OnboardingDraft = {
   equipment: "raektarstod",
   experience: "einhver",
   sessionsPerWeek: 3,
+  name: "Sigurður Jónsson",
+  kennitala: "0101302989",
 };
 
 const plan = (id: string) => ({
@@ -187,6 +189,42 @@ describe("completeOnboarding", () => {
       macroTargets: 0,
       planAssignments: 0,
     });
+  });
+
+  it("records who to invoice and when they joined the queue", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, { ...complete, phone: "8612345" });
+
+    const row = await reload(member.id);
+
+    expect(row).toMatchObject({
+      name: "Sigurður Jónsson",
+      kennitala: "0101302989",
+      phone: "8612345",
+    });
+    expect(row.readyAt).toBeInstanceOf(Date);
+  });
+
+  /** The queue on /admin is ordered by it, so a second run must not reset it. */
+  it("keeps the first moment a member joined the queue", async () => {
+    const first = new Date("2026-09-01T12:00:00Z");
+    const member = await createMember({ readyAt: first });
+
+    await completeOnboarding(member.id, complete);
+
+    expect((await reload(member.id)).readyAt).toEqual(first);
+  });
+
+  it("refuses a draft without a kennitala, and nobody is queued", async () => {
+    const member = await createMember();
+    const { kennitala: _, ...withoutKennitala } = complete;
+
+    expect(await completeOnboarding(member.id, withoutKennitala)).toEqual({
+      ok: false,
+      reason: "incomplete",
+    });
+    expect((await reload(member.id)).readyAt).toBeNull();
   });
 
   it("refuses a draft missing a measurement", async () => {

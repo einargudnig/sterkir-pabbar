@@ -97,6 +97,26 @@ export const users = pgTable(
     isAdmin: boolean("is_admin").notNull().default(false),
 
     /**
+     * Who Aron invoices. Until Repeat is live, a member pays by a claim (krafa)
+     * Aron sends to their online bank, and a claim is addressed to a kennitala.
+     * On `users` rather than `onboarding`: they describe the person, not one
+     * run through the questionnaire, and `onboarding` is append-only.
+     *
+     * `kennitala` is stored as the bare ten digits, checksum-verified.
+     */
+    name: text("name"),
+    kennitala: text("kennitala"),
+    phone: text("phone"),
+
+    /**
+     * When the member finished the questionnaire and said they are ready to
+     * start — the moment they joined Aron's queue to be invoiced. Set once,
+     * with a conditional update, so it doubles as the guard that sends Aron
+     * exactly one notification per member.
+     */
+    readyAt: timestamp("ready_at", { withTimezone: true }),
+
+    /**
      * Set the moment a checkout starts charging a card, cleared when it ends.
      * Repeat has no idempotency key, so a double-click would otherwise be two
      * orders and two charges. Claimed with a conditional UPDATE rather than a

@@ -1,8 +1,8 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "~/db";
-import { macroTargets, onboarding, planAssignments } from "~/db/schema";
+import { macroTargets, onboarding, planAssignments, users } from "~/db/schema";
 import { computeMacros } from "~/lib/macros";
 import {
   ACTIVITY_VALUES,
@@ -39,6 +39,9 @@ const completeDraftSchema = z.object({
   equipment: z.enum(EQUIPMENT_VALUES),
   experience: z.enum(EXPERIENCE_VALUES),
   sessionsPerWeek: z.number().int(),
+  name: z.string().min(1),
+  kennitala: z.string().length(10),
+  phone: z.string().optional(),
 });
 
 export type CompletionResult =
@@ -46,7 +49,8 @@ export type CompletionResult =
   | { readonly ok: false; readonly reason: "incomplete" | "no-plan" };
 
 /**
- * Writes the three rows that make a member a member, in one transaction.
+ * Writes the three rows that make a member a member, and who to invoice, in
+ * one transaction.
  *
  * All three or none. A macro target without the answers it came from is
  * unexplainable, and a member with answers but no plan assignment lands on an
@@ -137,6 +141,21 @@ export const completeOnboarding = async (
     });
 
     await tx.insert(planAssignments).values({ userId, sanityPlanId: plan._id });
+
+    /**
+     * `coalesce` keeps the first moment they joined the queue. The wizard
+     * redirects anyone who has finished it, so a second completion is a race
+     * between two tabs — and the queue is ordered by this column.
+     */
+    await tx
+      .update(users)
+      .set({
+        name: answers.name,
+        kennitala: answers.kennitala,
+        phone: answers.phone ?? null,
+        readyAt: sql`coalesce(${users.readyAt}, now())`,
+      })
+      .where(eq(users.id, userId));
   });
 
   return { ok: true };

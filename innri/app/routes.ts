@@ -5,10 +5,10 @@ import { index, layout, prefix, route, type RouteConfig } from "@react-router/de
  * Icelandic. See the route map in docs/solutions/inner-circle.md.
  *
  * Everything inside the member layout is gated by that layout's loader, so a
- * route added here is guarded by existing there. The three routes outside it —
- * subscribe, onboarding, admin — are signed-in-only and call `requireUserId`
+ * route added here is guarded by existing there. The routes outside it —
+ * subscribe, onboarding, waiting, admin — are signed-in-only and guard
  * themselves; they sit outside because they must stay reachable to someone who
- * has not paid yet.
+ * has not paid yet. `subscribe` is Repeat's checkout, dormant until it is live.
  */
 export default [
   index("routes/home.tsx"),
@@ -17,6 +17,7 @@ export default [
   route("sign-up/*", "routes/sign-up.tsx"),
   route("subscribe", "routes/subscribe.tsx"),
   route("onboarding", "routes/onboarding.tsx"),
+  route("waiting", "routes/waiting.tsx"),
 
   layout("layouts/member.tsx", [
     ...prefix("dashboard", [

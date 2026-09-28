@@ -9,9 +9,10 @@
  */
 
 /**
- * Two parts, in the order a member meets them. The first is about training and
+ * Three parts, in the order a member meets them. The first is about training and
  * decides the plan; the second is only the numbers the macro calculation needs,
- * so it comes last and says so. Equipment is asked before frequency because
+ * and says so; the third is who Aron invoices, asked last because it is the
+ * only step that is about paying rather than about them. Equipment is asked before frequency because
  * the frequencies on offer depend on which plans exist for that equipment.
  */
 export const STEPS = [
@@ -21,6 +22,7 @@ export const STEPS = [
   "health",
   "acknowledge",
   "measurements",
+  "ready",
 ] as const;
 
 export type Step = (typeof STEPS)[number];
@@ -28,6 +30,7 @@ export type Step = (typeof STEPS)[number];
 export const PARTS = [
   { title: "Planið þitt", steps: ["goal", "training", "frequency", "health", "acknowledge"] },
   { title: "Næringin", steps: ["measurements"] },
+  { title: "Af stað", steps: ["ready"] },
 ] as const satisfies readonly { readonly title: string; readonly steps: readonly Step[] }[];
 
 export const partOf = (step: Step) => {
@@ -152,6 +155,7 @@ export const LIMITS = {
   heightCm: { min: 130, max: 220 },
   age: { min: 18, max: 90 },
   limitationsChars: 500,
+  nameChars: 100,
 } as const;
 
 /**

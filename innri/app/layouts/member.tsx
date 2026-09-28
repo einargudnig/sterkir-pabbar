@@ -1,7 +1,6 @@
 import { UserButton } from "@clerk/react-router";
-import { NavLink, Outlet, redirect } from "react-router";
+import { NavLink, Outlet } from "react-router";
 
-import { hasCompletedOnboarding } from "~/lib/onboarding.server";
 import { requireActiveAccess } from "~/lib/subscription.server";
 
 import type { Route } from "./+types/member";
@@ -15,20 +14,12 @@ import type { Route } from "./+types/member";
  */
 export async function loader(args: Route.LoaderArgs) {
   /**
-   * The paid gate, for this whole subtree in one place. It reads only the local
-   * mirror — never Repeat — so a Repeat outage does not lock members out.
+   * The member gate, for this whole subtree in one place: questionnaire
+   * answered, then access. Every page under here renders a plan or numbers
+   * derived from the questionnaire, and access reads only the local database —
+   * never Repeat — so a Repeat outage does not lock members out.
    */
   const user = await requireActiveAccess(args);
-
-  /**
-   * Every page under here renders a plan or numbers derived from the
-   * questionnaire, so a member who has not answered it has nothing to show.
-   * Gating it here rather than per route means a new tab added to the dashboard
-   * cannot forget to check.
-   */
-  if (!(await hasCompletedOnboarding(user.id))) {
-    throw redirect("/onboarding");
-  }
 
   return { userId: user.clerkUserId };
 }
