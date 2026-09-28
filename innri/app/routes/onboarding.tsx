@@ -156,7 +156,15 @@ export async function action(args: Route.ActionArgs) {
     });
   }
 
-  const completion = await completeOnboarding(user.id, merged);
+  /**
+   * Read from Clerk here as well as by the webhook: Aron needs an address to
+   * reach the member he is invoicing, and a webhook that has not landed — or
+   * never will, for accounts older than the endpoint — must not leave it blank.
+   */
+  const email = (await clerkClient(args).users.getUser(user.clerkUserId)).primaryEmailAddress
+    ?.emailAddress;
+
+  const completion = await completeOnboarding(user.id, merged, email);
 
   if (!completion.ok) {
     /**

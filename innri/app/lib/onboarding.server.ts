@@ -64,6 +64,7 @@ export type CompletionResult =
 export const completeOnboarding = async (
   userId: string,
   draft: OnboardingDraft,
+  email?: string,
 ): Promise<CompletionResult> => {
   const parsed = completeDraftSchema.safeParse(draft);
 
@@ -145,7 +146,8 @@ export const completeOnboarding = async (
     /**
      * `coalesce` keeps the first moment they joined the queue. The wizard
      * redirects anyone who has finished it, so a second completion is a race
-     * between two tabs — and the queue is ordered by this column.
+     * between two tabs — and the queue is ordered by this column. The email
+     * only fills a gap: the Clerk webhook owns it once it has landed.
      */
     await tx
       .update(users)
@@ -154,6 +156,7 @@ export const completeOnboarding = async (
         kennitala: answers.kennitala,
         phone: answers.phone ?? null,
         readyAt: sql`coalesce(${users.readyAt}, now())`,
+        email: sql`coalesce(${users.email}, ${email ?? null})`,
       })
       .where(eq(users.id, userId));
   });

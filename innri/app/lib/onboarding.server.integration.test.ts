@@ -206,6 +206,17 @@ describe("completeOnboarding", () => {
     expect(row.readyAt).toBeInstanceOf(Date);
   });
 
+  it("fills in a missing email, and leaves one the webhook already wrote", async () => {
+    const missing = await createMember();
+    const synced = await createMember({ email: "siggi@example.is" });
+
+    await completeOnboarding(missing.id, complete, "nyr@example.is");
+    await completeOnboarding(synced.id, complete, "annad@example.is");
+
+    expect((await reload(missing.id)).email).toBe("nyr@example.is");
+    expect((await reload(synced.id)).email).toBe("siggi@example.is");
+  });
+
   /** The queue on /admin is ordered by it, so a second run must not reset it. */
   it("keeps the first moment a member joined the queue", async () => {
     const first = new Date("2026-09-01T12:00:00Z");
