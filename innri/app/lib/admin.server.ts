@@ -1,12 +1,12 @@
-import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { db } from "~/db";
 import { onboarding, users } from "~/db/schema";
-import { extendGrant, memberStatus } from "~/lib/members";
+import { extendGrant, inInvoicingQueue, memberStatus } from "~/lib/members";
 
 /**
- * Reads and writes behind /admin: who is waiting for a claim, who is due the
- * next one, and Aron marking a claim paid.
+ * Reads and writes behind /admin: everyone who has signed up, who is waiting
+ * for a claim, who is due the next one, and Aron marking a claim paid.
  *
  * Every write here touches `access_granted_until` only. The Repeat mirror is
  * never written from this page, so turning Repeat on later cannot be undone by
@@ -14,24 +14,20 @@ import { extendGrant, memberStatus } from "~/lib/members";
  */
 
 /**
- * Everyone Aron has something to do about: they finished the questionnaire,
- * or they were granted access at some point. Admins are left out — Aron does
- * not invoice himself.
+ * Every non-admin user, newest sign-up first, with their newest questionnaire
+ * answers and where they stand. Admins are left out — Aron does not invoice
+ * himself.
  *
  * Two queries rather than a lateral join. At the 50–100 members this flow is
  * meant for, fetching every onboarding row for them costs nothing, and picking
  * the newest per member in code keeps the query obvious.
  */
-export const listMembers = async (now: Date) => {
+export const listUsers = async (now: Date) => {
   const members = await db
     .select()
     .from(users)
-    .where(
-      and(
-        eq(users.isAdmin, false),
-        or(isNotNull(users.readyAt), isNotNull(users.accessGrantedUntil)),
-      ),
-    );
+    .where(eq(users.isAdmin, false))
+    .orderBy(desc(users.createdAt));
 
   const ids = members.map((member) => member.id);
 
@@ -58,6 +54,9 @@ export const listMembers = async (now: Date) => {
     answers: latest.get(member.id) ?? null,
   }));
 };
+
+/** The invoicing queue: the users Aron has something to do about. */
+export const listMembers = async (now: Date) => (await listUsers(now)).filter(inInvoicingQueue);
 
 export type AdminMember = Awaited<ReturnType<typeof listMembers>>[number];
 
