@@ -9,8 +9,8 @@ import { defineConfig } from "vitest/config";
  *
  *   unit          pure modules, no I/O, `*.test.ts`
  *   integration   `*.integration.test.ts`, against a throwaway Postgres started
- *                 by test/postgres.ts, with Repeat and Sanity faked at their
- *                 wire boundary. One file at a time: they share the database.
+ *                 by test/postgres.ts, with Sanity faked at its wire
+ *                 boundary. One file at a time: they share the database.
  *
  * Coverage thresholds apply only to the modules that carry real risk. See
  * docs/solutions/inner-circle.md — chasing repo-wide coverage is explicitly

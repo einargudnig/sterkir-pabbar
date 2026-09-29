@@ -108,20 +108,19 @@ Paths and filenames are English; every word a member reads on the page is Icelan
 
 ```
 /                     redirect: signed out → /sign-in
-                                no subscription → /subscribe
                                 onboarding incomplete → /onboarding
+                                no access → /articles, paid tabs locked
                                 else → /dashboard
 /sign-in              Clerk sign-in
 /sign-up              Clerk sign-up
-/subscribe            subscription state + Repeat card widget → order
 /onboarding           wizard; step in the URL (?step=health|measurements|goal|frequency)
 /dashboard            redirects to the first tab
 /dashboard/workouts   Mínar æfingar
 /dashboard/macros     Mín macros
 /articles             Fróðleikur index
 /articles/:slug       article
-/settings             account, cancel subscription
-/admin                Aron — manual grant, comps, fix failed payments
+/settings             account, measurements, paid-until date
+/admin                Aron — claims sent and paid, manual grants
 
 /api/repeat/webhook   secret-header checked, re-fetches from Repeat, updates the mirror
 /api/cron/repeat-sync reconciles every mirrored subscription (Repeat never retries a webhook)
@@ -228,12 +227,11 @@ Not coverage — these five carry almost all the risk:
 
 1. **Macro calculation** — property tests on the floors: no input combination may produce a
    target below the safety floor.
-2. **Repeat webhook trust** — a missing or wrong secret header is rejected, and a body
-   claiming `active: true` for a subscription Repeat's API says is inactive grants nothing.
-3. **Webhook idempotency** — the same delivery, and a dashboard replay of it (which arrives
-   with a fresh delivery id), must leave the mirror exactly as one delivery would.
-4. **`requireActiveAccess`** — across `trialing`/`active`/`past_due`/`canceled` and the exact
-   period boundary.
+2. **Repeat webhook trust** — removed with Repeat on 2026-09-29.
+3. **Webhook idempotency** — removed with Repeat on 2026-09-29. In their place: **marking a
+   claim paid** extends the grant exactly once (`admin.server.integration.test.ts`).
+4. **The gates** — `hasActiveAccess` at the exact grant boundary, and `assertOnboarded` /
+   `assertAccess` against real rows (`gates.server.integration.test.ts`).
 5. **Plan assignment** — including when no published plan exists for the chosen frequency.
 
 Plus **one** Playwright smoke test: signup → subscribe → onboarding → dashboard.
@@ -549,6 +547,7 @@ dataset keeps working with no content migration.
 Aron's call: launch without card payments. He invoices each member by a claim (krafa) in their
 online bank and switches access on once it is paid. Repeat goes live at 50–100 members; its
 code stays in place, dormant, and `/subscribe` is no longer linked from anywhere.
+(**Superseded 2026-09-29:** the Repeat code is gone — see "Repeat removed" below.)
 
 ```
 sign-up → /onboarding … measurements → ready (name, kennitala, phone) → "Hell YEAH"
@@ -609,3 +608,23 @@ page's own `requireAdmin` is what keeps members out.
 - **Afturkalla** clears the grant, so a mistaken one sends the member back to the queue rather
   than showing them as lapsed.
 - Only `access_granted_until` is ever written here, never the Repeat mirror.
+
+## Repeat removed — 2026-09-29
+
+Einar's call before launch: manual invoicing is the payment model, and the Repeat integration
+comes out rather than sitting dormant. If Repeat is chosen later it is re-integrated, starting
+from commit `89d685d` and the "Payments switched to Repeat" and "Phase 6 built" sections above.
+
+- **Gone:** `/subscribe`, `/api/repeat/webhook`, `/api/cron/repeat-sync` and the Vercel cron,
+  `repeat.ts`, `repeat.server.ts`, `secret.server.ts`, the fake Repeat server and its tests,
+  the `@teamrepeat/card-token` dependency, the five `REPEAT_*` / `CRON_SECRET` env keys, and
+  the subscription and cancellation section of `/settings`. That section now shows the date
+  access is paid until.
+- **Access is two ways in:** `isAdmin`, or `access_granted_until` in the future.
+  `subscription.server.ts` is renamed `gates.server.ts`, since the gates are all that is left.
+- **The database is untouched.** `users.subscription_status`, `repeat_subscription_id`,
+  `current_period_end`, `checkout_claimed_at`, the `subscription_status` enum and the
+  `repeat_events` table stay in the schema, marked DORMANT, and nothing reads or writes them.
+  Production had no Repeat data (0 subscriptions, 0 events), but a drop is a production
+  migration right before launch, and there is no need for one. Drop them in a deliberate
+  migration after launch, or reuse them.

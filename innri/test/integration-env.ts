@@ -28,9 +28,4 @@ Object.assign(process.env, {
   SANITY_DATASET: "test",
   SANITY_READ_TOKEN: "sanity-test-token",
   SESSION_SECRET: "session-secret-for-integration-tests-only",
-  REPEAT_API_KEY: "repeat-test-api-key",
-  REPEAT_WEBHOOK_SECRET: "webhook-secret-for-integration-tests",
-  REPEAT_SHOP_UUID: "5b0f6a8e-2d7c-4c1b-9f3e-1a2b3c4d5e6f",
-  REPEAT_PRODUCT_UUID: "0c9e8d7f-6a5b-4c3d-8e2f-1a0b9c8d7e6f",
-  CRON_SECRET: "cron-secret-for-tests",
 });

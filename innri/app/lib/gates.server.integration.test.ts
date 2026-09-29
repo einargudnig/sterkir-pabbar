@@ -4,7 +4,7 @@ import { createMember, resetDatabase } from "../../test/db";
 import { db } from "~/db";
 import { planAssignments } from "~/db/schema";
 
-import { assertAccess, assertOnboarded, PREVIEW_LANDING } from "./subscription.server";
+import { assertAccess, assertOnboarded, PREVIEW_LANDING } from "./gates.server";
 
 /**
  * The two halves of the member gate, against real rows. The member layout

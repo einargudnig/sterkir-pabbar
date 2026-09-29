@@ -14,12 +14,7 @@ const now = new Date("2026-10-15T12:00:00Z");
 
 const days = (count: number) => new Date(now.getTime() + count * 24 * 60 * 60 * 1000);
 
-const member = {
-  isAdmin: false,
-  accessGrantedUntil: null,
-  subscriptionStatus: null,
-  currentPeriodEnd: null,
-} as const;
+const member = { isAdmin: false, accessGrantedUntil: null } as const;
 
 describe("memberStatus", () => {
   it("puts someone never granted in the queue for their first claim", () => {
@@ -45,13 +40,6 @@ describe("memberStatus", () => {
 
   it("counts a grant that ran out as lapsed", () => {
     expect(memberStatus({ ...member, accessGrantedUntil: days(-2) }, now)).toBe("lapsed");
-  });
-
-  /** Repeat has no grant to run out, so nothing for Aron to invoice. */
-  it("counts a member paying through Repeat as active", () => {
-    expect(
-      memberStatus({ ...member, subscriptionStatus: "active", currentPeriodEnd: days(2) }, now),
-    ).toBe("active");
   });
 });
 

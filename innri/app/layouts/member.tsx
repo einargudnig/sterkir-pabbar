@@ -4,7 +4,7 @@ import { NavLink, Outlet } from "react-router";
 
 import { hasActiveAccess } from "~/lib/access";
 import { formatDate } from "~/lib/format";
-import { requireOnboarded } from "~/lib/subscription.server";
+import { requireOnboarded } from "~/lib/gates.server";
 
 import type { Route } from "./+types/member";
 
@@ -18,10 +18,6 @@ import type { Route } from "./+types/member";
  * loader (`layouts/paid.tsx`) — these tabs are only what the member sees.
  */
 export async function loader(args: Route.LoaderArgs) {
-  /**
-   * Reads only the local database — never Repeat — so a Repeat outage does
-   * not lock members out.
-   */
   const user = await requireOnboarded(args);
 
   const hasAccess = hasActiveAccess(user, new Date());
@@ -92,8 +88,8 @@ export default function MemberLayout({ loaderData }: Route.ComponentProps) {
               </NavLink>
             )}
 
-            {/* Settings edits the plan's inputs and the subscription — paid
-                layout, so there is nothing behind it to show before access. */}
+            {/* Settings edits the plan's inputs and shows the paid period —
+                paid layout, so there is nothing behind it to show before access. */}
             {loaderData.hasAccess && (
               <NavLink
                 to="/settings"

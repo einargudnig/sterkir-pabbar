@@ -13,16 +13,14 @@ import { index, layout, prefix, route, type RouteConfig } from "@react-router/de
  *
  * Put a new route under the paid layout unless someone who has not paid should
  * see it. `admin` sits in the member layout for its chrome and guards itself
- * with `requireAdmin`. The routes outside both — subscribe, onboarding — are
- * signed-in-only and guard themselves. `waiting` is retired to a redirect.
- * `subscribe` is Repeat's checkout, dormant until it is live.
+ * with `requireAdmin`. `onboarding`, outside both, is signed-in-only and guards
+ * itself. `waiting` is retired to a redirect.
  */
 export default [
   index("routes/home.tsx"),
 
   route("sign-in/*", "routes/sign-in.tsx"),
   route("sign-up/*", "routes/sign-up.tsx"),
-  route("subscribe", "routes/subscribe.tsx"),
   route("onboarding", "routes/onboarding.tsx"),
   route("waiting", "routes/waiting.tsx"),
 
@@ -48,6 +46,4 @@ export default [
 
   // Resource routes — no component, called by other systems, never by a member.
   route("api/clerk/webhook", "routes/api/clerk-webhook.ts"),
-  route("api/repeat/webhook", "routes/api/repeat-webhook.ts"),
-  route("api/cron/repeat-sync", "routes/api/repeat-sync.ts"),
 ] satisfies RouteConfig;

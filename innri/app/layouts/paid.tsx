@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 
-import { requireActiveAccess } from "~/lib/subscription.server";
+import { requireActiveAccess } from "~/lib/gates.server";
 
 import type { Route } from "./+types/paid";
 
