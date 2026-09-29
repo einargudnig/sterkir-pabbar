@@ -1,7 +1,8 @@
+import { ChevronRight } from "lucide-react";
+import { Link } from "react-router";
+
 import { requireUser } from "~/lib/auth.server";
-import { latestPlanAssignment } from "~/lib/onboarding.server";
-import { planByIdQuery, sanity } from "~/lib/sanity.server";
-import type { PlanByIdQueryResult } from "~/lib/sanity.types";
+import { assignedPlan } from "~/lib/onboarding.server";
 
 import type { Route } from "./+types/workouts";
 
@@ -10,65 +11,17 @@ export function meta(_args: Route.MetaArgs) {
 }
 
 /**
- * The member's own plan, by the document id onboarding assigned them.
+ * The member's week: one card per session in the plan, each opening that
+ * session's page.
  *
  * The member layout has already redirected anyone without an assignment to the
- * questionnaire, so a missing row here means the layout's check and this one
+ * questionnaire, so a missing plan here means the layout's check and this one
  * disagree — which the empty state below covers rather than throwing.
  */
 export async function loader(args: Route.LoaderArgs) {
   const user = await requireUser(args);
 
-  const assignment = await latestPlanAssignment(user.id);
-
-  if (!assignment) {
-    return { plan: null };
-  }
-
-  const plan = await sanity.fetch(planByIdQuery, { id: assignment.sanityPlanId });
-
-  return { plan };
-}
-
-type Session = NonNullable<PlanByIdQueryResult>["sessions"];
-
-function SessionCard({ session }: { session: NonNullable<Session>[number] }) {
-  return (
-    <section className="overflow-hidden rounded-xl border border-line bg-raised">
-      <header className="px-6 py-5">
-        <h2 className="font-display text-subtitle text-text">{session.title}</h2>
-      </header>
-
-      <div>
-        <ul className="divide-y divide-line-soft border-t border-line-soft">
-          {session.exercises?.map((item) => (
-            <li key={item._key} className="px-6 py-4">
-              <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-medium text-text">{item.exercise?.name ?? "Æfing vantar"}</h3>
-
-                {/* Same rule as the macro shares: Orbitron slashes its zero,
-                    so "3 × 10" would read "3 × 1Ø". Sets and reps are the most
-                    looked-at numbers in the app — they get the body font. */}
-                <span className="whitespace-nowrap text-sm font-medium text-bronze">
-                  {item.sets} × {item.reps}
-                </span>
-              </div>
-
-              {/* The per-plan note wins over the exercise's general cue: it was
-                  written about this exercise in this plan specifically. */}
-              {(item.note ?? item.exercise?.cue) && (
-                <p className="mt-1.5 text-sm text-text-muted">{item.note ?? item.exercise?.cue}</p>
-              )}
-
-              {!item.exercise?.videoUrl && (
-                <p className="mt-2 text-xs text-text-muted italic">Myndband kemur</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
+  return { plan: await assignedPlan(user.id) };
 }
 
 export default function Workouts({ loaderData }: Route.ComponentProps) {
@@ -91,10 +44,16 @@ export default function Workouts({ loaderData }: Route.ComponentProps) {
     );
   }
 
+  const sessions = plan.sessions ?? [];
+
   return (
     <div>
       <header>
-        <h1 className="font-display text-title text-text">{plan.title}</h1>
+        <p className="font-mark text-xs uppercase tracking-mark text-bronze">
+          {sessions.length}× í viku
+        </p>
+
+        <h1 className="mt-2 font-display text-title text-text">{plan.title}</h1>
 
         <p className="mt-2 text-text-soft">
           {plan.intro ??
@@ -102,15 +61,38 @@ export default function Workouts({ loaderData }: Route.ComponentProps) {
         </p>
       </header>
 
-      <div className="mt-8 grid gap-5">
-        {plan.sessions?.map((session) => (
-          <SessionCard key={session._key} session={session} />
+      {/* Numbered, not weekday-bound: the week is the sessions in order, done
+          whenever the member gets to them. A calendar would have to show a
+          missed Wednesday, which is exactly the guilt the plan is built to
+          avoid. See PRODUCT.md, "Design around the collapsed week". */}
+      <ol className="mt-8 grid gap-3">
+        {sessions.map((session, index) => (
+          <li key={session._key}>
+            <Link
+              to={`/dashboard/workouts/${index + 1}`}
+              className="flex items-center gap-4 rounded-xl border border-line bg-raised px-5 py-4 transition-colors hover:border-bronze"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line font-semibold text-text-soft">
+                {index + 1}
+              </span>
+
+              <span className="flex grow flex-col gap-0.5">
+                <span className="font-display text-subtitle text-text">{session.title}</span>
+
+                <span className="text-sm text-text-muted">
+                  {session.exercises?.length ?? 0} æfingar
+                </span>
+              </span>
+
+              <ChevronRight className="size-5 shrink-0 text-text-muted" aria-hidden="true" />
+            </Link>
+          </li>
         ))}
-      </div>
+      </ol>
 
       <p className="mt-8 rounded-lg border border-line-soft bg-sunken p-4 text-sm text-text-muted">
-        Missirðu úr æfingu tekurðu hana ekki upp seinna — þú heldur bara áfram þar sem frá var
-        horfið.
+        Engir fastir dagar. Missirðu úr æfingu tekurðu hana ekki upp seinna — þú heldur bara áfram
+        þar sem frá var horfið.
       </p>
     </div>
   );
