@@ -553,7 +553,7 @@ code stays in place, dormant, and `/subscribe` is no longer linked from anywhere
 ```
 sign-up → /onboarding … measurements → ready (name, kennitala, phone) → "Hell YEAH"
             completeOnboarding: plan + macros as before, plus users.name/kennitala/phone/ready_at
-        → /waiting                       (Aron sends the claim)
+        → /articles, paid tabs locked   (Aron sends the claim; was /waiting until 2026-09-29)
         → /admin "Greitt" → users.access_granted_until → /dashboard
 ```
 
@@ -572,6 +572,21 @@ sign-up → /onboarding … measurements → ready (name, kennitala, phone) → 
   `/waiting` unreachable until it closed. Testers keep access through a one-off grant:
   `update users set access_granted_until = '2026-10-15T00:00:00Z' where id in (select user_id
 from plan_assignments)`.
+
+### Preview before access — 2026-09-29
+
+`/waiting` was a dead end: a member who had paid nothing yet saw one page and nothing of what
+they were paying for. Now they get the member area itself — Fróðleikur readable, the plan and
+macros tabs locked, and a banner saying full access opens once the claim is paid (or, after a
+grant ran out, that it has and a new claim is on its way).
+
+- **Two nested layouts.** `layouts/member.tsx` requires a finished questionnaire
+  (`requireOnboarded`); `layouts/paid.tsx` inside it requires access (`requireActiveAccess`)
+  and holds `/dashboard/*` and `/settings`. The locked tab is cosmetic — the paid layout's
+  redirect is what keeps the plan off the wire, and it beats the child loaders running in
+  parallel with it.
+- **The unpaid land on `/articles`** (`PREVIEW_LANDING`), from the entry redirect and from
+  the paid layout. `/waiting` is retired to a redirect to `/` so an old link still lands.
 
 ### /admin — 2026-09-28
 

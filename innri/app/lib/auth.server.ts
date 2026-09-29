@@ -6,18 +6,21 @@ import { db } from "~/db";
 import { users } from "~/db/schema";
 
 /**
- * There are three levels of gate in this app, and they are easy to confuse:
+ * There are four levels of gate in this app, and they are easy to confuse:
  *
  *   public              /sign-in, /sign-up
- *   signed in           /subscribe, /onboarding, /waiting, /admin — you must
- *                       have an account to answer the questionnaire, to wait
- *                       for Aron's claim to be paid, or to be Aron
- *   signed in + paid    everything under layouts/member.tsx
+ *   signed in           /subscribe, /onboarding, /admin — you must have an
+ *                       account to answer the questionnaire or to be Aron
+ *   signed in + onboarded  everything under layouts/member.tsx — Fróðleikur,
+ *                       with the paid tabs locked and a banner until the claim
+ *                       is paid
+ *   signed in + paid    everything under layouts/paid.tsx, nested inside the
+ *                       member layout — the plan, macros and settings
  *
- * The third is enforced by the member layout's loader. The second is
- * `requireUserId`, because those routes deliberately sit outside that layout —
- * they have their own full-width chrome and must stay reachable to someone who
- * has not paid yet, which is the whole point of the paywall.
+ * The last two are the layouts' loaders (`requireOnboarded`,
+ * `requireActiveAccess` in subscription.server.ts). The second is
+ * `requireUserId`, because those routes deliberately sit outside the member
+ * layout with their own full-width chrome.
  */
 
 type AuthArgs = Parameters<typeof getAuth>[0];
