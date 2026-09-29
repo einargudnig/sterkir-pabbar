@@ -1,4 +1,3 @@
-import { UserButton } from "@clerk/react-router";
 import { clerkClient } from "@clerk/react-router/server";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -37,8 +36,9 @@ import type { Route } from "./+types/admin";
  * the action on the row. A row expands for the details a claim needs
  * (kennitala, phone) and the health notes he should read before opening access.
  *
- * Outside the member layout — Aron does not pay for his own product — and
- * gated on `users.is_admin` by `requireAdmin`.
+ * Inside the member layout for its chrome, which lets admins through without a
+ * questionnaire. The page itself is gated on `users.is_admin` by `requireAdmin`
+ * — the layout's guard alone would admit every member.
  */
 export async function loader(args: Route.LoaderArgs) {
   await requireAdmin(args);
@@ -508,12 +508,8 @@ export default function Admin({ loaderData, actionData }: Route.ComponentProps) 
   const { users, now, lastSeenAvailable } = loaderData;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-12">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-title text-text">Umsjón</h1>
-
-        <UserButton />
-      </div>
+    <>
+      <h1 className="font-display text-title text-text">Umsjón</h1>
 
       <p className="mt-2 max-w-2xl text-text-soft">
         Sendu kröfu í heimabanka og merktu hana senda hér. Merktu hana greidda þegar hún berst — þá
@@ -529,6 +525,6 @@ export default function Admin({ loaderData, actionData }: Route.ComponentProps) 
       )}
 
       <UsersTable users={users} now={now} lastSeenAvailable={lastSeenAvailable} />
-    </main>
+    </>
   );
 }

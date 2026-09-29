@@ -57,6 +57,12 @@ describe("assertOnboarded", () => {
 
     expect(await redirectOf(() => assertOnboarded(member))).toBeNull();
   });
+
+  it("lets an admin in without a questionnaire, so /admin has the app's chrome", async () => {
+    const admin = await createMember({ isAdmin: true });
+
+    expect(await redirectOf(() => assertOnboarded(admin))).toBeNull();
+  });
 });
 
 describe("assertAccess", () => {

@@ -9,7 +9,8 @@ import { requireOnboarded } from "~/lib/subscription.server";
 import type { Route } from "./+types/member";
 
 /**
- * Shell for the member area, for everyone who has answered the questionnaire.
+ * Shell for the member area, for everyone who has answered the questionnaire —
+ * and for admins, who need not have, since /admin lives inside it.
  *
  * Paid or not, a member gets the same chrome. Without access the plan and
  * macros tabs are locked and a banner says access opens once the claim is
@@ -80,7 +81,12 @@ export default function MemberLayout({ loaderData }: Route.ComponentProps) {
             {loaderData.isAdmin && (
               <NavLink
                 to="/admin"
-                className="rounded-md px-2 py-1 text-sm text-text-muted transition-colors hover:text-text"
+                className={({ isActive }) =>
+                  [
+                    "rounded-md px-2 py-1 text-sm transition-colors",
+                    isActive ? "text-text" : "text-text-muted hover:text-text",
+                  ].join(" ")
+                }
               >
                 Umsjón
               </NavLink>

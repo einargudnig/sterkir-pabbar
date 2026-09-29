@@ -9,11 +9,12 @@ import { users } from "~/db/schema";
  * There are four levels of gate in this app, and they are easy to confuse:
  *
  *   public              /sign-in, /sign-up
- *   signed in           /subscribe, /onboarding, /admin — you must have an
- *                       account to answer the questionnaire or to be Aron
+ *   signed in           /subscribe, /onboarding — you must have an account to
+ *                       answer the questionnaire
  *   signed in + onboarded  everything under layouts/member.tsx — Fróðleikur,
  *                       with the paid tabs locked and a banner until the claim
- *                       is paid
+ *                       is paid. Admins pass without a questionnaire; /admin
+ *                       sits here and adds `requireAdmin` on top
  *   signed in + paid    everything under layouts/paid.tsx, nested inside the
  *                       member layout — the plan, macros and settings
  *
