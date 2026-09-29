@@ -64,11 +64,14 @@ handler checks a shared-secret header, then re-fetches the subscription from Rep
 the server key and writes _that_ to the mirror. `requireActiveAccess` reads the local Postgres
 mirror, never a live Repeat call.
 
-**Three gate levels, defined in `innri/app/lib/auth.server.ts`.** Public is `/sign-in` and
-`/sign-up`. Signed-in-only is `/subscribe`, `/onboarding`, `/waiting` and `/admin` — they sit outside the
-member layout on purpose, because a paywall people cannot reach is not a paywall, so they call
-`requireUserId` themselves. Everything under `layouts/member.tsx` is gated by that layout's
-loader. A new route under the layout inherits the guard; a new route outside it does not.
+**Four gate levels, defined in `innri/app/lib/auth.server.ts`.** Public is `/sign-in` and
+`/sign-up`. Signed-in-only is `/subscribe`, `/onboarding` and `/admin` — they sit outside the
+member layout on purpose, so they guard themselves. `layouts/member.tsx` requires a finished
+questionnaire: a member who has not paid sees the app with the paid tabs locked, a banner, and
+Fróðleikur. `layouts/paid.tsx`, nested inside it, requires access — plan, macros, settings. A
+new route inherits the guard of the layout it sits under, so **put it under the paid layout
+unless an unpaid member should see it.** A locked tab is cosmetic; the paid layout's loader is
+the lock.
 
 **Never reintroduce `resolve.tsconfigPaths` in `innri/vite.config.ts`.** It discovers the repo
 root's tsconfig, which extends `astro/tsconfigs/strict` — fine locally, fatal on Vercel where

@@ -4,11 +4,17 @@ import { index, layout, prefix, route, type RouteConfig } from "@react-router/de
  * Paths and filenames are English; everything a member reads on the page is
  * Icelandic. See the route map in docs/solutions/inner-circle.md.
  *
- * Everything inside the member layout is gated by that layout's loader, so a
- * route added here is guarded by existing there. The routes outside it —
- * subscribe, onboarding, waiting, admin — are signed-in-only and guard
- * themselves; they sit outside because they must stay reachable to someone who
- * has not paid yet. `subscribe` is Repeat's checkout, dormant until it is live.
+ * Two nested gates, each a layout loader, so a route is guarded by where it
+ * sits rather than by remembering to call something:
+ *
+ *   member layout   questionnaire answered — Fróðleikur, readable while a
+ *                   member waits for their claim to be paid
+ *   paid layout     inside it, plus access — the plan, macros and settings
+ *
+ * Put a new route under the paid layout unless someone who has not paid should
+ * see it. The routes outside both — subscribe, onboarding, admin — are
+ * signed-in-only and guard themselves. `waiting` is retired to a redirect.
+ * `subscribe` is Repeat's checkout, dormant until it is live.
  */
 export default [
   index("routes/home.tsx"),
@@ -20,19 +26,21 @@ export default [
   route("waiting", "routes/waiting.tsx"),
 
   layout("layouts/member.tsx", [
-    ...prefix("dashboard", [
-      index("routes/dashboard/index.tsx"),
-      route("workouts", "routes/dashboard/workouts.tsx"),
-      route("workouts/:session", "routes/dashboard/session.tsx"),
-      route("macros", "routes/dashboard/macros.tsx"),
+    layout("layouts/paid.tsx", [
+      ...prefix("dashboard", [
+        index("routes/dashboard/index.tsx"),
+        route("workouts", "routes/dashboard/workouts.tsx"),
+        route("workouts/:session", "routes/dashboard/session.tsx"),
+        route("macros", "routes/dashboard/macros.tsx"),
+      ]),
+
+      route("settings", "routes/settings.tsx"),
     ]),
 
     ...prefix("articles", [
       index("routes/articles/index.tsx"),
       route(":slug", "routes/articles/article.tsx"),
     ]),
-
-    route("settings", "routes/settings.tsx"),
   ]),
 
   route("admin", "routes/admin.tsx"),
