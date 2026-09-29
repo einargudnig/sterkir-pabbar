@@ -1,6 +1,6 @@
 import { getAuth } from "@clerk/react-router/server";
 import { eq } from "drizzle-orm";
-import { redirect } from "react-router";
+import { data, redirect } from "react-router";
 
 import { db } from "~/db";
 import { users } from "~/db/schema";
@@ -9,9 +9,9 @@ import { users } from "~/db/schema";
  * There are three levels of gate in this app, and they are easy to confuse:
  *
  *   public              /sign-in, /sign-up
- *   signed in           /subscribe, /onboarding, /admin — you must have an
- *                       account to subscribe, to answer the questionnaire, or
- *                       to be Aron
+ *   signed in           /subscribe, /onboarding, /waiting, /admin — you must
+ *                       have an account to answer the questionnaire, to wait
+ *                       for Aron's claim to be paid, or to be Aron
  *   signed in + paid    everything under layouts/member.tsx
  *
  * The third is enforced by the member layout's loader. The second is
@@ -83,4 +83,20 @@ export const requireUser = async (args: AuthArgs): Promise<UserRow> => {
   }
 
   return raced;
+};
+
+/**
+ * Aron, and nobody else. A signed-in member who guesses /admin gets a 404
+ * rather than a 403 — there is no reason to confirm the page exists.
+ *
+ * `is_admin` is set by hand in the database, once, for Aron's row.
+ */
+export const requireAdmin = async (args: AuthArgs): Promise<UserRow> => {
+  const user = await requireUser(args);
+
+  if (!user.isAdmin) {
+    throw data(null, { status: 404 });
+  }
+
+  return user;
 };

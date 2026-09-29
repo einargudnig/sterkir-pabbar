@@ -16,7 +16,9 @@ export default function Nyskraning() {
 
       <h1 className="font-display text-title text-text">Nýskráning</h1>
 
-      <p className="mt-3 mb-8 text-text-soft">Búðu til aðgang. Þú velur áskrift í næsta skrefi.</p>
+      <p className="mt-3 mb-8 text-text-soft">
+        Búðu til aðgang. Svo tekur við stuttur spurningalisti sem setur saman planið þitt.
+      </p>
 
       <SignUp signInUrl="/sign-in" forceRedirectUrl="/" />
     </main>

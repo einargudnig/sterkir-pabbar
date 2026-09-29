@@ -1,7 +1,9 @@
+import { clerkClient } from "@clerk/react-router/server";
 import { Form, Link, redirect } from "react-router";
 
 import { ChoiceRow, FieldError, MeasurementFields } from "~/components/measurement-fields";
 import { Button, buttonVariants } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup } from "~/components/ui/radio-group";
 import { Textarea } from "~/components/ui/textarea";
@@ -17,6 +19,7 @@ import {
   HEALTH_FLAGS,
   isStep,
   LIMITS,
+  PARTS,
   partOf,
   type Step,
   stepsFor,
@@ -37,8 +40,10 @@ import { availableEquipmentQuery, availableFrequenciesQuery, sanity } from "~/li
 import type { Route } from "./+types/onboarding";
 
 /**
- * The onboarding wizard — the first thing a paying member does, and the only
- * screen where the product asks for something before giving anything.
+ * The onboarding wizard — the first thing a new member does, before paying, and
+ * the only screen where the product asks for something before giving anything.
+ * It ends with who Aron should invoice; finishing it puts the member in his
+ * queue on /admin.
  *
  * Two things shape every decision here. The members are fathers who have not
  * trained in years and who arrive braced for something that will make them feel
@@ -51,12 +56,13 @@ export async function loader(args: Route.LoaderArgs) {
   const user = await requireUser(args);
 
   /**
-   * Already a member. Re-running the wizard would append a second set of
+   * Already answered. Re-running the wizard would append a second set of
    * answers and quietly reassign their plan, so the way back in is the
-   * measurements form in Stillingar rather than this URL.
+   * measurements form in Stillingar rather than this URL. Sent to the entry
+   * redirect, which knows whether they are waiting on Aron or already in.
    */
   if (await hasCompletedOnboarding(user.id)) {
-    return redirect("/dashboard/workouts");
+    return redirect("/");
   }
 
   const draft = await readDraft(args.request);
@@ -111,7 +117,16 @@ export async function loader(args: Route.LoaderArgs) {
    */
   const planMissing = url.searchParams.get("vantar") === "plan";
 
-  return { step, steps, draft, equipmentOptions, frequencies, planMissing };
+  /**
+   * Prefilled from the account when the member has not typed a name yet —
+   * Google sign-ups carry one. Fetched only on the step that shows it.
+   */
+  const defaultName =
+    step === "ready" && draft.name === undefined
+      ? ((await clerkClient(args).users.getUser(user.clerkUserId)).fullName ?? "")
+      : (draft.name ?? "");
+
+  return { step, steps, draft, equipmentOptions, frequencies, planMissing, defaultName };
 }
 
 export async function action(args: Route.ActionArgs) {
@@ -141,7 +156,15 @@ export async function action(args: Route.ActionArgs) {
     });
   }
 
-  const completion = await completeOnboarding(user.id, merged);
+  /**
+   * Read from Clerk here as well as by the webhook: Aron needs an address to
+   * reach the member he is invoicing, and a webhook that has not landed — or
+   * never will, for accounts older than the endpoint — must not leave it blank.
+   */
+  const email = (await clerkClient(args).users.getUser(user.clerkUserId)).primaryEmailAddress
+    ?.emailAddress;
+
+  const completion = await completeOnboarding(user.id, merged, email);
 
   if (!completion.ok) {
     /**
@@ -157,7 +180,7 @@ export async function action(args: Route.ActionArgs) {
     );
   }
 
-  return redirect("/dashboard/workouts", {
+  return redirect("/", {
     headers: { "Set-Cookie": await clearedDraftHeader() },
   });
 }
@@ -184,7 +207,7 @@ function Progress({ step, steps }: { step: Step; steps: readonly Step[] }) {
 
       <p className="mt-3 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mark text-xs uppercase tracking-mark text-text-muted">
         <span className="whitespace-nowrap">
-          Hluti {number} af 2 · {part.title}
+          Hluti {number} af {PARTS.length} · {part.title}
         </span>
 
         <span className="whitespace-nowrap">
@@ -543,8 +566,90 @@ function FrequencyStep({
   );
 }
 
+function ReadyStep({
+  draft,
+  errors,
+  defaultName,
+}: {
+  draft: OnboardingDraft;
+  errors: StepErrors;
+  defaultName: string;
+}) {
+  return (
+    <>
+      <h1 className="font-display text-title text-text">Tilbúinn að keyra þetta í gang?</h1>
+
+      <p className="mt-3 text-text-soft">
+        Planið og næringarviðmiðin þín eru klár. Aron sendir þér kröfu í heimabankann og aðgangurinn
+        opnast um leið og greiðslan berst.
+      </p>
+
+      <div className="mt-8 grid gap-6">
+        <div className="grid gap-2">
+          <Label htmlFor="name">Fullt nafn</Label>
+
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            maxLength={LIMITS.nameChars}
+            defaultValue={defaultName}
+            aria-invalid={errors.name !== undefined}
+            className="h-11"
+          />
+
+          <FieldError message={errors.name} />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="kennitala">Kennitala</Label>
+
+          <p className="text-xs text-text-muted">Krafan er stofnuð á kennitöluna þína.</p>
+
+          <Input
+            id="kennitala"
+            name="kennitala"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="000000-0000"
+            defaultValue={draft.kennitala}
+            aria-invalid={errors.kennitala !== undefined}
+            className="h-11"
+          />
+
+          <FieldError message={errors.kennitala} />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="phone">Símanúmer (valkvætt)</Label>
+
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
+            defaultValue={draft.phone}
+            aria-invalid={errors.phone !== undefined}
+            className="h-11"
+          />
+
+          <FieldError message={errors.phone} />
+        </div>
+      </div>
+
+      <p className="mt-6 text-xs text-text-muted">
+        Aron sér þessar upplýsingar til að senda þér reikning, enginn annar.
+      </p>
+    </>
+  );
+}
+
 export default function Onboarding({ loaderData, actionData }: Route.ComponentProps) {
-  const { step, steps, draft, equipmentOptions, frequencies, planMissing } = loaderData;
+  const { step, steps, draft, equipmentOptions, frequencies, planMissing, defaultName } =
+    loaderData;
 
   const errors: StepErrors = actionData?.errors ?? {};
 
@@ -581,6 +686,8 @@ export default function Onboarding({ loaderData, actionData }: Route.ComponentPr
 
         {step === "measurements" && <MeasurementsStep draft={draft} errors={errors} />}
 
+        {step === "ready" && <ReadyStep draft={draft} errors={errors} defaultName={defaultName} />}
+
         <div className="mt-12 flex items-center justify-between gap-4">
           {previous === undefined ? (
             <span />
@@ -601,7 +708,7 @@ export default function Onboarding({ loaderData, actionData }: Route.ComponentPr
 
           {canContinue && (
             <Button type="submit" size="touch">
-              {isLast ? "Sjá planið mitt" : "Áfram"}
+              {isLast ? "Hell YEAH" : "Áfram"}
             </Button>
           )}
         </div>

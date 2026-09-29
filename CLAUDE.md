@@ -65,7 +65,7 @@ the server key and writes _that_ to the mirror. `requireActiveAccess` reads the 
 mirror, never a live Repeat call.
 
 **Three gate levels, defined in `innri/app/lib/auth.server.ts`.** Public is `/sign-in` and
-`/sign-up`. Signed-in-only is `/subscribe`, `/onboarding` and `/admin` — they sit outside the
+`/sign-up`. Signed-in-only is `/subscribe`, `/onboarding`, `/waiting` and `/admin` — they sit outside the
 member layout on purpose, because a paywall people cannot reach is not a paywall, so they call
 `requireUserId` themselves. Everything under `layouts/member.tsx` is gated by that layout's
 loader. A new route under the layout inherits the guard; a new route outside it does not.

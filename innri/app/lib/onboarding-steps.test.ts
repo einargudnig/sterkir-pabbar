@@ -294,9 +294,69 @@ describe("where an unfinished member belongs", () => {
     expect(firstIncompleteStep({ ...planChosen, confirmedAdult: true })).toBe("measurements");
   });
 
-  /** Measurements are the whole second part, so they come last. */
-  it("ends on measurements, with everything before them answered", () => {
-    expect(firstIncompleteStep({ ...answered, sessionsPerWeek: 3 })).toBe("measurements");
+  /** Who to invoice is the whole third part, and the last thing asked. */
+  it("ends on the ready step, with everything before it answered", () => {
+    expect(firstIncompleteStep({ ...answered, sessionsPerWeek: 3 })).toBe("ready");
+  });
+
+  it("stays on measurements while one of them is missing", () => {
+    expect(
+      firstIncompleteStep({
+        ...planChosen,
+        confirmedAdult: true,
+        weightKg: 92,
+        heightCm: 181,
+        age: 41,
+        sex: "karl",
+      }),
+    ).toBe("measurements");
+  });
+});
+
+describe("the ready step", () => {
+  const valid = { name: "Sigurður Jónsson", kennitala: "010130-2989", phone: "" };
+
+  it("stores the kennitala as bare digits and a blank phone as no answer", () => {
+    const result = submitStep("ready", form(valid));
+
+    expect(result).toStrictEqual({
+      ok: true,
+      patch: { name: "Sigurður Jónsson", kennitala: "0101302989", phone: undefined },
+    });
+  });
+
+  it("strips a +354 prefix and separators from the phone number", () => {
+    const result = submitStep("ready", form({ ...valid, phone: "+354 861-2345" }));
+
+    expect(result.ok && result.patch.phone).toBe("8612345");
+  });
+
+  it("rejects a phone number that is not seven digits", () => {
+    const result = submitStep("ready", form({ ...valid, phone: "86123" }));
+
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.errors.phone).toBe("Símanúmer er 7 tölustafir");
+  });
+
+  /** A claim sent to a mistyped kennitala goes to nobody. */
+  it("rejects a kennitala whose check digit does not match", () => {
+    const result = submitStep("ready", form({ ...valid, kennitala: "010130-2979" }));
+
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.errors.kennitala).toMatch(/misritast/u);
+  });
+
+  it("rejects a company kennitala", () => {
+    const result = submitStep("ready", form({ ...valid, kennitala: "460207-0889" }));
+
+    expect(!result.ok && result.errors.kennitala).toMatch(/fyrirtækis/u);
+  });
+
+  it("requires a name and a kennitala", () => {
+    const result = submitStep("ready", form({ name: "  ", kennitala: "" }));
+
+    expect(result.ok).toBe(false);
+    expect(!result.ok && Object.keys(result.errors).sort()).toEqual(["kennitala", "name"]);
   });
 });
 

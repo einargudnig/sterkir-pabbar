@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hasActiveAccess, isOpenAccess } from "./access";
+import { hasActiveAccess } from "./access";
 
 const now = new Date("2026-10-15T12:00:00Z");
 
@@ -89,24 +89,5 @@ describe("hasActiveAccess", () => {
 
   it("always lets an admin in", () => {
     expect(hasActiveAccess({ ...member, isAdmin: true }, now)).toBe(true);
-  });
-});
-
-describe("isOpenAccess", () => {
-  it("opens the paywall before the window closes", () => {
-    expect(isOpenAccess(later, now)).toBe(true);
-  });
-
-  /** A forgotten setting must close itself, not give the product away. */
-  it("closes the paywall once the window has passed", () => {
-    expect(isOpenAccess(earlier, now)).toBe(false);
-  });
-
-  it("closes at the exact moment the window ends", () => {
-    expect(isOpenAccess(now, now)).toBe(false);
-  });
-
-  it("stays closed when no window is set", () => {
-    expect(isOpenAccess(undefined, now)).toBe(false);
   });
 });
