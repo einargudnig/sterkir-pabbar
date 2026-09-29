@@ -1,30 +1,41 @@
 import { UserButton } from "@clerk/react-router";
 import { clerkClient } from "@clerk/react-router/server";
+import { ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { Form } from "react-router";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { type AdminMember, grantAccess, listUsers, revokeAccess } from "~/lib/admin.server";
+import {
+  cancelClaim,
+  grantAccess,
+  listUsers,
+  markClaimPaid,
+  revokeAccess,
+  sendClaim,
+} from "~/lib/admin.server";
 import { requireAdmin } from "~/lib/auth.server";
 import { formatDate } from "~/lib/format";
 import { formatKennitala } from "~/lib/kennitala";
 import {
-  EXPIRING_WITHIN_DAYS,
+  attentionRank,
   funnel,
   inInvoicingQueue,
   lastSeenLabel,
   type MemberStatus,
+  nextStep,
 } from "~/lib/members";
 import { GOAL_LABELS, type HealthFlagName } from "~/lib/onboarding";
 
 import type { Route } from "./+types/admin";
 
 /**
- * Aron's ops page: an overview of everyone who has signed up, then the
- * invoicing queue — who is waiting for their first claim, whose access runs out
- * soon, and a button to mark a claim paid.
+ * Aron's ops page: counts across the top, then one table of everyone who has
+ * signed up, ordered by what he has to do — send a claim, mark one paid — with
+ * the action on the row. A row expands for the details a claim needs
+ * (kennitala, phone) and the health notes he should read before opening access.
  *
  * Outside the member layout — Aron does not pay for his own product — and
  * gated on `users.is_admin` by `requireAdmin`.
@@ -87,11 +98,16 @@ const lastActiveByClerkId = async (
   }
 };
 
+const days = z.coerce.number().int().min(1).max(366);
+
 const actionSchema = z.discriminatedUnion("intent", [
+  z.object({ intent: z.literal("send"), userId: z.uuid(), days }),
+  z.object({ intent: z.literal("paid"), claimId: z.uuid() }),
+  z.object({ intent: z.literal("cancel"), claimId: z.uuid() }),
   z.object({
     intent: z.literal("grant"),
     userId: z.uuid(),
-    days: z.coerce.number().int().min(1).max(366),
+    days,
     seenUntil: z
       .string()
       .transform((value) => (value.length === 0 ? null : new Date(value)))
@@ -101,6 +117,8 @@ const actionSchema = z.discriminatedUnion("intent", [
 ]);
 
 type ActionResult = { readonly notice: string };
+
+const STALE = "Þetta hafði þegar verið skráð — listinn sýnir stöðuna eins og hún er núna.";
 
 export async function action(args: Route.ActionArgs): Promise<ActionResult> {
   await requireAdmin(args);
@@ -113,59 +131,50 @@ export async function action(args: Route.ActionArgs): Promise<ActionResult> {
 
   const input = parsed.data;
 
+  const now = new Date();
+
+  if (input.intent === "send") {
+    return (await sendClaim(input.userId, input.days, now)) === "sent"
+      ? { notice: `Krafa skráð send, fyrir ${input.days} daga.` }
+      : { notice: "Það er þegar krafa úti fyrir þennan meðlim." };
+  }
+
+  if (input.intent === "paid") {
+    return (await markClaimPaid(input.claimId, now)) === "paid"
+      ? { notice: "Krafa greidd — aðgangur opnaður." }
+      : { notice: STALE };
+  }
+
+  if (input.intent === "cancel") {
+    await cancelClaim(input.claimId);
+
+    return { notice: "Hætt við kröfuna." };
+  }
+
   if (input.intent === "revoke") {
     await revokeAccess(input.userId);
 
-    return { notice: "Aðgangur afturkallaður. Meðlimurinn bíður aftur eftir kröfu." };
+    return { notice: "Aðgangur afturkallaður." };
   }
 
-  const result = await grantAccess(input.userId, input.days, input.seenUntil, new Date());
+  const result = await grantAccess(input.userId, input.days, input.seenUntil, now);
 
   if (result === "stale") {
-    return { notice: "Þetta hafði þegar verið skráð — listinn sýnir stöðuna eins og hún er núna." };
+    return { notice: STALE };
   }
 
   if (result === "unknown") {
     return { notice: "Þessi meðlimur fannst ekki." };
   }
 
-  return { notice: `Aðgangur opnaður í ${input.days} daga.` };
+  return { notice: `Aðgangur opnaður í ${input.days} daga, án kröfu.` };
 }
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: "Umsjón — Innri hringurinn" }, { name: "robots", content: "noindex, nofollow" }];
 }
 
-const SECTIONS = [
-  {
-    status: "pending",
-    title: "Bíða eftir kröfu",
-    empty: "Enginn í röðinni.",
-  },
-  {
-    status: "expiring",
-    title: `Renna út innan ${EXPIRING_WITHIN_DAYS} daga`,
-    empty: "Enginn að renna út.",
-  },
-  {
-    status: "lapsed",
-    title: "Útrunnir",
-    empty: "Enginn útrunninn.",
-  },
-  {
-    status: "active",
-    title: "Virkir",
-    empty: "Enginn virkur ennþá.",
-  },
-] as const satisfies readonly {
-  readonly status: MemberStatus;
-  readonly title: string;
-  readonly empty: string;
-}[];
-
-/** Oldest first: the one who has waited longest, or runs out soonest, is next. */
-const sortKey = (member: AdminMember): number =>
-  (member.status === "pending" ? member.readyAt : member.accessGrantedUntil)?.getTime() ?? 0;
+type DashboardUser = Route.ComponentProps["loaderData"]["users"][number];
 
 const FLAG_LABELS = {
   chronicCondition: "Langvinnur sjúkdómur",
@@ -174,105 +183,15 @@ const FLAG_LABELS = {
   injury: "Meiðsli",
 } satisfies Record<HealthFlagName, string>;
 
-const flagsOf = (answers: NonNullable<AdminMember["answers"]>): string[] =>
-  [
-    { on: answers.flaggedChronicCondition, label: FLAG_LABELS.chronicCondition },
-    { on: answers.flaggedMedication, label: FLAG_LABELS.medication },
-    { on: answers.flaggedEatingDisorder, label: FLAG_LABELS.eatingDisorder },
-    { on: answers.flaggedInjury, label: FLAG_LABELS.injury },
-  ].flatMap((flag) => (flag.on ? [flag.label] : []));
-
-function MemberCard({ member }: { member: AdminMember }) {
-  const { answers } = member;
-
-  const flags = answers === null ? [] : flagsOf(answers);
-
-  return (
-    <li className="rounded-xl border border-line-soft bg-raised p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p className="text-text">{member.name ?? member.email ?? "Nafnlaus"}</p>
-
-        <p className="text-xs text-text-muted">
-          {member.accessGrantedUntil === null
-            ? member.readyAt === null
-              ? ""
-              : `Skráði sig ${formatDate(member.readyAt)}`
-            : `Aðgangur til ${formatDate(member.accessGrantedUntil)}`}
-        </p>
-      </div>
-
-      <dl className="mt-3 grid gap-1 text-sm text-text-soft sm:grid-cols-4 sm:gap-x-4">
-        <dt className="text-text-muted">Kennitala</dt>
-        <dd className="font-mono sm:col-span-3">
-          {member.kennitala === null ? "—" : formatKennitala(member.kennitala)}
-        </dd>
-
-        <dt className="text-text-muted">Netfang</dt>
-        <dd className="sm:col-span-3">{member.email ?? "—"}</dd>
-
-        <dt className="text-text-muted">Sími</dt>
-        <dd className="sm:col-span-3">{member.phone ?? "—"}</dd>
-
-        {answers !== null && (
-          <>
-            <dt className="text-text-muted">Plan</dt>
-            <dd className="sm:col-span-3">
-              {GOAL_LABELS[answers.goal].label}, {answers.sessionsPerWeek}× í viku
-            </dd>
-          </>
-        )}
-      </dl>
-
-      {(flags.length > 0 || (answers?.limitations ?? null) !== null) && (
-        <div className="mt-3 border-l-2 border-bronze-deep pl-4 text-sm text-text-soft">
-          {flags.length > 0 && <p>Heilsa: {flags.join(", ")}</p>}
-
-          {answers?.limitations && <p className="mt-1">„{answers.limitations}“</p>}
-        </div>
-      )}
-
-      <Form method="post" className="mt-4 flex flex-wrap items-end gap-3">
-        <input type="hidden" name="intent" value="grant" />
-        <input type="hidden" name="userId" value={member.id} />
-        <input
-          type="hidden"
-          name="seenUntil"
-          value={member.accessGrantedUntil?.toISOString() ?? ""}
-        />
-
-        <div className="grid gap-1.5">
-          <Label htmlFor={`days-${member.id}`}>Dagar</Label>
-
-          <Input
-            id={`days-${member.id}`}
-            name="days"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={366}
-            defaultValue={30}
-            className="h-11 w-20"
-          />
-        </div>
-
-        <Button type="submit" size="touch">
-          {member.status === "pending" ? "Greitt — opna aðgang" : "Greitt — framlengja"}
-        </Button>
-      </Form>
-
-      {member.accessGrantedUntil !== null && (
-        <Form method="post" className="mt-2">
-          <input type="hidden" name="intent" value="revoke" />
-          <input type="hidden" name="userId" value={member.id} />
-
-          <Button type="submit" variant="ghost" size="sm">
-            Afturkalla aðgang
-          </Button>
-        </Form>
-      )}
-    </li>
-  );
-}
+const flagsOf = (answers: DashboardUser["answers"]): string[] =>
+  answers === null
+    ? []
+    : [
+        { on: answers.flaggedChronicCondition, label: FLAG_LABELS.chronicCondition },
+        { on: answers.flaggedMedication, label: FLAG_LABELS.medication },
+        { on: answers.flaggedEatingDisorder, label: FLAG_LABELS.eatingDisorder },
+        { on: answers.flaggedInjury, label: FLAG_LABELS.injury },
+      ].flatMap((flag) => (flag.on ? [flag.label] : []));
 
 const ACCESS_LABELS = {
   pending: "Bíður eftir kröfu",
@@ -280,8 +199,6 @@ const ACCESS_LABELS = {
   active: "Virkur",
   lapsed: "Útrunninn",
 } satisfies Record<MemberStatus, string>;
-
-type DashboardUser = Route.ComponentProps["loaderData"]["users"][number];
 
 /** A member who never reached the queue has no access to speak of, not a pending claim. */
 const accessLabel = (user: DashboardUser): string =>
@@ -309,6 +226,151 @@ function Overview({ users }: { users: readonly DashboardUser[] }) {
   );
 }
 
+function DaysField({ id, defaultValue = 30 }: { id: string; defaultValue?: number }) {
+  return (
+    <>
+      <Label htmlFor={id} className="sr-only">
+        Dagar
+      </Label>
+
+      <Input
+        id={id}
+        name="days"
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={366}
+        defaultValue={defaultValue}
+        className="h-8 w-16"
+      />
+    </>
+  );
+}
+
+/** The one thing to do about this person right now, on their row. */
+function RowAction({ user }: { user: DashboardUser }) {
+  const step = nextStep(user);
+
+  if (step === "awaitPayment" && user.openClaim !== null) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-text-muted">
+          Send {formatDate(user.openClaim.sentAt)} · {user.openClaim.days} d.
+        </span>
+
+        <Form method="post">
+          <input type="hidden" name="intent" value="paid" />
+          <input type="hidden" name="claimId" value={user.openClaim.id} />
+          <Button type="submit">Greitt</Button>
+        </Form>
+
+        <Form method="post">
+          <input type="hidden" name="intent" value="cancel" />
+          <input type="hidden" name="claimId" value={user.openClaim.id} />
+          <Button type="submit" variant="ghost">
+            Hætta við
+          </Button>
+        </Form>
+      </div>
+    );
+  }
+
+  if (step === "sendClaim") {
+    return (
+      <Form method="post" className="flex items-center gap-2">
+        <input type="hidden" name="intent" value="send" />
+        <input type="hidden" name="userId" value={user.id} />
+        <DaysField id={`send-days-${user.id}`} />
+
+        {/* An active member can be sent next month's claim early, but it is
+            not what Aron came here to do — so it does not shout. */}
+        <Button type="submit" variant={user.status === "active" ? "outline" : "default"}>
+          Krafa send
+        </Button>
+      </Form>
+    );
+  }
+
+  return <span className="text-text-muted">—</span>;
+}
+
+function Details({ user }: { user: DashboardUser }) {
+  const { answers } = user;
+
+  const flags = flagsOf(answers);
+
+  return (
+    <div className="grid gap-6 px-4 py-5 sm:grid-cols-2">
+      <dl className="grid grid-cols-3 gap-x-4 gap-y-1 text-sm text-text-soft">
+        <dt className="text-text-muted">Kennitala</dt>
+        <dd className="col-span-2 font-mono">
+          {user.kennitala === null ? "—" : formatKennitala(user.kennitala)}
+        </dd>
+
+        <dt className="text-text-muted">Netfang</dt>
+        <dd className="col-span-2">{user.email ?? "—"}</dd>
+
+        <dt className="text-text-muted">Sími</dt>
+        <dd className="col-span-2">{user.phone ?? "—"}</dd>
+
+        <dt className="text-text-muted">Plan</dt>
+        <dd className="col-span-2">
+          {answers === null
+            ? "—"
+            : `${GOAL_LABELS[answers.goal].label}, ${answers.sessionsPerWeek}× í viku`}
+        </dd>
+
+        <dt className="text-text-muted">Síðast greitt</dt>
+        <dd className="col-span-2">
+          {user.lastPaidClaim?.paidAt
+            ? `${formatDate(user.lastPaidClaim.paidAt)} · ${user.lastPaidClaim.days} d.`
+            : "—"}
+        </dd>
+      </dl>
+
+      <div className="grid content-start gap-4">
+        {(flags.length > 0 || answers?.limitations) && (
+          <div className="border-l-2 border-bronze-deep pl-4 text-sm text-text-soft">
+            {flags.length > 0 && <p>Heilsa: {flags.join(", ")}</p>}
+
+            {answers?.limitations && <p className="mt-1">„{answers.limitations}“</p>}
+          </div>
+        )}
+
+        {/* Access without a claim — comping a friend, or a payment that
+            arrived some other way. Guarded by the end date the page showed. */}
+        <Form method="post" className="flex items-center gap-2">
+          <input type="hidden" name="intent" value="grant" />
+          <input type="hidden" name="userId" value={user.id} />
+          <input
+            type="hidden"
+            name="seenUntil"
+            value={user.accessGrantedUntil?.toISOString() ?? ""}
+          />
+          <DaysField id={`grant-days-${user.id}`} />
+
+          <Button type="submit" variant="outline">
+            Opna aðgang án kröfu
+          </Button>
+        </Form>
+
+        {user.accessGrantedUntil !== null && (
+          <Form method="post">
+            <input type="hidden" name="intent" value="revoke" />
+            <input type="hidden" name="userId" value={user.id} />
+
+            <Button type="submit" variant="ghost" size="sm">
+              Afturkalla aðgang
+            </Button>
+          </Form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const COLUMNS = ["Notandi", "Spurningalisti", "Aðgangur", "Síðast virkur", "Næsta skref"];
+
 function UsersTable({
   users,
   now,
@@ -318,6 +380,21 @@ function UsersTable({
   now: Date;
   lastSeenAvailable: boolean;
 }) {
+  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
+
+  const toggle = (id: string) =>
+    setOpen((current) => {
+      const next = new Set(current);
+
+      if (!next.delete(id)) {
+        next.add(id);
+      }
+
+      return next;
+    });
+
+  const ordered = [...users].sort((a, b) => attentionRank(a) - attentionRank(b));
+
   return (
     <section className="mt-12">
       <h2 className="font-mark text-xs uppercase tracking-mark text-text-muted">
@@ -331,64 +408,96 @@ function UsersTable({
       )}
 
       {/* Scrolls sideways on a phone rather than squeezing five columns into
-          390px; Aron reads this at a desk, the queue below is the phone part. */}
+          390px. */}
       <div className="mt-4 overflow-x-auto rounded-xl border border-line-soft">
-        <table className="w-full min-w-xl text-left text-sm">
+        <table className="w-full min-w-2xl text-left text-sm">
           <thead className="bg-sunken text-text-muted">
             <tr>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Notandi
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Skráður
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Spurningalisti
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Aðgangur
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Síðast virkur
-              </th>
+              {COLUMNS.map((column) => (
+                <th key={column} scope="col" className="px-4 py-3 font-medium">
+                  {column}
+                </th>
+              ))}
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-line-soft">
-            {users.map((user) => (
-              <tr key={user.id} className="text-text-soft">
-                <td className="px-4 py-3">
-                  <p className="text-text">{user.name ?? user.email ?? "Nafnlaus"}</p>
-                  {user.name !== null && user.email !== null && (
-                    <p className="text-xs text-text-muted">{user.email}</p>
-                  )}
-                </td>
+          {ordered.map((user) => {
+            const expanded = open.has(user.id);
 
-                <td className="whitespace-nowrap px-4 py-3">{formatDate(user.createdAt)}</td>
+            const flagged = flagsOf(user.answers).length > 0;
 
-                <td className="whitespace-nowrap px-4 py-3">
-                  {user.answers === null ? (
-                    <span className="text-text-muted">Ekki lokið</span>
-                  ) : (
-                    `Lokið ${formatDate(user.answers.completedAt)}`
-                  )}
-                </td>
+            return (
+              <tbody key={user.id} className="border-t border-line-soft">
+                <tr className="text-text-soft">
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => toggle(user.id)}
+                      aria-expanded={expanded}
+                      aria-controls={`details-${user.id}`}
+                      className="flex items-start gap-2 text-left"
+                    >
+                      <ChevronRight
+                        aria-hidden="true"
+                        className={`mt-0.5 size-4 shrink-0 text-text-muted transition-transform ${expanded ? "rotate-90" : ""}`}
+                      />
 
-                <td className="whitespace-nowrap px-4 py-3">
-                  <p>{accessLabel(user)}</p>
-                  {user.accessGrantedUntil !== null && (
-                    <p className="text-xs text-text-muted">
-                      til {formatDate(user.accessGrantedUntil)}
-                    </p>
-                  )}
-                </td>
+                      <span>
+                        <span className="block text-text">
+                          {user.name ?? user.email ?? "Nafnlaus"}
+                        </span>
 
-                <td className="whitespace-nowrap px-4 py-3">
-                  {lastSeenAvailable ? lastSeenLabel(user.lastActiveAt, now) : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                        <span className="block text-xs text-text-muted">
+                          Skráður {formatDate(user.createdAt)}
+                        </span>
+
+                        {/* So a flag is seen before access is opened, not
+                            only if Aron happens to expand the row. */}
+                        {flagged && (
+                          <span className="mt-1 block text-xs text-bronze">
+                            Heilsufar — sjá nánar
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  </td>
+
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {user.answers === null ? (
+                      <span className="text-text-muted">Ekki lokið</span>
+                    ) : (
+                      `Lokið ${formatDate(user.answers.completedAt)}`
+                    )}
+                  </td>
+
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <p>{accessLabel(user)}</p>
+                    {user.accessGrantedUntil !== null && (
+                      <p className="text-xs text-text-muted">
+                        til {formatDate(user.accessGrantedUntil)}
+                      </p>
+                    )}
+                  </td>
+
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {lastSeenAvailable ? lastSeenLabel(user.lastActiveAt, now) : "—"}
+                  </td>
+
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <RowAction user={user} />
+                  </td>
+                </tr>
+
+                {expanded && (
+                  <tr id={`details-${user.id}`} className="bg-sunken">
+                    <td colSpan={COLUMNS.length}>
+                      <Details user={user} />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            );
+          })}
         </table>
       </div>
     </section>
@@ -398,57 +507,28 @@ function UsersTable({
 export default function Admin({ loaderData, actionData }: Route.ComponentProps) {
   const { users, now, lastSeenAvailable } = loaderData;
 
-  const members = users.filter(inInvoicingQueue);
-
   return (
-    <main className="mx-auto max-w-4xl px-4 py-12">
+    <main className="mx-auto max-w-5xl px-4 py-12">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-title text-text">Umsjón</h1>
 
         <UserButton />
       </div>
 
-      <Overview users={users} />
-
-      <UsersTable users={users} now={now} lastSeenAvailable={lastSeenAvailable} />
-
-      <h2 className="mt-16 font-display text-subtitle text-text">Rukkun</h2>
-
       <p className="mt-2 max-w-2xl text-text-soft">
-        Sendu kröfu í heimabanka, og merktu hana greidda hér þegar hún berst.
+        Sendu kröfu í heimabanka og merktu hana senda hér. Merktu hana greidda þegar hún berst — þá
+        opnast aðgangurinn.
       </p>
 
+      <Overview users={users} />
+
       {actionData?.notice && (
-        <p role="status" className="mt-6 border-l-2 border-bronze pl-4 text-sm text-text-soft">
+        <p role="status" className="mt-8 border-l-2 border-bronze pl-4 text-sm text-text-soft">
           {actionData.notice}
         </p>
       )}
 
-      {SECTIONS.map((section) => {
-        const inSection = members
-          .filter((member) => member.status === section.status)
-          .sort((a, b) =>
-            section.status === "lapsed" ? sortKey(b) - sortKey(a) : sortKey(a) - sortKey(b),
-          );
-
-        return (
-          <section key={section.status} className="mt-10 max-w-2xl">
-            <h3 className="font-mark text-xs uppercase tracking-mark text-text-muted">
-              {section.title} · {inSection.length}
-            </h3>
-
-            {inSection.length === 0 ? (
-              <p className="mt-3 text-sm text-text-muted">{section.empty}</p>
-            ) : (
-              <ul className="mt-4 grid gap-4">
-                {inSection.map((member) => (
-                  <MemberCard key={member.id} member={member} />
-                ))}
-              </ul>
-            )}
-          </section>
-        );
-      })}
+      <UsersTable users={users} now={now} lastSeenAvailable={lastSeenAvailable} />
     </main>
   );
 }
