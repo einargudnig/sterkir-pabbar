@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { extendGrant, memberStatus } from "./members";
+import { extendGrant, funnel, inInvoicingQueue, lastSeenLabel, memberStatus } from "./members";
 
 const now = new Date("2026-10-15T12:00:00Z");
 
@@ -60,5 +60,58 @@ describe("extendGrant", () => {
   /** Paying late must not backdate a month they could not use. */
   it("starts from now once a grant has run out", () => {
     expect(extendGrant(days(-10), now, 30)).toEqual(days(30));
+  });
+});
+
+describe("inInvoicingQueue", () => {
+  it("leaves out someone who signed up and never said they were ready", () => {
+    expect(inInvoicingQueue({ readyAt: null, accessGrantedUntil: null })).toBe(false);
+  });
+
+  it("keeps someone Aron granted before they finished the questionnaire", () => {
+    expect(inInvoicingQueue({ readyAt: null, accessGrantedUntil: days(10) })).toBe(true);
+  });
+});
+
+describe("funnel", () => {
+  it("counts each stage, and access whether or not the member reached the queue", () => {
+    const row = {
+      readyAt: null,
+      accessGrantedUntil: null,
+      answered: false,
+      status: "pending",
+    } as const;
+
+    expect(
+      funnel([
+        row,
+        { ...row, answered: true },
+        { ...row, answered: true, readyAt: days(-2) },
+        {
+          ...row,
+          answered: true,
+          readyAt: days(-9),
+          accessGrantedUntil: days(20),
+          status: "active",
+        },
+        { ...row, accessGrantedUntil: days(3), status: "expiring" },
+      ]),
+    ).toEqual({ signedUp: 5, answered: 3, ready: 2, withAccess: 2 });
+  });
+});
+
+describe("lastSeenLabel", () => {
+  it("says never for someone Clerk has no session for", () => {
+    expect(lastSeenLabel(null, now)).toBe("Aldrei");
+  });
+
+  it("reads relative within two weeks", () => {
+    expect(lastSeenLabel(days(0), now)).toBe("Í dag");
+    expect(lastSeenLabel(days(-1), now)).toBe("Í gær");
+    expect(lastSeenLabel(days(-13), now)).toBe("Fyrir 13 dögum");
+  });
+
+  it("falls back to the date after two weeks", () => {
+    expect(lastSeenLabel(days(-14), now)).toBe("1. október 2026");
   });
 });

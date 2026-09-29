@@ -5,7 +5,7 @@ import { createMember, reload, resetDatabase } from "../../test/db";
 import { db } from "~/db";
 import { onboarding, users } from "~/db/schema";
 
-import { grantAccess, listMembers, revokeAccess } from "./admin.server";
+import { grantAccess, listMembers, listUsers, revokeAccess } from "./admin.server";
 
 const now = new Date("2026-10-15T12:00:00Z");
 
@@ -52,6 +52,20 @@ describe("listMembers", () => {
 
     expect(listed?.status).toBe("pending");
     expect(listed?.answers?.weightKg).toBe(92);
+  });
+});
+
+describe("listUsers", () => {
+  it("lists everyone who signed up, finished or not, and leaves out admins", async () => {
+    const stopped = await createMember();
+    const queued = await createMember({ readyAt: days(-1) });
+
+    await createMember({ isAdmin: true });
+
+    const listed = await listUsers(now);
+
+    expect(listed.map((user) => user.id).sort()).toEqual([stopped.id, queued.id].sort());
+    expect(listed.find((user) => user.id === stopped.id)?.answers).toBeNull();
   });
 });
 
