@@ -43,6 +43,13 @@
       "when": 1790572063982,
       "tag": "0005_manual_invoicing",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790672272364,
+      "tag": "0006_admin_claims",
+      "breakpoints": true
     }
   ]
 }

@@ -5,7 +5,15 @@ import { createMember, reload, resetDatabase } from "../../test/db";
 import { db } from "~/db";
 import { onboarding, users } from "~/db/schema";
 
-import { grantAccess, listMembers, listUsers, revokeAccess } from "./admin.server";
+import {
+  cancelClaim,
+  grantAccess,
+  listMembers,
+  listUsers,
+  markClaimPaid,
+  revokeAccess,
+  sendClaim,
+} from "./admin.server";
 
 const now = new Date("2026-10-15T12:00:00Z");
 
@@ -124,5 +132,79 @@ describe("revokeAccess", () => {
     const [listed] = await listMembers(now);
 
     expect(listed?.status).toBe("pending");
+  });
+});
+
+describe("claims", () => {
+  const openClaimOf = async (userId: string) =>
+    (await listUsers(now)).find((user) => user.id === userId)?.openClaim ?? null;
+
+  it("records a sent claim, and refuses a second while the first is open", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    expect(await sendClaim(member.id, 30, now)).toBe("sent");
+    expect(await sendClaim(member.id, 30, now)).toBe("open");
+
+    expect((await openClaimOf(member.id))?.days).toBe(30);
+  });
+
+  it("opens access for the claimed days when paid, once", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    await sendClaim(member.id, 30, days(-2));
+
+    const claim = await openClaimOf(member.id);
+
+    expect(await markClaimPaid(claim?.id ?? "", now)).toBe("paid");
+    expect(await markClaimPaid(claim?.id ?? "", now)).toBe("stale");
+
+    expect((await reload(member.id)).accessGrantedUntil).toEqual(days(30));
+    expect(await openClaimOf(member.id)).toBeNull();
+  });
+
+  it("extends from the current end when a renewal is paid early", async () => {
+    const member = await createMember({ readyAt: days(-40), accessGrantedUntil: days(5) });
+
+    await sendClaim(member.id, 30, now);
+
+    const claim = await openClaimOf(member.id);
+
+    await markClaimPaid(claim?.id ?? "", now);
+
+    expect((await reload(member.id)).accessGrantedUntil).toEqual(days(35));
+  });
+
+  it("lets a new claim be sent once the last one is paid", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    await sendClaim(member.id, 30, now);
+    await markClaimPaid((await openClaimOf(member.id))?.id ?? "", now);
+
+    expect(await sendClaim(member.id, 30, now)).toBe("sent");
+  });
+
+  it("withdraws an open claim without touching access", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    await sendClaim(member.id, 30, now);
+    await cancelClaim((await openClaimOf(member.id))?.id ?? "");
+
+    expect(await openClaimOf(member.id)).toBeNull();
+    expect((await reload(member.id)).accessGrantedUntil).toBeNull();
+  });
+
+  it("never deletes a paid claim", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    await sendClaim(member.id, 30, now);
+
+    const claim = await openClaimOf(member.id);
+
+    await markClaimPaid(claim?.id ?? "", now);
+    await cancelClaim(claim?.id ?? "");
+
+    expect((await listUsers(now)).find((user) => user.id === member.id)?.lastPaidClaim?.id).toBe(
+      claim?.id,
+    );
   });
 });

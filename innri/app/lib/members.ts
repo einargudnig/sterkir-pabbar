@@ -66,6 +66,46 @@ type QueueFields = Pick<typeof users.$inferSelect, "readyAt" | "accessGrantedUnt
 export const inInvoicingQueue = (user: QueueFields): boolean =>
   user.readyAt !== null || user.accessGrantedUntil !== null;
 
+type StepFields = QueueFields & {
+  readonly status: MemberStatus;
+  readonly openClaim: object | null;
+};
+
+/**
+ * sendClaim     in the queue, no claim out — Aron's move
+ * awaitPayment  a claim is out — waiting on the member's bank
+ * none          never said they were ready, so nothing to invoice yet
+ */
+export type NextStep = "sendClaim" | "awaitPayment" | "none";
+
+export const nextStep = (user: StepFields): NextStep => {
+  if (user.openClaim !== null) {
+    return "awaitPayment";
+  }
+
+  return inInvoicingQueue(user) ? "sendClaim" : "none";
+};
+
+/**
+ * Row order on /admin, lowest first: what Aron has to do now comes before what
+ * he is waiting on, and people who have not finished signing up come last.
+ */
+export const attentionRank = (user: StepFields): number => {
+  const step = nextStep(user);
+
+  if (step === "awaitPayment") {
+    return 3;
+  }
+
+  if (step === "none") {
+    return 5;
+  }
+
+  const bySendUrgency = { pending: 0, expiring: 1, lapsed: 2, active: 4 } as const;
+
+  return bySendUrgency[user.status];
+};
+
 type FunnelFields = QueueFields & { readonly answered: boolean; readonly status: MemberStatus };
 
 export type Funnel = {
