@@ -133,7 +133,7 @@ Three gate levels, defined in `innri/app/lib/auth.server.ts`:
 | Level            | Routes                                | Enforced by                    |
 | ---------------- | ------------------------------------- | ------------------------------ |
 | public           | `/sign-in`, `/sign-up`                | —                              |
-| signed in        | `/subscribe`, `/onboarding`, `/admin` | `requireUserId` in each loader |
+| signed in        | `/subscribe`, `/onboarding`           | `requireUserId` in each loader |
 | signed in + paid | everything under `layouts/member.tsx` | the layout loader              |
 
 The middle level exists because those routes must stay reachable to someone who has not paid
@@ -592,6 +592,11 @@ grant ran out, that it has and a new claim is on its way).
 
 Phase 5, made real for manual invoicing. `requireAdmin` gates on `users.is_admin` and answers a
 404 to anyone else. Set once, for Aron: `update users set is_admin = true where email = '…'`.
+
+Since 2026-09-29 it is a page inside the member layout, not a standalone screen: same header,
+nav and account menu as the rest of the app. The member layout lets admins through without a
+questionnaire (Aron has no plan of his own; the plan tabs show their empty state), and the
+page's own `requireAdmin` is what keeps members out.
 
 - Four groups from one pure `memberStatus` (`app/lib/members.ts`): waiting for a first claim,
   running out within 7 days, lapsed, active. It goes through `hasActiveAccess`, so the page

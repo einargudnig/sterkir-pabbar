@@ -38,11 +38,14 @@ export const PREVIEW_LANDING = "/articles";
  * Questionnaire first because, until Repeat is live, finishing it is how a
  * member asks to be invoiced — it puts them in Aron's queue on /admin.
  *
+ * Admins skip it: Aron runs /admin from inside the member layout and has no
+ * plan of his own. The plan tabs cover a missing assignment with an empty state.
+ *
  * Split from the Clerk lookup so the rule is tested against real rows, with no
  * session to fake.
  */
 export const assertOnboarded = async (user: UserRow): Promise<UserRow> => {
-  if (!(await hasCompletedOnboarding(user.id))) {
+  if (!user.isAdmin && !(await hasCompletedOnboarding(user.id))) {
     throw redirect("/onboarding");
   }
 
