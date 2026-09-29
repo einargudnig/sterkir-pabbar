@@ -9,8 +9,8 @@ import { users } from "~/db/schema";
  * There are four levels of gate in this app, and they are easy to confuse:
  *
  *   public              /sign-in, /sign-up
- *   signed in           /subscribe, /onboarding — you must have an account to
- *                       answer the questionnaire
+ *   signed in           /onboarding — you must have an account to answer the
+ *                       questionnaire
  *   signed in + onboarded  everything under layouts/member.tsx — Fróðleikur,
  *                       with the paid tabs locked and a banner until the claim
  *                       is paid. Admins pass without a questionnaire; /admin
@@ -19,7 +19,7 @@ import { users } from "~/db/schema";
  *                       member layout — the plan, macros and settings
  *
  * The last two are the layouts' loaders (`requireOnboarded`,
- * `requireActiveAccess` in subscription.server.ts). The second is
+ * `requireActiveAccess` in gates.server.ts). The second is
  * `requireUserId`, because those routes deliberately sit outside the member
  * layout with their own full-width chrome.
  */

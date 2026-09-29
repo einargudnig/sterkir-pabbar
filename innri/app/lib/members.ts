@@ -10,10 +10,7 @@ import { formatDate } from "~/lib/format";
  * through `hasActiveAccess`.
  */
 
-type StatusFields = Pick<
-  typeof users.$inferSelect,
-  "isAdmin" | "accessGrantedUntil" | "subscriptionStatus" | "currentPeriodEnd"
->;
+type StatusFields = Pick<typeof users.$inferSelect, "isAdmin" | "accessGrantedUntil">;
 
 export const MEMBER_STATUSES = ["pending", "expiring", "active", "lapsed"] as const;
 
@@ -27,7 +24,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /**
  * pending    never granted — waiting for their first claim
  * expiring   in, and the grant ends within EXPIRING_WITHIN_DAYS — time for the next claim
- * active     in, with longer to go (or paying through Repeat)
+ * active     in, with longer to go
  * lapsed     had a grant, it ran out
  */
 export const memberStatus = (user: StatusFields, now: Date): MemberStatus => {

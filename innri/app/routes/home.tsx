@@ -1,7 +1,7 @@
 import { redirect } from "react-router";
 
 import { hasActiveAccess } from "~/lib/access";
-import { PREVIEW_LANDING, requireOnboarded } from "~/lib/subscription.server";
+import { PREVIEW_LANDING, requireOnboarded } from "~/lib/gates.server";
 
 import type { Route } from "./+types/home";
 

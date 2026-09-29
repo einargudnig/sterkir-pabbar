@@ -34,6 +34,8 @@ import {
  */
 
 /**
+ * DORMANT with the Repeat columns on `users`.
+ *
  * Repeat's states, not Kling's. Repeat has no `past_due`: a subscription stays
  * active through the retry window until one of Aron's failure rules deactivates
  * it, and a free first period is an ordinary active subscription whose first
@@ -64,11 +66,13 @@ export const sex = pgEnum("sex", SEX_VALUES);
  * that person the app needs to answer quickly — above all whether they are
  * currently paid up.
  *
- * The subscription columns are a MIRROR of Repeat, written only from Repeat's
- * own API — the webhook and the reconciliation job both re-fetch the
- * subscription rather than trusting a pushed body. `requireActiveAccess` reads
- * them and never calls Repeat: access stays fast, keeps working through a
- * Repeat outage, and the customer list is ours.
+ * Access comes from `accessGrantedUntil`, set when Aron marks a claim paid.
+ *
+ * DORMANT: `subscriptionStatus`, `repeatSubscriptionId`, `currentPeriodEnd` and
+ * `checkoutClaimedAt` were the Repeat mirror. The integration was removed on
+ * 2026-09-29 and nothing reads or writes them; they are kept so launch needed
+ * no production migration. Drop them, or reuse them if Repeat returns — see
+ * "Repeat removed" in docs/solutions/inner-circle.md.
  */
 export const users = pgTable(
   "users",
@@ -80,25 +84,18 @@ export const users = pgTable(
     subscriptionStatus: subscriptionStatus("subscription_status"),
     repeatSubscriptionId: text("repeat_subscription_id"),
 
-    /**
-     * The moment access lapses unless the next sync extends it. Null means the
-     * member has never subscribed. Access is `currentPeriodEnd > now()` AND
-     * status `active` — see `app/lib/access.ts`, and `toMirror` in
-     * `app/lib/repeat.ts` for how Repeat's fields become this date.
-     */
     currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
 
     /**
-     * Set by the admin page when Aron comps someone or repairs a payment Repeat
-     * could not retry. Kept separate from `currentPeriodEnd` so a later webhook
-     * cannot silently wipe a manual grant.
+     * The moment access lapses. Extended from /admin when Aron marks a claim
+     * paid, or set by hand when he comps someone. See `app/lib/access.ts`.
      */
     accessGrantedUntil: timestamp("access_granted_until", { withTimezone: true }),
 
     isAdmin: boolean("is_admin").notNull().default(false),
 
     /**
-     * Who Aron invoices. Until Repeat is live, a member pays by a claim (krafa)
+     * Who Aron invoices. A member pays by a claim (krafa)
      * Aron sends to their online bank, and a claim is addressed to a kennitala.
      * On `users` rather than `onboarding`: they describe the person, not one
      * run through the questionnaire, and `onboarding` is append-only.
@@ -117,13 +114,6 @@ export const users = pgTable(
      */
     readyAt: timestamp("ready_at", { withTimezone: true }),
 
-    /**
-     * Set the moment a checkout starts charging a card, cleared when it ends.
-     * Repeat has no idempotency key, so a double-click would otherwise be two
-     * orders and two charges. Claimed with a conditional UPDATE rather than a
-     * lock, because the charge is a network call and a transaction must not be
-     * held open across one on a one-connection pool.
-     */
     checkoutClaimedAt: timestamp("checkout_claimed_at", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -288,6 +278,9 @@ export const planAssignments = pgTable(
 );
 
 /**
+ * DORMANT: nothing writes here since Repeat was removed on 2026-09-29. Kept,
+ * empty, so launch needed no production migration.
+ *
  * Every webhook delivery Repeat has made, once per delivery.
  *
  * Repeat does not sign deliveries and does not retry them, and a replay from its
