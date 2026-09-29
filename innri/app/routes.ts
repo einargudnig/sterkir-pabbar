@@ -23,6 +23,7 @@ export default [
     ...prefix("dashboard", [
       index("routes/dashboard/index.tsx"),
       route("workouts", "routes/dashboard/workouts.tsx"),
+      route("workouts/:session", "routes/dashboard/session.tsx"),
       route("macros", "routes/dashboard/macros.tsx"),
     ]),
 
