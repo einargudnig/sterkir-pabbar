@@ -21,7 +21,7 @@ export async function loader(args: Route.LoaderArgs) {
    */
   const user = await requireActiveAccess(args);
 
-  return { userId: user.clerkUserId };
+  return { userId: user.clerkUserId, isAdmin: user.isAdmin };
 }
 
 const navigation = [
@@ -30,7 +30,7 @@ const navigation = [
   { to: "/articles", label: "Fróðleikur" },
 ] as const;
 
-export default function MemberLayout() {
+export default function MemberLayout({ loaderData }: Route.ComponentProps) {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-10 border-b border-line bg-base/85 backdrop-blur">
@@ -44,6 +44,17 @@ export default function MemberLayout() {
           </NavLink>
 
           <div className="flex items-center gap-3">
+            {/* Convenience only: /admin guards itself with requireAdmin and
+                answers 404 to everyone else, link or no link. */}
+            {loaderData.isAdmin && (
+              <NavLink
+                to="/admin"
+                className="rounded-md px-2 py-1 text-sm text-text-muted transition-colors hover:text-text"
+              >
+                Umsjón
+              </NavLink>
+            )}
+
             <NavLink
               to="/settings"
               className="rounded-md px-2 py-1 text-sm text-text-muted transition-colors hover:text-text"
