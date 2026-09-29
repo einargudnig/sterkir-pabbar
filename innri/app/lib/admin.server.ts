@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { db } from "~/db";
-import { onboarding, users } from "~/db/schema";
+import { claims, onboarding, users } from "~/db/schema";
 import { extendGrant, inInvoicingQueue, memberStatus } from "~/lib/members";
 
 /**
@@ -48,10 +48,32 @@ export const listUsers = async (now: Date) => {
     }
   }
 
+  const claimRows =
+    ids.length === 0
+      ? []
+      : await db
+          .select()
+          .from(claims)
+          .where(inArray(claims.userId, ids))
+          .orderBy(desc(claims.sentAt));
+
+  const open = new Map<string, (typeof claimRows)[number]>();
+  const lastPaid = new Map<string, (typeof claimRows)[number]>();
+
+  for (const claim of claimRows) {
+    const into = claim.paidAt === null ? open : lastPaid;
+
+    if (!into.has(claim.userId)) {
+      into.set(claim.userId, claim);
+    }
+  }
+
   return members.map((member) => ({
     ...member,
     status: memberStatus(member, now),
     answers: latest.get(member.id) ?? null,
+    openClaim: open.get(member.id) ?? null,
+    lastPaidClaim: lastPaid.get(member.id) ?? null,
   }));
 };
 
@@ -63,7 +85,8 @@ export type AdminMember = Awaited<ReturnType<typeof listMembers>>[number];
 export type GrantResult = "granted" | "stale" | "unknown";
 
 /**
- * Aron marks a claim paid.
+ * Aron gives access without a claim — comping a friend, or repairing a payment
+ * that went through outside the app.
  *
  * `seenUntil` is the end date the page showed when he clicked. The update
  * applies only if it is still the stored value, so a double-click, or a second
@@ -109,4 +132,64 @@ export const grantAccess = async (
  */
 export const revokeAccess = async (userId: string): Promise<void> => {
   await db.update(users).set({ accessGrantedUntil: null }).where(eq(users.id, userId));
+};
+
+export type SendResult = "sent" | "open";
+
+/**
+ * Aron has sent a claim to the member's online bank. Reports "open" instead of
+ * inserting when one is already waiting — the partial unique index on
+ * `claims` makes that a no-op rather than a second claim.
+ */
+export const sendClaim = async (userId: string, days: number, now: Date): Promise<SendResult> => {
+  const inserted = await db
+    .insert(claims)
+    .values({ userId, days, sentAt: now })
+    .onConflictDoNothing()
+    .returning({ id: claims.id });
+
+  return inserted.length > 0 ? "sent" : "open";
+};
+
+export type PaidResult = "paid" | "stale";
+
+/**
+ * The claim was paid: mark it, and extend the member's access by the days it
+ * was sent for, in one transaction.
+ *
+ * Only an open claim can be paid, so a double-click extends once and reports
+ * "stale" the second time — one paid claim must never become two months.
+ */
+export const markClaimPaid = async (claimId: string, now: Date): Promise<PaidResult> =>
+  db.transaction(async (tx) => {
+    const [claim] = await tx
+      .update(claims)
+      .set({ paidAt: now })
+      .where(and(eq(claims.id, claimId), isNull(claims.paidAt)))
+      .returning();
+
+    if (!claim) {
+      return "stale";
+    }
+
+    const [member] = await tx
+      .select({ until: users.accessGrantedUntil })
+      .from(users)
+      .where(eq(users.id, claim.userId))
+      .for("update");
+
+    await tx
+      .update(users)
+      .set({ accessGrantedUntil: extendGrant(member?.until ?? null, now, claim.days) })
+      .where(eq(users.id, claim.userId));
+
+    return "paid";
+  });
+
+/**
+ * Withdraw a claim sent by mistake. Deleted rather than kept: an unpaid claim
+ * that was never meant to exist is not history worth reading.
+ */
+export const cancelClaim = async (claimId: string): Promise<void> => {
+  await db.delete(claims).where(and(eq(claims.id, claimId), isNull(claims.paidAt)));
 };

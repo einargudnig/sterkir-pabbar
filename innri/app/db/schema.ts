@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -226,6 +227,43 @@ export const macroTargets = pgTable(
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("macro_targets_user_id_idx").on(table.userId)],
+);
+
+/**
+ * One row per claim (krafa) Aron sends to a member's online bank, for manual
+ * invoicing until Repeat is live.
+ *
+ * Sent and paid are separate moments — a claim can sit unpaid for weeks — so
+ * each is its own column rather than one overwritten "invoiced" flag on
+ * `users`. Paying sets `paid_at` and extends `users.access_granted_until` in
+ * one transaction; the row keeps the history of who paid for which period.
+ *
+ * `days` is fixed when the claim is sent: what the member was asked to pay
+ * for is what they get when it is paid.
+ */
+export const claims = pgTable(
+  "claims",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    days: smallint("days").notNull(),
+
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("claims_user_id_idx").on(table.userId),
+    /**
+     * At most one open claim per member. A second "send" — a double-click, a
+     * second tab — hits this instead of putting two claims in their bank.
+     */
+    uniqueIndex("claims_one_open_per_user_idx")
+      .on(table.userId)
+      .where(sql`${table.paidAt} is null`),
+  ],
 );
 
 /**

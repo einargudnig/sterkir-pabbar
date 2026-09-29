@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { extendGrant, funnel, inInvoicingQueue, lastSeenLabel, memberStatus } from "./members";
+import {
+  attentionRank,
+  extendGrant,
+  funnel,
+  inInvoicingQueue,
+  lastSeenLabel,
+  memberStatus,
+  nextStep,
+} from "./members";
 
 const now = new Date("2026-10-15T12:00:00Z");
 
@@ -113,5 +121,40 @@ describe("lastSeenLabel", () => {
 
   it("falls back to the date after two weeks", () => {
     expect(lastSeenLabel(days(-14), now)).toBe("1. október 2026");
+  });
+});
+
+describe("nextStep and attentionRank", () => {
+  const ready = {
+    readyAt: days(-1),
+    accessGrantedUntil: null,
+    status: "pending",
+    openClaim: null,
+  } as const;
+
+  it("asks Aron to send the first claim to someone who is ready", () => {
+    expect(nextStep(ready)).toBe("sendClaim");
+  });
+
+  it("waits on the bank once a claim is out, whatever the access status", () => {
+    expect(nextStep({ ...ready, openClaim: {} })).toBe("awaitPayment");
+    expect(nextStep({ ...ready, status: "active", openClaim: {} })).toBe("awaitPayment");
+  });
+
+  it("has nothing to invoice for someone who never said they were ready", () => {
+    expect(nextStep({ ...ready, readyAt: null })).toBe("none");
+  });
+
+  it("orders first claims, then renewals, then open claims, then the rest", () => {
+    const rows: Parameters<typeof attentionRank>[0][] = [
+      { ...ready, readyAt: null },
+      { ...ready, status: "active", accessGrantedUntil: days(20) },
+      { ...ready, openClaim: {} },
+      { ...ready, status: "lapsed", accessGrantedUntil: days(-3) },
+      { ...ready, status: "expiring", accessGrantedUntil: days(3) },
+      ready,
+    ];
+
+    expect(rows.map(attentionRank)).toEqual([5, 4, 3, 2, 1, 0]);
   });
 });
