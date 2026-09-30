@@ -321,7 +321,18 @@ export default function Stillingar({ loaderData, actionData }: Route.ComponentPr
         <h2 className="text-sm text-text-soft">Mínar upplýsingar</h2>
 
         {answers === null ? (
-          <p className="mt-3 text-sm text-text-muted">Engin svör skráð.</p>
+          <div className="mt-3 rounded-xl border border-line-soft bg-raised p-5">
+            <p className="text-sm text-text-muted">
+              Engin svör skráð. Farðu í gegnum spurningalistann til að fá plan og velja fjölda daga.
+            </p>
+
+            <Link
+              to="/onboarding"
+              className={buttonVariants({ variant: "outline", className: "mt-4" })}
+            >
+              Fara í gegnum spurningalistann
+            </Link>
+          </div>
         ) : (
           <AnswersSection
             answers={answers}
