@@ -628,3 +628,27 @@ from commit `89d685d` and the "Payments switched to Repeat" and "Phase 6 built" 
   Production had no Repeat data (0 subscriptions, 0 events), but a drop is a production
   migration right before launch, and there is no need for one. Drop them in a deliberate
   migration after launch, or reuse them.
+
+## Plans follow the number of days — 2026-09-30
+
+Einar's call, from Aron's feedback: where a member trains does not change their plan, and
+the number of days a week decides the split.
+
+| Days | Split                |
+| ---- | -------------------- |
+| 1    | Full body            |
+| 2    | Upper / lower        |
+| 3    | Push / pull / legs   |
+| 4    | Upper / lower, twice |
+| 5    | Not defined yet      |
+
+- **The training step is gone.** Equipment is no longer asked. Experience moved onto the
+  frequency step, which now names the split under each option (`SPLITS` in
+  `app/lib/onboarding.ts`). Onboarding is one screen shorter.
+- **Plans are matched on goal + days only.** `onboarding.equipment` stays in the schema and
+  is null for new members. The `equipment` enum stays because old rows hold its values.
+- **Studio:** `trainingPlan` loses its equipment field, the uniqueness rule is goal + days,
+  and there is one "Nýtt plan" template per split with the days pre-named
+  (`studio/schemas/splits.ts`, a copy of `SPLITS` — the packages share no code).
+- **Frequencies still appear only when a plan is published.** Offering 1, 2 or 4 days is
+  Aron publishing those plans, not a deploy.
