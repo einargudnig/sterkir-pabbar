@@ -34,7 +34,6 @@ const complete: OnboardingDraft = {
   sex: "karl",
   activityLevel: "lett",
   goal: "fitutap",
-  equipment: "raektarstod",
   experience: "einhver",
   sessionsPerWeek: 3,
   name: "Sigurður Jónsson",
@@ -80,13 +79,12 @@ beforeEach(async () => {
 });
 
 describe("completeOnboarding", () => {
-  it("looks up the plan by the goal, equipment and frequency the member chose", async () => {
+  it("looks up the plan by the goal and days a week the member chose, nothing else", async () => {
     const member = await createMember();
 
     await completeOnboarding(member.id, {
       ...complete,
       goal: "vodvauppbygging",
-      equipment: "heima",
       sessionsPerWeek: 4,
     });
 
@@ -94,8 +92,8 @@ describe("completeOnboarding", () => {
 
     expect(sanity.queries).toHaveLength(1);
     expect(query?.params.get("goal")).toBe('"vodvauppbygging"');
-    expect(query?.params.get("equipment")).toBe('"heima"');
     expect(query?.params.get("sessionsPerWeek")).toBe("4");
+    expect(query?.params.has("equipment")).toBe(false);
   });
 
   /** Experience is recorded for Aron, and must not narrow the plan lookup yet. */
@@ -107,13 +105,14 @@ describe("completeOnboarding", () => {
     expect(sanity.queries[0]?.params.has("experience")).toBe(false);
   });
 
-  it("records equipment, experience and limitations with the answers", async () => {
+  /** Where a member trains is no longer asked; the column stays, empty. */
+  it("records experience and limitations with the answers, and no equipment", async () => {
     const member = await createMember();
 
     await completeOnboarding(member.id, { ...complete, limitations: "Slæmt vinstra hné" });
 
     expect(await latestOnboarding(member.id)).toMatchObject({
-      equipment: "raektarstod",
+      equipment: null,
       experience: "einhver",
       limitations: "Slæmt vinstra hné",
     });
@@ -360,7 +359,6 @@ describe("updateMeasurements", () => {
     expect(after).toMatchObject({
       ...changed,
       goal: "fitutap",
-      equipment: "raektarstod",
       sessionsPerWeek: 3,
       limitations: "Slæmt vinstra hné",
       confirmedAdult: true,

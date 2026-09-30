@@ -12,12 +12,11 @@
  * Three parts, in the order a member meets them. The first is about training and
  * decides the plan; the second is only the numbers the macro calculation needs,
  * and says so; the third is who Aron invoices, asked last because it is the
- * only step that is about paying rather than about them. Equipment is asked before frequency because
- * the frequencies on offer depend on which plans exist for that equipment.
+ * only step that is about paying rather than about them. Goal is asked before
+ * frequency because the frequencies on offer depend on which plans exist for it.
  */
 export const STEPS = [
   "goal",
-  "training",
   "frequency",
   "health",
   "acknowledge",
@@ -28,7 +27,7 @@ export const STEPS = [
 export type Step = (typeof STEPS)[number];
 
 export const PARTS = [
-  { title: "Planið þitt", steps: ["goal", "training", "frequency", "health", "acknowledge"] },
+  { title: "Planið þitt", steps: ["goal", "frequency", "health", "acknowledge"] },
   { title: "Næringin", steps: ["measurements"] },
   { title: "Af stað", steps: ["ready"] },
 ] as const satisfies readonly { readonly title: string; readonly steps: readonly Step[] }[];
@@ -46,9 +45,9 @@ export const GOAL_VALUES = ["fitutap", "vodvauppbygging"] as const;
 export type Goal = (typeof GOAL_VALUES)[number];
 
 /**
- * What a member has to train with. Picks the plan together with goal and
- * frequency, so a value only appears in the wizard once Aron has published a
- * plan for it.
+ * DORMANT: no longer asked since 2026-09-30 — where a member trains does not
+ * change their plan. Kept because `db/schema.ts` builds the `equipment` enum
+ * from it and old `onboarding` rows hold these values.
  */
 export const EQUIPMENT_VALUES = ["raektarstod", "heima", "engin"] as const;
 
@@ -108,31 +107,6 @@ export const GOAL_LABELS = {
   vodvauppbygging: { label: "Vöðvauppbygging", description: "Þyngjast og byggja upp styrk." },
 } satisfies Record<Goal, { readonly label: string; readonly description: string }>;
 
-/**
- * `assumes` is shown instead of a question when only one option has a plan —
- * so nobody without a gym finds out on their first training day.
- */
-export const EQUIPMENT_LABELS = {
-  raektarstod: {
-    label: "Líkamsræktarstöð",
-    description: "Aðgangur að tækjasal með lóðum og stöngum.",
-    assumes: "Planið gerir ráð fyrir aðgangi að líkamsræktarstöð.",
-  },
-  heima: {
-    label: "Heima með lóð",
-    description: "Handlóð, teygjur eða lítið heimasett.",
-    assumes: "Planið gerir ráð fyrir handlóðum eða litlu heimasetti.",
-  },
-  engin: {
-    label: "Engin tæki",
-    description: "Bara eigin líkamsþyngd.",
-    assumes: "Planið þarf engin tæki — bara þig.",
-  },
-} satisfies Record<
-  Equipment,
-  { readonly label: string; readonly description: string; readonly assumes: string }
->;
-
 export const EXPERIENCE_LABELS = {
   byrjandi: { label: "Byrjandi", description: "Hef lítið æft, eða ekki í nokkur ár." },
   einhver: { label: "Einhver reynsla", description: "Hef æft áður og kann grunnæfingarnar." },
@@ -167,3 +141,24 @@ export const LIMITS = {
  */
 export const stepsFor = (needsAcknowledgement: boolean): readonly Step[] =>
   needsAcknowledgement ? STEPS : STEPS.filter((step) => step !== "acknowledge");
+
+/**
+ * The split a plan follows is decided by how many days a week it trains. Shown
+ * on the frequency step, and used by the Studio's "Nýtt plan" templates to
+ * start a plan with the right days already named.
+ *
+ * Five days is not defined yet: a 5-day plan can still be published, it just
+ * has no split name to show and starts empty in the Studio.
+ */
+export const SPLITS = {
+  1: { label: "Allur líkaminn", days: ["Allur líkaminn"] },
+  2: { label: "Efri og neðri hluti", days: ["Efri hluti", "Neðri hluti"] },
+  3: { label: "Ýta, toga, fætur", days: ["Ýta", "Toga", "Fætur"] },
+  4: {
+    label: "Efri og neðri hluti, tvisvar",
+    days: ["Efri hluti A", "Neðri hluti A", "Efri hluti B", "Neðri hluti B"],
+  },
+} as const satisfies Record<number, { readonly label: string; readonly days: readonly string[] }>;
+
+export const splitFor = (sessionsPerWeek: number) =>
+  Object.entries(SPLITS).find(([count]) => Number(count) === sessionsPerWeek)?.[1];

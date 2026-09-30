@@ -3,8 +3,9 @@ import { defineArrayMember, defineField, defineType } from "sanity";
 import { planCombinationMustBeUnique } from "./validators";
 
 /**
- * A training plan, looked up by three answers a member gives in onboarding:
- * goal + what equipment they have + how often they can train.
+ * A training plan, looked up by two answers a member gives in onboarding:
+ * goal + how many days a week they can train. The number of days also decides
+ * the split (see `splits.ts`); the "Nýtt plan" templates start from it.
  *
  * The app finds a plan by querying for that exact combination, so it has to
  * identify exactly one published plan — see `planCombinationMustBeUnique`.
@@ -44,28 +45,10 @@ export const trainingPlan = defineType({
     }),
 
     defineField({
-      name: "equipment",
-      title: "Aðstaða",
-      description:
-        "Hvað meðlimurinn þarf til að fylgja planinu. Meðlimir sjá aðeins þá aðstöðu sem á birt plan.",
-      type: "string",
-      initialValue: "raektarstod",
-      options: {
-        list: [
-          { title: "Líkamsræktarstöð", value: "raektarstod" },
-          { title: "Heima með lóð", value: "heima" },
-          { title: "Engin tæki", value: "engin" },
-        ],
-        layout: "radio",
-      },
-      validation: (Rule) => Rule.required(),
-    }),
-
-    defineField({
       name: "sessionsPerWeek",
       title: "Æfingar í viku",
       description:
-        "Hversu oft í viku þetta plan gerir ráð fyrir. Meðlimir sjá aðeins þær tíðnir sem eiga birt plan.",
+        "Hversu oft í viku. Ræður skiptingunni: 1 = allur líkaminn, 2 = efri/neðri, 3 = ýta/toga/fætur, 4 = efri/neðri tvisvar. Meðlimir sjá aðeins þær tíðnir sem eiga birt plan.",
       type: "number",
       options: {
         list: [1, 2, 3, 4, 5],

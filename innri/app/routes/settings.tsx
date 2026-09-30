@@ -5,13 +5,7 @@ import { Form, Link, redirect, useNavigation } from "react-router";
 import { MeasurementFields } from "~/components/measurement-fields";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { formatDate } from "~/lib/format";
-import {
-  ACTIVITY_LABELS,
-  EQUIPMENT_LABELS,
-  EXPERIENCE_LABELS,
-  GOAL_LABELS,
-  SEX_LABELS,
-} from "~/lib/onboarding";
+import { ACTIVITY_LABELS, EXPERIENCE_LABELS, GOAL_LABELS, SEX_LABELS } from "~/lib/onboarding";
 import { submitStep, type StepErrors } from "~/lib/onboarding-draft.server";
 import { latestOnboarding, updateMeasurements } from "~/lib/onboarding.server";
 import { requireActiveAccess } from "~/lib/gates.server";
@@ -121,7 +115,6 @@ type Answers = NonNullable<Loaded["answers"]>;
 
 const answerRows = (answers: Answers): readonly (readonly [string, string])[] => [
   ["Markmið", GOAL_LABELS[answers.goal].label],
-  ["Aðstaða", answers.equipment ? EQUIPMENT_LABELS[answers.equipment].label : "—"],
   ["Reynsla", answers.experience ? EXPERIENCE_LABELS[answers.experience].label : "—"],
   ["Æfingar", `${answers.sessionsPerWeek} sinnum í viku`],
   ["Þyngd", `${answers.weightKg} kg`],
