@@ -87,10 +87,14 @@ sterkirpabbar.is — það sést eingöngu þeim sem eru komnir inn fyrir.
 **1. Æfing** — ein æfing, skrifuð einu sinni og notuð í eins mörgum plönum og þú vilt.
 Lagarðu ábendingu eða skiptir um myndband uppfærist það alls staðar í einu.
 
+Undir **Æfingar** er ein mappa fyrir hvern vöðvahóp (Fætur, Bak, Bringa, Axlir,
+Handleggir, Kviður og kjarni, Allur líkaminn). Búirðu til æfingu inni í möppu er
+vöðvahópurinn þegar valinn. **Allar æfingar** neðst sýnir listann í heild.
+
 | Reitur        | Hvað á að standa                                                                                                          |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Heiti æfingar | Eins og þú myndir segja það upphátt — „Hnébeygja“.                                                                        |
-| Vöðvahópur    | Bara til að flokka listann hér í Studio. Sést ekki hjá meðlimum.                                                          |
+| Vöðvahópur    | Ræður í hvaða möppu æfingin lendir hér í Studio. Sést ekki hjá meðlimum.                                                  |
 | Ábending      | Eitt atriði sem skiptir mestu. Sleppt ef myndbandið segir allt. Mest 140 stafir — þetta er lesið standandi á milli setta. |
 | Myndband      | Slóð á **óskráð** myndband á Vimeo eða YouTube.                                                                           |
 

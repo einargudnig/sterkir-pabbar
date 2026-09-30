@@ -3,6 +3,21 @@ import { defineField, defineType } from "sanity";
 import { videoUrlMustBeEmbeddable } from "./validators";
 
 /**
+ * Also the folders under "Æfingar" in the Studio sidebar (see sanity.config.ts),
+ * so an exercise lives in exactly one folder and a new one made inside a folder
+ * starts with that group chosen.
+ */
+export const MUSCLE_GROUPS = [
+  { title: "Fætur", value: "faetur" },
+  { title: "Bak", value: "bak" },
+  { title: "Bringa", value: "bringa" },
+  { title: "Axlir", value: "axlir" },
+  { title: "Handleggir", value: "handleggir" },
+  { title: "Kviður og kjarni", value: "kjarni" },
+  { title: "Allur líkaminn", value: "allur" },
+];
+
+/**
  * One exercise, reused across training plans. Aron writes each one once and
  * refers to it from every plan that uses it, so fixing a cue or swapping a
  * video updates everywhere at once.
@@ -24,19 +39,9 @@ export const exercise = defineType({
     defineField({
       name: "muscleGroup",
       title: "Vöðvahópur",
-      description: "Notað til að flokka æfingar í listanum hér í Studio.",
+      description: "Ræður í hvaða möppu æfingin lendir undir „Æfingar“ hér í Studio.",
       type: "string",
-      options: {
-        list: [
-          { title: "Fætur", value: "faetur" },
-          { title: "Bak", value: "bak" },
-          { title: "Bringa", value: "bringa" },
-          { title: "Axlir", value: "axlir" },
-          { title: "Handleggir", value: "handleggir" },
-          { title: "Kviður og kjarni", value: "kjarni" },
-          { title: "Allur líkaminn", value: "allur" },
-        ],
-      },
+      options: { list: MUSCLE_GROUPS },
       validation: (Rule) => Rule.required(),
     }),
 
