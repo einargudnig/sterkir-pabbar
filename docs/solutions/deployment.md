@@ -15,8 +15,9 @@ appears in `vercel teams ls` and is sometimes the active scope — pass `--scope
 explicitly rather than relying on whichever is current.
 
 Database: **Neon**, provisioned through the Vercel marketplace integration on the `innri`
-project. It injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` automatically. Local
-development runs against a separate Neon branch — see [Databases](#databases).
+project. It injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` into **Production
+only**. Preview, Development and local dev run against a separate Neon branch — see
+[Databases](#databases).
 
 ## Three things that broke, and will again
 
@@ -100,7 +101,7 @@ Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes i
 
 | Variable                                                                                     | Where it comes from                                             | Which projects                                                 |
 | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------- |
-| `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `PG*`, `POSTGRES_*`                                 | Neon integration, injected                                      | innri                                                          |
+| `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `PG*`, `POSTGRES_*`                                 | Neon integration, Production only; Preview/Development by hand  | innri                                                          |
 | `CLERK_SECRET_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`                                             | `clerk init`                                                    | innri                                                          |
 | `VITE_CLERK_SIGN_IN_URL`, `VITE_CLERK_SIGN_UP_URL`, and their `_FALLBACK_REDIRECT_URL` pairs | `clerk init`                                                    | innri                                                          |
 | `APP_URL`                                                                                    | set by hand — `https://app.sterkirpabbar.is`, no trailing slash | innri                                                          |
@@ -116,15 +117,23 @@ Three, and it matters which one a command reaches:
 
 | Database                 | Host                     | Used by                                          |
 | ------------------------ | ------------------------ | ------------------------------------------------ |
-| Neon branch `main`       | `ep-green-pond-…`        | Production **and Preview** deploys               |
-| Neon branch `dev`        | `ep-jolly-sky-…`         | `bun run dev`, and migrations while developing   |
+| Neon branch `main`       | `ep-green-pond-…`        | Production deploys only                          |
+| Neon branch `dev`        | `ep-jolly-sky-…`         | Preview deploys, `bun run dev`, dev migrations   |
 | Throwaway local Postgres | `127.0.0.1`, random port | integration tests, created and deleted every run |
 
 Neon project `crimson-math-82418529`. `dev` (`br-solitary-boat-aw2u514u`) was branched from
-`main` on 2026-09-23, data included. Vercel holds one `DATABASE_URL` for all three of its
-environments, so a preview deploy still writes to production.
+`main` on 2026-09-23, data included.
 
-**How `dev` is selected.** `innri/.env.development.local` holds the branch's two connection
+**Preview never touches production — since 2026-09-30.** Until then the Neon integration fed
+one `DATABASE_URL` to all three Vercel environments, while Preview used Clerk's **dev**
+instance: signing in to a preview with a test account wrote rows to the production database
+for Clerk users that production's Clerk has never heard of. Now the integration is connected
+to Production only (Vercel → Storage → `neon-erin-island` → the project's connection), and
+Preview and Development hold the `dev` branch's two strings, added by hand. The pairing is
+the point: dev Clerk with the dev database, live Clerk with production. If the integration is
+ever reconnected, check it did not grab Preview back: `vercel env ls | rg DATABASE_URL`.
+
+**How `dev` is selected locally.** `innri/.env.development.local` holds the branch's two connection
 strings. The React Router Vite plugin loads env files with Vite's `loadEnv`, where that file
 outranks `.env.local`, and `vercel env pull` rewrites only `.env.local`, so the override
 survives a pull. Two ways it silently stops working:
@@ -139,11 +148,24 @@ survives a pull. Two ways it silently stops working:
 ```bash
 cd innri
 bun --env-file=.env.development.local run db:migrate      # dev branch
-(set -a; . ./.env.local; set +a; bun run db:migrate)      # production: .env.local exported, in a subshell
+DATABASE_URL_UNPOOLED="$(npx neonctl connection-string main --project-id crimson-math-82418529)" \
+  bun run db:migrate                                      # production, asked of Neon by name
 ```
 
 Plain `bun run db:migrate` gets an empty URL and fails, which is the point: nothing reaches
-production without saying so. Apply to `dev` first, drive the change locally, then production.
+production without saying so. `.env.local` no longer holds production's URL — `vercel env
+pull` fills it from Development, which is the `dev` branch — so production's string comes from
+Neon, named `main`, at the moment of use.
+
+**Before launch: additive migrations only** (new tables, new nullable columns). No drops or
+renames on production. Order, every time:
+
+1. `bun run db:generate` and read the SQL it wrote.
+2. Migrate `dev`, then run the app against it and check the change works.
+3. Snapshot production: `npx neonctl branches create --project-id crimson-math-82418529
+--parent main --name pre-<migration>` — an instant copy to restore from.
+4. Migrate production, then check the `drizzle.__drizzle_migrations` row count went up by one.
+5. Delete the snapshot branch once the deploy that needs it is live and healthy.
 
 **Resetting `dev`** to production's current state: `npx neonctl branches reset dev --parent
 --project-id crimson-math-82418529` (needs `npx neonctl auth` once).
