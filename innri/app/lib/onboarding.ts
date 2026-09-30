@@ -146,9 +146,6 @@ export const stepsFor = (needsAcknowledgement: boolean): readonly Step[] =>
  * The split a plan follows is decided by how many days a week it trains. Shown
  * on the frequency step, and used by the Studio's "Nýtt plan" templates to
  * start a plan with the right days already named.
- *
- * Five days is not defined yet: a 5-day plan can still be published, it just
- * has no split name to show and starts empty in the Studio.
  */
 export const SPLITS = {
   1: { label: "Allur líkaminn", days: ["Allur líkaminn"] },
@@ -158,7 +155,11 @@ export const SPLITS = {
     label: "Efri og neðri hluti, tvisvar",
     days: ["Efri hluti A", "Neðri hluti A", "Efri hluti B", "Neðri hluti B"],
   },
+  5: { label: "Einn vöðvahópur á dag", days: ["Bringa", "Bak", "Fætur", "Axlir", "Handleggir"] },
 } as const satisfies Record<number, { readonly label: string; readonly days: readonly string[] }>;
+
+export const frequencyLabel = (count: number) =>
+  count === 1 ? "Einu sinni í viku" : `${count} sinnum í viku`;
 
 export const splitFor = (sessionsPerWeek: number) =>
   Object.entries(SPLITS).find(([count]) => Number(count) === sessionsPerWeek)?.[1];

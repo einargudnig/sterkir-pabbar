@@ -2,15 +2,13 @@
  * The split a plan follows, by days a week. Mirrors `SPLITS` in
  * `innri/app/lib/onboarding.ts`, which shows the same names to members — the
  * two packages share no code, so change both together.
- *
- * Five days is not defined yet, so there is no template for it; a 5-day plan
- * can still be made from the plain "Æfingaplan" button.
  */
 export const SPLIT_DAYS = {
   1: ["Allur líkaminn"],
   2: ["Efri hluti", "Neðri hluti"],
   3: ["Ýta", "Toga", "Fætur"],
   4: ["Efri hluti A", "Neðri hluti A", "Efri hluti B", "Neðri hluti B"],
+  5: ["Bringa", "Bak", "Fætur", "Axlir", "Handleggir"],
 } as const;
 
 const SPLIT_NAMES = {
@@ -18,6 +16,7 @@ const SPLIT_NAMES = {
   2: "efri/neðri",
   3: "ýta/toga/fætur",
   4: "efri/neðri tvisvar",
+  5: "einn vöðvahópur á dag",
 } as const;
 
 /**
