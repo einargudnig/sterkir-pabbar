@@ -20,6 +20,7 @@ import {
   partOf,
   type Step,
   stepsFor,
+  frequencyLabel,
   splitFor,
 } from "~/lib/onboarding";
 import {
@@ -55,11 +56,15 @@ export async function loader(args: Route.LoaderArgs) {
 
   /**
    * Already answered. Re-running the wizard would append a second set of
-   * answers and quietly reassign their plan, so the way back in is the
-   * measurements form in Stillingar rather than this URL. Sent to the entry
-   * redirect, which knows whether they are waiting on Aron or already in.
+   * answers and quietly reassign their plan, so the way back in is Stillingar
+   * rather than this URL. Sent to the entry redirect, which knows whether they
+   * are waiting on Aron or already in.
+   *
+   * Admins may run it again, from /admin: Aron walks it to see what members
+   * see, and completing it gives him the plan it assigns. Append-only, so each
+   * run is a new set of answers and the newest one is in force.
    */
-  if (await hasCompletedOnboarding(user.id)) {
+  if (!user.isAdmin && (await hasCompletedOnboarding(user.id))) {
     return redirect("/");
   }
 
@@ -442,7 +447,7 @@ function FrequencyStep({
                 <ChoiceRow
                   key={count}
                   value={String(count)}
-                  title={count === 1 ? "Einu sinni í viku" : `${count} sinnum í viku`}
+                  title={frequencyLabel(count)}
                   detail={splitFor(count)?.label}
                 />
               ))}
