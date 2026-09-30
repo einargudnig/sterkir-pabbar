@@ -1,10 +1,10 @@
 import { clerkClient } from "@clerk/react-router/server";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { Form } from "react-router";
+import { Form, Link } from "react-router";
 import { z } from "zod";
 
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -525,6 +525,22 @@ export default function Admin({ loaderData, actionData }: Route.ComponentProps) 
       )}
 
       <UsersTable users={users} now={now} lastSeenAvailable={lastSeenAvailable} />
+
+      <section className="mt-12 rounded-xl border border-line-soft bg-raised p-5">
+        <h2 className="text-sm text-text-soft">Spurningalistinn</h2>
+
+        <p className="mt-2 max-w-2xl text-sm text-text-muted">
+          Farðu sjálfur í gegnum spurningalistann eins og nýr meðlimur. Þegar þú klárar færðu planið
+          sem svörin þín velja, og getur farið aftur í gegn hvenær sem er.
+        </p>
+
+        <Link
+          to="/onboarding"
+          className={buttonVariants({ variant: "outline", className: "mt-4" })}
+        >
+          Fara í gegnum spurningalistann
+        </Link>
+      </section>
     </>
   );
 }

@@ -48,7 +48,7 @@ export const trainingPlan = defineType({
       name: "sessionsPerWeek",
       title: "Æfingar í viku",
       description:
-        "Hversu oft í viku. Ræður skiptingunni: 1 = allur líkaminn, 2 = efri/neðri, 3 = ýta/toga/fætur, 4 = efri/neðri tvisvar. Meðlimir sjá aðeins þær tíðnir sem eiga birt plan.",
+        "Hversu oft í viku. Ræður skiptingunni: 1 = allur líkaminn, 2 = efri/neðri, 3 = ýta/toga/fætur, 4 = efri/neðri tvisvar, 5 = einn vöðvahópur á dag. Meðlimir sjá aðeins þær tíðnir sem eiga birt plan.",
       type: "number",
       options: {
         list: [1, 2, 3, 4, 5],

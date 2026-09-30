@@ -1,13 +1,23 @@
 import { useClerk } from "@clerk/react-router";
 import { clerkClient } from "@clerk/react-router/server";
 import { Form, Link, redirect, useNavigation } from "react-router";
+import { z } from "zod";
 
-import { MeasurementFields } from "~/components/measurement-fields";
+import { ChoiceRow, FieldError, MeasurementFields } from "~/components/measurement-fields";
+import { RadioGroup } from "~/components/ui/radio-group";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { formatDate } from "~/lib/format";
-import { ACTIVITY_LABELS, EXPERIENCE_LABELS, GOAL_LABELS, SEX_LABELS } from "~/lib/onboarding";
+import {
+  ACTIVITY_LABELS,
+  EXPERIENCE_LABELS,
+  frequencyLabel,
+  GOAL_LABELS,
+  SEX_LABELS,
+  splitFor,
+} from "~/lib/onboarding";
 import { submitStep, type StepErrors } from "~/lib/onboarding-draft.server";
-import { latestOnboarding, updateMeasurements } from "~/lib/onboarding.server";
+import { latestOnboarding, updateFrequency, updateMeasurements } from "~/lib/onboarding.server";
+import { availableFrequenciesQuery, sanity } from "~/lib/sanity.server";
 import { requireActiveAccess } from "~/lib/gates.server";
 
 import type { Route } from "./+types/settings";
@@ -41,10 +51,19 @@ export async function loader(args: Route.LoaderArgs) {
     latestOnboarding(user.id),
   ]);
 
+  const editingDays = params.has("dagar") && answers !== undefined;
+
+  /** Only days with a published plan for their goal — the same rule as the wizard. */
+  const frequencies = editingDays
+    ? await sanity.fetch(availableFrequenciesQuery, { goal: answers.goal })
+    : [];
+
   return {
     account,
     answers: answers ?? null,
     editing: params.has("maelingar"),
+    editingDays,
+    frequencies,
     /** Null for an admin, whose access does not come from a grant. */
     paidUntil:
       user.isAdmin || user.accessGrantedUntil === null ? null : formatDate(user.accessGrantedUntil),
@@ -68,8 +87,31 @@ export async function action(args: Route.ActionArgs) {
     return redirect(result.ok ? "/dashboard/macros" : "/settings");
   }
 
+  if (formData.get("intent") === "days") {
+    const parsed = daysSchema.safeParse(Object.fromEntries(formData));
+
+    if (!parsed.success) {
+      return { daysError: "Veldu hversu oft í viku" };
+    }
+
+    const result = await updateFrequency(user.id, parsed.data.sessionsPerWeek);
+
+    /**
+     * `no-plan` means Aron unpublished that plan between the page loading and
+     * the submit. Say so, and let them pick again from what is there now.
+     */
+    if (!result.ok) {
+      return { daysError: "Þetta plan er ekki lengur í boði. Veldu aftur." };
+    }
+
+    /** A new number of days is a new plan — show it. */
+    return redirect("/dashboard/workouts");
+  }
+
   return redirect("/settings");
 }
+
+const daysSchema = z.object({ sessionsPerWeek: z.coerce.number().int().min(1).max(7) });
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: "Stillingar — Innri hringurinn" }];
@@ -116,7 +158,6 @@ type Answers = NonNullable<Loaded["answers"]>;
 const answerRows = (answers: Answers): readonly (readonly [string, string])[] => [
   ["Markmið", GOAL_LABELS[answers.goal].label],
   ["Reynsla", answers.experience ? EXPERIENCE_LABELS[answers.experience].label : "—"],
-  ["Æfingar", `${answers.sessionsPerWeek} sinnum í viku`],
   ["Þyngd", `${answers.weightKg} kg`],
   ["Hæð", `${answers.heightCm} cm`],
   ["Aldur", `${answers.age} ára`],
@@ -185,10 +226,86 @@ const AnswersSection = ({
   );
 };
 
-export default function Stillingar({ loaderData, actionData }: Route.ComponentProps) {
-  const { account, answers, editing, paidUntil } = loaderData;
+const DaysSection = ({
+  current,
+  editing,
+  frequencies,
+  error,
+}: {
+  readonly current: number;
+  readonly editing: boolean;
+  readonly frequencies: readonly number[];
+  readonly error: string | undefined;
+}) => {
+  const navigation = useNavigation();
 
-  const errors: StepErrors = actionData?.errors ?? {};
+  if (!editing) {
+    return (
+      <div className="mt-3 rounded-xl border border-line-soft bg-raised p-5">
+        <p className="text-sm text-text">{frequencyLabel(current)}</p>
+
+        {splitFor(current) && <p className="text-sm text-text-muted">{splitFor(current)?.label}</p>}
+
+        <Link
+          to="?dagar"
+          preventScrollReset
+          className={buttonVariants({ variant: "outline", className: "mt-4" })}
+        >
+          Breyta fjölda daga
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <Form method="post" className="mt-3 rounded-xl border border-line-soft bg-raised p-5">
+      <p className="mb-6 text-sm text-text-soft">
+        Fjöldi daga ræður skiptingunni, svo þú færð nýtt plan. Næringarviðmiðin haldast óbreytt.
+      </p>
+
+      <fieldset>
+        <legend className="sr-only">Æfingar í viku</legend>
+
+        <RadioGroup name="sessionsPerWeek" defaultValue={String(current)}>
+          {frequencies.map((count) => (
+            <ChoiceRow
+              key={count}
+              value={String(count)}
+              title={frequencyLabel(count)}
+              detail={splitFor(count)?.label}
+            />
+          ))}
+        </RadioGroup>
+
+        <FieldError message={error} />
+      </fieldset>
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Button
+          type="submit"
+          name="intent"
+          value="days"
+          disabled={navigation.state === "submitting"}
+        >
+          Vista og sjá nýja planið
+        </Button>
+
+        <Link to="." preventScrollReset className={buttonVariants({ variant: "ghost" })}>
+          Hætta við
+        </Link>
+      </div>
+    </Form>
+  );
+};
+
+export default function Stillingar({ loaderData, actionData }: Route.ComponentProps) {
+  const { account, answers, editing, editingDays, frequencies, paidUntil } = loaderData;
+
+  const errors: StepErrors =
+    actionData !== undefined && "errors" in actionData ? actionData.errors : {};
+
+  const daysError =
+    actionData !== undefined && "daysError" in actionData ? actionData.daysError : undefined;
 
   return (
     <div className="max-w-lg">
@@ -208,11 +325,24 @@ export default function Stillingar({ loaderData, actionData }: Route.ComponentPr
         ) : (
           <AnswersSection
             answers={answers}
-            editing={editing || actionData !== undefined}
+            editing={editing || (actionData !== undefined && "errors" in actionData)}
             errors={errors}
           />
         )}
       </section>
+
+      {answers !== null && (
+        <section className="mt-8">
+          <h2 className="text-sm text-text-soft">Æfingar í viku</h2>
+
+          <DaysSection
+            current={answers.sessionsPerWeek}
+            editing={editingDays || daysError !== undefined}
+            frequencies={frequencies}
+            error={daysError}
+          />
+        </section>
+      )}
 
       {paidUntil !== null && (
         <section className="mt-8">

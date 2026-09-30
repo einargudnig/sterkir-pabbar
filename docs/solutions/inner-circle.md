@@ -634,13 +634,13 @@ from commit `89d685d` and the "Payments switched to Repeat" and "Phase 6 built" 
 Einar's call, from Aron's feedback: where a member trains does not change their plan, and
 the number of days a week decides the split.
 
-| Days | Split                |
-| ---- | -------------------- |
-| 1    | Full body            |
-| 2    | Upper / lower        |
-| 3    | Push / pull / legs   |
-| 4    | Upper / lower, twice |
-| 5    | Not defined yet      |
+| Days | Split                                  |
+| ---- | -------------------------------------- |
+| 1    | Full body                              |
+| 2    | Upper / lower                          |
+| 3    | Push / pull / legs                     |
+| 4    | Upper / lower, twice                   |
+| 5    | Chest / back / legs / shoulders / arms |
 
 - **The training step is gone.** Equipment is no longer asked. Experience moved onto the
   frequency step, which now names the split under each option (`SPLITS` in
@@ -652,3 +652,15 @@ the number of days a week decides the split.
   (`studio/schemas/splits.ts`, a copy of `SPLITS` — the packages share no code).
 - **Frequencies still appear only when a plan is published.** Offering 1, 2 or 4 days is
   Aron publishing those plans, not a deploy.
+
+**Follow-up, same day.**
+
+- **5 days is the bro split:** chest, back, legs, shoulders, arms. Einar wrote
+  "chest/back/legs/arms/legs"; shoulders replace the second legs day until he says otherwise.
+- **Draft plans exist for every goal and number of days.** They have named days and no
+  exercises, so Aron fills them in and publishes them. Until he does, members can't pick them.
+- **Members change their days in Stillingar.** `updateFrequency` appends an onboarding row
+  and a new plan assignment. It leaves macros alone, because days are not one of their
+  inputs.
+- **Admins can rerun the questionnaire** from `/admin`. For admins the onboarding loader
+  skips the "already done" redirect, and each run appends rows the same way.
