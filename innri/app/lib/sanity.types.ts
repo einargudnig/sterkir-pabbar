@@ -67,7 +67,6 @@ export type TrainingPlan = {
   _rev: string;
   title: string;
   goal: "fitutap" | "vodvauppbygging";
-  equipment: "raektarstod" | "heima" | "engin";
   sessionsPerWeek: 1 | 2 | 3 | 4 | 5;
   intro?: string;
   sessions: Array<{
@@ -308,7 +307,7 @@ export type AllSanitySchemaTypes =
 
 // Source: ../innri/app/lib/sanity.server.ts
 // Variable: matchingPlanQuery
-// Query: *[    _type == "trainingPlan" &&    goal == $goal &&    coalesce(equipment, "raektarstod") == $equipment &&    sessionsPerWeek == $sessionsPerWeek  ][0]{    _id,    title,    goal,    sessionsPerWeek,    intro,    sessions[]{      _key,      title,      exercises[]{        _key,        sets,        reps,        note,        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }      }    }  }
+// Query: *[    _type == "trainingPlan" &&    goal == $goal &&    sessionsPerWeek == $sessionsPerWeek  ][0]{    _id,    title,    goal,    sessionsPerWeek,    intro,    sessions[]{      _key,      title,      exercises[]{        _key,        sets,        reps,        note,        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }      }    }  }
 export type MatchingPlanQueryResult = {
   _id: string;
   title: string;
@@ -342,15 +341,8 @@ export type MatchingPlanQueryResult = {
 } | null;
 
 // Source: ../innri/app/lib/sanity.server.ts
-// Variable: availableEquipmentQuery
-// Query: array::unique(*[_type == "trainingPlan" && goal == $goal]{    "equipment": coalesce(equipment, "raektarstod")  }.equipment)
-export type AvailableEquipmentQueryResult = Array<
-  "engin" | "heima" | "raektarstod"
->;
-
-// Source: ../innri/app/lib/sanity.server.ts
 // Variable: availableFrequenciesQuery
-// Query: array::unique(*[    _type == "trainingPlan" &&    goal == $goal &&    coalesce(equipment, "raektarstod") == $equipment  ].sessionsPerWeek) | order(@ asc)
+// Query: array::unique(*[_type == "trainingPlan" && goal == $goal].sessionsPerWeek) | order(@ asc)
 export type AvailableFrequenciesQueryResult = Array<1 | 2 | 3 | 4 | 5>;
 
 // Source: ../innri/app/lib/sanity.server.ts
@@ -434,9 +426,8 @@ export type ArticleBySlugQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '\n  *[\n    _type == "trainingPlan" &&\n    goal == $goal &&\n    coalesce(equipment, "raektarstod") == $equipment &&\n    sessionsPerWeek == $sessionsPerWeek\n  ][0]{\n    _id,\n    title,\n    goal,\n    sessionsPerWeek,\n    intro,\n    sessions[]{\n      _key,\n      title,\n      exercises[]{\n        _key,\n        sets,\n        reps,\n        note,\n        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }\n      }\n    }\n  }\n': MatchingPlanQueryResult;
-    '\n  array::unique(*[_type == "trainingPlan" && goal == $goal]{\n    "equipment": coalesce(equipment, "raektarstod")\n  }.equipment)\n': AvailableEquipmentQueryResult;
-    '\n  array::unique(*[\n    _type == "trainingPlan" &&\n    goal == $goal &&\n    coalesce(equipment, "raektarstod") == $equipment\n  ].sessionsPerWeek) | order(@ asc)\n': AvailableFrequenciesQueryResult;
+    '\n  *[\n    _type == "trainingPlan" &&\n    goal == $goal &&\n    sessionsPerWeek == $sessionsPerWeek\n  ][0]{\n    _id,\n    title,\n    goal,\n    sessionsPerWeek,\n    intro,\n    sessions[]{\n      _key,\n      title,\n      exercises[]{\n        _key,\n        sets,\n        reps,\n        note,\n        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }\n      }\n    }\n  }\n': MatchingPlanQueryResult;
+    '\n  array::unique(*[_type == "trainingPlan" && goal == $goal].sessionsPerWeek) | order(@ asc)\n': AvailableFrequenciesQueryResult;
     '\n  *[_type == "trainingPlan" && _id == $id][0]{\n    _id,\n    title,\n    goal,\n    sessionsPerWeek,\n    intro,\n    sessions[]{\n      _key,\n      title,\n      exercises[]{\n        _key,\n        sets,\n        reps,\n        note,\n        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }\n      }\n    }\n  }\n': PlanByIdQueryResult;
     '\n  *[_type == "article"] | order(title asc){\n    _id,\n    title,\n    "slug": slug.current,\n    category,\n    excerpt\n  }\n': ArticlesQueryResult;
     '\n  *[_type == "article" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    category,\n    excerpt,\n    body\n  }\n': ArticleBySlugQueryResult;

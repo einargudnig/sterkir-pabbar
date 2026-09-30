@@ -40,7 +40,6 @@ const answered: OnboardingDraft = {
   sex: "karl",
   activityLevel: "kyrrseta",
   goal: "fitutap",
-  equipment: "raektarstod",
   experience: "byrjandi",
 };
 
@@ -105,36 +104,25 @@ describe("the health step", () => {
   });
 });
 
-describe("the training step", () => {
-  it("needs both equipment and experience, and says which is missing", () => {
-    const result = submitStep("training", form({ equipment: "heima" }));
+describe("the frequency step", () => {
+  it("needs both the days and the experience, and says which is missing", () => {
+    const result = submitStep("frequency", form({ sessionsPerWeek: "3" }));
 
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
       expect(result.errors.experience).toBe("Veldu hversu mikla reynslu þú hefur");
-      expect(result.errors.equipment).toBeUndefined();
+      expect(result.errors.sessionsPerWeek).toBeUndefined();
     }
   });
 
-  it("rejects equipment that is not one of the three", () => {
-    expect(submitStep("training", form({ equipment: "sundlaug", experience: "vanur" })).ok).toBe(
-      false,
-    );
-  });
-
-  /** Frequencies are offered per equipment, so the old one may lead nowhere. */
-  it("clears the frequency chosen for the previous equipment", () => {
-    const result = submitStep("training", form({ equipment: "heima", experience: "vanur" }));
+  it("records both", () => {
+    const result = submitStep("frequency", form({ sessionsPerWeek: "4", experience: "vanur" }));
 
     expect(result.ok).toBe(true);
 
     if (result.ok) {
-      expect(result.patch).toStrictEqual({
-        equipment: "heima",
-        experience: "vanur",
-        sessionsPerWeek: undefined,
-      });
+      expect(result.patch).toStrictEqual({ sessionsPerWeek: 4, experience: "vanur" });
     }
   });
 });
@@ -225,10 +213,10 @@ describe("the measurements step", () => {
 
 describe("changing the goal", () => {
   /**
-   * Equipment and frequency options are per-goal. Keeping either across a goal
-   * change is how a member ends up assigned a plan that does not exist.
+   * Frequency options are per-goal. Keeping one across a goal change is how a
+   * member ends up assigned a plan that does not exist.
    */
-  it("clears the equipment and frequency chosen for the previous goal", () => {
+  it("clears the frequency chosen for the previous goal", () => {
     const result = submitStep("goal", form({ goal: "vodvauppbygging" }));
 
     expect(result.ok).toBe(true);
@@ -236,7 +224,6 @@ describe("changing the goal", () => {
     if (result.ok) {
       expect(result.patch).toStrictEqual({
         goal: "vodvauppbygging",
-        equipment: undefined,
         sessionsPerWeek: undefined,
       });
     }
@@ -246,7 +233,6 @@ describe("changing the goal", () => {
 describe("where an unfinished member belongs", () => {
   const planChosen: OnboardingDraft = {
     goal: "fitutap",
-    equipment: "raektarstod",
     experience: "byrjandi",
     sessionsPerWeek: 3,
   };
@@ -255,12 +241,12 @@ describe("where an unfinished member belongs", () => {
     expect(firstIncompleteStep({})).toBe("goal");
   });
 
-  it("asks about training once the goal is set", () => {
-    expect(firstIncompleteStep({ goal: "fitutap" })).toBe("training");
+  it("asks for the days once the goal is set", () => {
+    expect(firstIncompleteStep({ goal: "fitutap" })).toBe("frequency");
   });
 
-  it("stays on training until both equipment and experience are answered", () => {
-    expect(firstIncompleteStep({ goal: "fitutap", equipment: "heima" })).toBe("training");
+  it("stays on the days step until the experience is answered too", () => {
+    expect(firstIncompleteStep({ goal: "fitutap", sessionsPerWeek: 3 })).toBe("frequency");
   });
 
   it("asks for the frequency before any health question", () => {

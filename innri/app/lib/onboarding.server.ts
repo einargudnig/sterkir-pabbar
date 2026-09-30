@@ -4,13 +4,7 @@ import { z } from "zod";
 import { db } from "~/db";
 import { macroTargets, onboarding, planAssignments, users } from "~/db/schema";
 import { computeMacros } from "~/lib/macros";
-import {
-  ACTIVITY_VALUES,
-  EQUIPMENT_VALUES,
-  EXPERIENCE_VALUES,
-  GOAL_VALUES,
-  SEX_VALUES,
-} from "~/lib/onboarding";
+import { ACTIVITY_VALUES, EXPERIENCE_VALUES, GOAL_VALUES, SEX_VALUES } from "~/lib/onboarding";
 import type { OnboardingDraft } from "~/lib/onboarding-draft.server";
 import { matchingPlanQuery, planByIdQuery, sanity } from "~/lib/sanity.server";
 
@@ -36,7 +30,6 @@ const completeDraftSchema = z.object({
   sex: z.enum(SEX_VALUES),
   activityLevel: z.enum(ACTIVITY_VALUES),
   goal: z.enum(GOAL_VALUES),
-  equipment: z.enum(EQUIPMENT_VALUES),
   experience: z.enum(EXPERIENCE_VALUES),
   sessionsPerWeek: z.number().int(),
   name: z.string().min(1),
@@ -76,7 +69,6 @@ export const completeOnboarding = async (
 
   const plan = await sanity.fetch(matchingPlanQuery, {
     goal: answers.goal,
-    equipment: answers.equipment,
     sessionsPerWeek: answers.sessionsPerWeek,
   });
 
@@ -105,7 +97,6 @@ export const completeOnboarding = async (
         userId,
         goal: answers.goal,
         sessionsPerWeek: answers.sessionsPerWeek,
-        equipment: answers.equipment,
         experience: answers.experience,
         weightKg: answers.weightKg,
         heightCm: answers.heightCm,

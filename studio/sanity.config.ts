@@ -3,6 +3,7 @@ import { structureTool } from "sanity/structure";
 import { visionTool } from "@sanity/vision";
 
 import { schemaTypes } from "./schemas";
+import { planTemplates } from "./schemas/splits";
 
 /**
  * The whole landing page is ONE document (`siteContent`, fixed id).
@@ -44,7 +45,7 @@ export default defineConfig({
     types: schemaTypes,
     // Nothing on this site is creatable from the "+" button — there is exactly
     // one document and it already exists.
-    templates: (prev) => prev.filter((t) => t.schemaType !== SINGLETON_ID),
+    templates: (prev) => [...prev.filter((t) => t.schemaType !== SINGLETON_ID), ...planTemplates],
   },
 
   document: {

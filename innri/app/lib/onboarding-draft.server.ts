@@ -5,7 +5,6 @@ import { serverEnv } from "~/lib/env.server";
 import { parseKennitala } from "~/lib/kennitala";
 import {
   ACTIVITY_VALUES,
-  EQUIPMENT_VALUES,
   EXPERIENCE_VALUES,
   GOAL_VALUES,
   type HealthFlags,
@@ -83,7 +82,6 @@ const draftSchema = z.object({
   activityLevel: z.enum(ACTIVITY_VALUES).optional(),
 
   goal: z.enum(GOAL_VALUES).optional(),
-  equipment: z.enum(EQUIPMENT_VALUES).optional(),
   experience: z.enum(EXPERIENCE_VALUES).optional(),
   sessionsPerWeek: z.number().int().optional(),
 
@@ -212,13 +210,9 @@ const goalSchema = z.object({
   goal: z.enum(GOAL_VALUES, { error: "Veldu markmið" }),
 });
 
-const trainingSchema = z.object({
-  equipment: z.enum(EQUIPMENT_VALUES, { error: "Veldu hvaða aðstöðu þú hefur" }),
-  experience: z.enum(EXPERIENCE_VALUES, { error: "Veldu hversu mikla reynslu þú hefur" }),
-});
-
 const frequencySchema = z.object({
   sessionsPerWeek: numberField("fjölda æfinga", { min: 1, max: 7 }),
+  experience: z.enum(EXPERIENCE_VALUES, { error: "Veldu hversu mikla reynslu þú hefur" }),
 });
 
 const KENNITALA_MESSAGES = {
@@ -294,7 +288,6 @@ export const FIELD_NAMES = [
   "sex",
   "activityLevel",
   "goal",
-  "equipment",
   "experience",
   "sessionsPerWeek",
   "name",
@@ -367,24 +360,12 @@ export const submitStep = (step: Step, formData: FormData): StepSubmission => {
     const result = goalSchema.safeParse(values);
 
     /**
-     * Changing the goal clears equipment and frequency. Both are offered per
-     * goal, so a member who backs up from "3× fyrir fitutap" and picks muscle
-     * gain must not silently keep an answer that has no plan behind it.
+     * Changing the goal clears the frequency. Frequencies are offered per goal,
+     * so a member who backs up from "3× fyrir fitutap" and picks muscle gain
+     * must not silently keep an answer that has no plan behind it.
      */
     return result.success
-      ? {
-          ok: true,
-          patch: { goal: result.data.goal, equipment: undefined, sessionsPerWeek: undefined },
-        }
-      : { ok: false, errors: errorsFrom(result.error) };
-  }
-
-  if (step === "training") {
-    const result = trainingSchema.safeParse(values);
-
-    /** Same reason as the goal step: frequencies are offered per equipment. */
-    return result.success
-      ? { ok: true, patch: { ...result.data, sessionsPerWeek: undefined } }
+      ? { ok: true, patch: { goal: result.data.goal, sessionsPerWeek: undefined } }
       : { ok: false, errors: errorsFrom(result.error) };
   }
 
@@ -415,11 +396,7 @@ export const firstIncompleteStep = (draft: OnboardingDraft): Step => {
     return "goal";
   }
 
-  if (draft.equipment === undefined || draft.experience === undefined) {
-    return "training";
-  }
-
-  if (draft.sessionsPerWeek === undefined) {
+  if (draft.sessionsPerWeek === undefined || draft.experience === undefined) {
     return "frequency";
   }
 
