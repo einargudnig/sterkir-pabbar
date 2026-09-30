@@ -213,6 +213,46 @@ export const updateMeasurements = async (
   return { ok: true };
 };
 
+export type FrequencyResult =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly reason: "no-answers" | "no-plan" };
+
+/**
+ * A member changing how many days a week they train, from Stillingar.
+ *
+ * Days pick the plan, so this is the one settings change that reassigns it:
+ * a new onboarding row with the frequency replaced, and a new plan assignment
+ * for the plan that matches it. Macros are untouched — days are not one of
+ * their inputs — so no new targets row. The Sanity lookup runs before the
+ * transaction, for the same reason as in `completeOnboarding`.
+ */
+export const updateFrequency = async (
+  userId: string,
+  sessionsPerWeek: number,
+): Promise<FrequencyResult> => {
+  const current = await latestOnboarding(userId);
+
+  if (!current) {
+    return { ok: false, reason: "no-answers" };
+  }
+
+  const plan = await sanity.fetch(matchingPlanQuery, { goal: current.goal, sessionsPerWeek });
+
+  if (!plan) {
+    return { ok: false, reason: "no-plan" };
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(onboarding)
+      .values({ ...current, sessionsPerWeek, id: undefined, completedAt: undefined });
+
+    await tx.insert(planAssignments).values({ userId, sanityPlanId: plan._id });
+  });
+
+  return { ok: true };
+};
+
 /* ── Reading what was written ─────────────────────────────────────────────── */
 
 /** The answers in force. Append-only table, so the newest row is current. */

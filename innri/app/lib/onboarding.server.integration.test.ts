@@ -14,6 +14,7 @@ import {
   latestMacros,
   latestOnboarding,
   latestPlanAssignment,
+  updateFrequency,
   updateMeasurements,
 } from "./onboarding.server";
 
@@ -396,5 +397,60 @@ describe("updateMeasurements", () => {
 
     expect(await updateMeasurements(member.id, withoutAge)).toEqual({ ok: false });
     expect((await rowsFor(member.id)).onboarding).toBe(1);
+  });
+});
+
+describe("updateFrequency", () => {
+  it("reassigns the plan for the new number of days, keeping every other answer and the macros", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, { ...complete, limitations: "Slæmt vinstra hné" });
+
+    const macrosBefore = await latestMacros(member.id);
+
+    sanity.queries.length = 0;
+    sanity.respondWith(plan("plan-fitutap-4"));
+
+    expect(await updateFrequency(member.id, 4)).toEqual({ ok: true });
+
+    expect(sanity.queries[0]?.params.get("goal")).toBe('"fitutap"');
+    expect(sanity.queries[0]?.params.get("sessionsPerWeek")).toBe("4");
+    expect(await rowsFor(member.id)).toEqual({
+      onboarding: 2,
+      macroTargets: 1,
+      planAssignments: 2,
+    });
+    expect(await latestOnboarding(member.id)).toMatchObject({
+      sessionsPerWeek: 4,
+      goal: "fitutap",
+      weightKg: complete.weightKg,
+      limitations: "Slæmt vinstra hné",
+    });
+    expect((await latestPlanAssignment(member.id))?.sanityPlanId).toBe("plan-fitutap-4");
+    expect((await latestMacros(member.id))?.id).toBe(macrosBefore?.id);
+  });
+
+  /** Unpublished between the page loading and the submit: nothing may change. */
+  it("changes nothing when no plan exists for the new number of days", async () => {
+    const member = await createMember();
+
+    await completeOnboarding(member.id, complete);
+
+    sanity.respondWith(null);
+
+    expect(await updateFrequency(member.id, 5)).toEqual({ ok: false, reason: "no-plan" });
+    expect(await rowsFor(member.id)).toEqual({
+      onboarding: 1,
+      macroTargets: 1,
+      planAssignments: 1,
+    });
+    expect((await latestPlanAssignment(member.id))?.sanityPlanId).toBe("plan-fitutap-3");
+  });
+
+  it("refuses someone who has never answered, without asking Sanity", async () => {
+    const member = await createMember();
+
+    expect(await updateFrequency(member.id, 3)).toEqual({ ok: false, reason: "no-answers" });
+    expect(sanity.queries).toEqual([]);
   });
 });
