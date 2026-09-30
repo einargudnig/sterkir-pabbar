@@ -516,20 +516,10 @@ export default function Admin({ loaderData, actionData }: Route.ComponentProps) 
         opnast aðgangurinn.
       </p>
 
-      <Overview users={users} />
-
-      {actionData?.notice && (
-        <p role="status" className="mt-8 border-l-2 border-bronze pl-4 text-sm text-text-soft">
-          {actionData.notice}
-        </p>
-      )}
-
-      <UsersTable users={users} now={now} lastSeenAvailable={lastSeenAvailable} />
-
-      <section className="mt-12 rounded-xl border border-line-soft bg-raised p-5">
+      <section className="mt-6 max-w-2xl rounded-xl border border-line-soft bg-raised p-5">
         <h2 className="text-sm text-text-soft">Spurningalistinn</h2>
 
-        <p className="mt-2 max-w-2xl text-sm text-text-muted">
+        <p className="mt-2 text-sm text-text-muted">
           Farðu sjálfur í gegnum spurningalistann eins og nýr meðlimur. Þegar þú klárar færðu planið
           sem svörin þín velja, og getur farið aftur í gegn hvenær sem er.
         </p>
@@ -541,6 +531,16 @@ export default function Admin({ loaderData, actionData }: Route.ComponentProps) 
           Fara í gegnum spurningalistann
         </Link>
       </section>
+
+      <Overview users={users} />
+
+      {actionData?.notice && (
+        <p role="status" className="mt-8 border-l-2 border-bronze pl-4 text-sm text-text-soft">
+          {actionData.notice}
+        </p>
+      )}
+
+      <UsersTable users={users} now={now} lastSeenAvailable={lastSeenAvailable} />
     </>
   );
 }
