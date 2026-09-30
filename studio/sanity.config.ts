@@ -3,6 +3,7 @@ import { structureTool } from "sanity/structure";
 import { visionTool } from "@sanity/vision";
 
 import { schemaTypes } from "./schemas";
+import { MUSCLE_GROUPS } from "./schemas/exercise";
 import { planTemplates } from "./schemas/splits";
 
 /**
@@ -33,7 +34,34 @@ export default defineConfig({
               .id(SINGLETON_ID)
               .child(S.document().schemaType(SINGLETON_ID).documentId(SINGLETON_ID)),
             S.divider(),
-            S.documentTypeListItem("exercise"),
+            S.listItem()
+              .title("Æfingar")
+              .schemaType("exercise")
+              .child(
+                S.list()
+                  .title("Æfingar")
+                  .items([
+                    ...MUSCLE_GROUPS.map((group) =>
+                      S.listItem()
+                        .id(`exercise-${group.value}`)
+                        .title(group.title)
+                        .schemaType("exercise")
+                        .child(
+                          S.documentTypeList("exercise")
+                            .title(group.title)
+                            .filter('_type == "exercise" && muscleGroup == $group')
+                            .params({ group: group.value })
+                            .initialValueTemplates([
+                              S.initialValueTemplateItem("exercise-in-group", {
+                                muscleGroup: group.value,
+                              }),
+                            ]),
+                        ),
+                    ),
+                    S.divider(),
+                    S.documentTypeListItem("exercise").title("Allar æfingar"),
+                  ]),
+              ),
             S.documentTypeListItem("trainingPlan"),
             S.documentTypeListItem("article"),
           ]),
@@ -45,10 +73,27 @@ export default defineConfig({
     types: schemaTypes,
     // Nothing on this site is creatable from the "+" button — there is exactly
     // one document and it already exists.
-    templates: (prev) => [...prev.filter((t) => t.schemaType !== SINGLETON_ID), ...planTemplates],
+    templates: (prev) => [
+      ...prev.filter((t) => t.schemaType !== SINGLETON_ID),
+      ...planTemplates,
+      /** Used by the muscle-group folders: a new exercise starts in its folder's group. */
+      {
+        id: "exercise-in-group",
+        title: "Æfing í vöðvahópi",
+        schemaType: "exercise",
+        parameters: [{ name: "muscleGroup", type: "string" }],
+        value: (params: { muscleGroup: string }) => ({ muscleGroup: params.muscleGroup }),
+      },
+    ],
   },
 
   document: {
+    // The folder template only makes sense inside a muscle-group folder, which
+    // fills in its group; the plain "Æfing" stays in the global "+" menu.
+    newDocumentOptions: (prev, { creationContext }) =>
+      creationContext.type === "global"
+        ? prev.filter((item) => item.templateId !== "exercise-in-group")
+        : prev,
     // Remove duplicate/delete from the singleton so the page can never lose
     // its only source of content.
     actions: (prev, { schemaType }) =>
