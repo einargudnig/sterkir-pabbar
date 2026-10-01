@@ -1,7 +1,6 @@
 import {
   convertToModelMessages,
   createUIMessageStreamResponse,
-  isStepCount,
   safeValidateUIMessages,
   streamText,
   toUIMessageStream,
@@ -12,6 +11,7 @@ import { z } from "zod";
 import {
   assistantInstructions,
   assistantTools,
+  generationSettings,
   messagesToday,
   recordUsage,
 } from "~/lib/assistant.server";
@@ -93,8 +93,7 @@ export async function action(args: Route.ActionArgs) {
     instructions: await assistantInstructions(),
     messages: await convertToModelMessages(messages),
     tools: assistantTools(user.id),
-    stopWhen: isStepCount(4),
-    maxOutputTokens: 600,
+    ...generationSettings,
     timeout: { totalMs: 45_000 },
     abortSignal: args.request.signal,
 

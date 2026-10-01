@@ -693,3 +693,10 @@ Step 2 is the chat.
 - **Off-topic gets one fixed reply, `OFF_TOPIC_REPLY`, word for word.** Left to phrase its
   own refusal, the model hedged and then wrote the Python anyway. Emergencies stay exempt.
   This is a prompt rule, not a guarantee: the acceptance evals should include off-topic cases.
+- **Evals: `bun --env-file=.env.development.local run eval` in `innri/`.** They run Aron's 48
+  answer cases plus our off-topic and in-scope cases (`evals/assistant/cases.json`) against the
+  real model, prompt and tools. The member is synthetic and the FAQ comes from Sanity drafts.
+  Off-topic cases must match `OFF_TOPIC_REPLY` exactly. A judge model grades the rest pass/fail
+  and flags critical failures, Aron's launch gate. The 12 access cases are not model behaviour;
+  `cases.json` maps each one to the guard that covers it. Kept out of `bun run check`: it costs
+  money and the answers vary between runs.

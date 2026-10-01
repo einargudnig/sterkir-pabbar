@@ -1,4 +1,4 @@
-import { tool } from "ai";
+import { isStepCount, tool } from "ai";
 import { and, count, eq, gte } from "drizzle-orm";
 import { z } from "zod";
 
@@ -62,7 +62,7 @@ Tilvísanir:
 
 Gagnsæi: segðu satt að þú sért gervigreind. Segðu aldrei að þú hafir breytt, vistað eða sent eitthvað — þú getur það ekki.`;
 
-type Faq = Awaited<ReturnType<typeof publishedFaq>>;
+export type Faq = Awaited<ReturnType<typeof publishedFaq>>;
 
 const publishedFaq = () => sanity.fetch(assistantFaqQuery);
 
@@ -72,7 +72,7 @@ const publishedFaq = () => sanity.fetch(assistantFaqQuery);
  * view on every turn, and there is no retrieval step to miss the right one.
  * Revisit when the collection is large enough for that to cost real money.
  */
-const instructionsFor = (faq: Faq) => {
+export const instructionsFor = (faq: Faq) => {
   const approved =
     faq.length === 0
       ? "(Engin samþykkt svör enn. Vísaðu spurningum um þjónustuna til Arons.)"
@@ -83,13 +83,31 @@ const instructionsFor = (faq: Faq) => {
 
 export const assistantInstructions = async () => instructionsFor(await publishedFaq());
 
+/**
+ * How each turn is generated. Shared with the evals, which must exercise the
+ * same budget as members do or their results describe a different assistant.
+ */
+export const generationSettings = {
+  stopWhen: isStepCount(4),
+  maxOutputTokens: 600,
+} as const;
+
+/** Where the tools read a member's data. The evals swap in a synthetic member. */
+export type MemberReaders = {
+  readonly assignedPlan: typeof assignedPlan;
+  readonly latestMacros: typeof latestMacros;
+};
+
 /** Read-only tools, each closed over the session user's id. */
-export const assistantTools = (userId: string) => ({
+export const assistantTools = (
+  userId: string,
+  read: MemberReaders = { assignedPlan, latestMacros },
+) => ({
   myPlan: tool({
     description: "Æfingaplan meðlimsins: dagar, æfingar, sett, endurtekningar og athugasemdir.",
     inputSchema: z.object({}),
     execute: async () => {
-      const plan = await assignedPlan(userId);
+      const plan = await read.assignedPlan(userId);
 
       if (!plan) {
         return { found: false } as const;
@@ -119,7 +137,7 @@ export const assistantTools = (userId: string) => ({
     description: "Næringarviðmið meðlimsins á dag: hitaeiningar, prótein, kolvetni og fita.",
     inputSchema: z.object({}),
     execute: async () => {
-      const macros = await latestMacros(userId);
+      const macros = await read.latestMacros(userId);
 
       if (!macros) {
         return { found: false } as const;

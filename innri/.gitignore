@@ -7,3 +7,6 @@
 /build/
 .vercel
 .env*
+
+# Assistant eval runs: replies to synthetic questions, kept locally to compare runs.
+/evals/assistant/results/
