@@ -64,6 +64,8 @@ export default defineConfig({
               ),
             S.documentTypeListItem("trainingPlan"),
             S.documentTypeListItem("article"),
+            S.divider(),
+            S.documentTypeListItem("faqEntry"),
           ]),
     }),
     visionTool(),

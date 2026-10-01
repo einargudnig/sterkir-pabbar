@@ -664,3 +664,20 @@ the number of days a week decides the split.
   inputs.
 - **Admins can rerun the questionnaire** from `/admin`. For admins the onboarding loader
   skips the "already done" redirect, and each run appends rows the same way.
+
+## Members' AI assistant — started 2026-09-30
+
+Aron's handoff pack (`sterkir-pabbar-handoff-2026-09-30`) is a brief, not code: scope, a
+draft system prompt, 41 draft FAQ answers, 60 acceptance cases. Step 1 is the content:
+
+- **`faqEntry` in Sanity; publishing is the approval.** The app reads published content
+  only, so the 41 imported entries (all drafts) reach no member until Aron publishes each
+  one. `reviewNote` is for him and must never be sent to the model.
+- **Nine answers were rewritten to match the app.** The pack described a cancel button,
+  automatic renewal, a 24-hour plan update and "Mínar síður". None of those exist. Each
+  rewritten entry keeps the original text in its review note.
+
+Planned next, not built yet: a resource route under the paid gate with AI SDK
+`streamText`. Its tools are server-scoped to the session user: plan, macros, FAQ lookup,
+and a deterministic protein swap. It adds a kill switch and a per-member daily limit.
+Conversations are not stored in v1.
