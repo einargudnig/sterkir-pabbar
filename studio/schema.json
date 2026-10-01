@@ -1,5 +1,116 @@
 [
   {
+    "name": "faqEntry",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "faqEntry"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "question": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "answer": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "topic": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "training"
+            },
+            {
+              "type": "string",
+              "value": "nutrition"
+            },
+            {
+              "type": "string",
+              "value": "habits"
+            },
+            {
+              "type": "string",
+              "value": "coaching"
+            },
+            {
+              "type": "string",
+              "value": "navigation"
+            },
+            {
+              "type": "string",
+              "value": "account"
+            },
+            {
+              "type": "string",
+              "value": "billing"
+            },
+            {
+              "type": "string",
+              "value": "services"
+            },
+            {
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "type": "string",
+              "value": "safety"
+            },
+            {
+              "type": "string",
+              "value": "scope"
+            }
+          ]
+        },
+        "optional": false
+      },
+      "reviewNote": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      }
+    }
+  },
+  {
     "name": "article",
     "type": "document",
     "attributes": {

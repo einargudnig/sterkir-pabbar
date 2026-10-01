@@ -15,6 +15,29 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
+export type FaqEntry = {
+  _id: string;
+  _type: "faqEntry";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  question: string;
+  answer: string;
+  topic:
+    | "training"
+    | "nutrition"
+    | "habits"
+    | "coaching"
+    | "navigation"
+    | "account"
+    | "billing"
+    | "services"
+    | "support"
+    | "safety"
+    | "scope";
+  reviewNote?: string;
+};
+
 export type Article = {
   _id: string;
   _type: "article";
@@ -288,6 +311,7 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | FaqEntry
   | Article
   | Slug
   | ExerciseReference
