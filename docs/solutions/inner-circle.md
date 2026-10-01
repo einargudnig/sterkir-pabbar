@@ -690,3 +690,6 @@ Step 2 is the chat.
   of entries this costs a few thousand tokens. It also removes the retrieval miss.
 - **`assistant_usage` stores cost and outcome, never the text.** Failed calls count toward
   the daily limit. Conversations are not stored at all.
+- **Off-topic gets one fixed reply, `OFF_TOPIC_REPLY`, word for word.** Left to phrase its
+  own refusal, the model hedged and then wrote the Python anyway. Emergencies stay exempt.
+  This is a prompt rule, not a guarantee: the acceptance evals should include off-topic cases.
