@@ -50,6 +50,13 @@
       "when": 1790672272364,
       "tag": "0006_admin_claims",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790821496599,
+      "tag": "0007_assistant_usage",
+      "breakpoints": true
     }
   ]
 }

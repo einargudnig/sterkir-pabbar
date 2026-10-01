@@ -129,3 +129,14 @@ export const articleBySlugQuery = defineQuery(`
     body
   }
 `);
+
+/**
+ * Every answer Aron has approved for the assistant — approval being publishing,
+ * which the client's `published` perspective enforces.
+ *
+ * The projection is an allowlist. `reviewNote` is Aron's working note and must
+ * never reach the model, so it is not selected rather than filtered later.
+ */
+export const assistantFaqQuery = defineQuery(`
+  *[_type == "faqEntry"] | order(topic asc, question asc){ question, answer, topic }
+`);

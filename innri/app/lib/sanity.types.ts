@@ -446,6 +446,26 @@ export type ArticleBySlugQueryResult = {
   }>;
 } | null;
 
+// Source: ../innri/app/lib/sanity.server.ts
+// Variable: assistantFaqQuery
+// Query: *[_type == "faqEntry"] | order(topic asc, question asc){ question, answer, topic }
+export type AssistantFaqQueryResult = Array<{
+  question: string;
+  answer: string;
+  topic:
+    | "account"
+    | "billing"
+    | "coaching"
+    | "habits"
+    | "navigation"
+    | "nutrition"
+    | "safety"
+    | "scope"
+    | "services"
+    | "support"
+    | "training";
+}>;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
@@ -455,5 +475,6 @@ declare module "@sanity/client" {
     '\n  *[_type == "trainingPlan" && _id == $id][0]{\n    _id,\n    title,\n    goal,\n    sessionsPerWeek,\n    intro,\n    sessions[]{\n      _key,\n      title,\n      exercises[]{\n        _key,\n        sets,\n        reps,\n        note,\n        "exercise": exercise->{ _id, name, cue, videoUrl, muscleGroup }\n      }\n    }\n  }\n': PlanByIdQueryResult;
     '\n  *[_type == "article"] | order(title asc){\n    _id,\n    title,\n    "slug": slug.current,\n    category,\n    excerpt\n  }\n': ArticlesQueryResult;
     '\n  *[_type == "article" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    category,\n    excerpt,\n    body\n  }\n': ArticleBySlugQueryResult;
+    '\n  *[_type == "faqEntry"] | order(topic asc, question asc){ question, answer, topic }\n': AssistantFaqQueryResult;
   }
 }
