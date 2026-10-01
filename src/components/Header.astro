@@ -21,6 +21,7 @@ import { bookingHref } from "../lib/booking";
       fragments, when the moment of "fine, I'll do it" is unpredictable.
     */}
     <div class="header-cta">
+      <a href={site.appUrl} class="btn btn-ghost btn-sm sign-in">Skrá inn</a>
       <a href={bookingHref} class="btn btn-primary btn-sm">
         <span class="cta-long">Ókeypis spjall</span>
         <span class="cta-short">Spjall</span>
@@ -42,6 +43,7 @@ import { bookingHref } from "../lib/booking";
   <div class="mobile-nav" id="mobile-nav" hidden>
     <nav class="shell" aria-label="Valmynd">
       {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+      <a href={site.appUrl}>Skrá inn</a>
       <a href={bookingHref} class="btn btn-primary">Ókeypis spjall</a>
     </nav>
   </div>
@@ -173,7 +175,14 @@ import { bookingHref } from "../lib/booking";
     font-size: 0.875rem;
   }
   .header-cta {
+    display: flex;
+    gap: 0.6rem;
     margin-inline-start: auto;
+  }
+  /* Phones already fit wordmark, CTA and menu toggle; sign-in lives in the
+     mobile panel there. */
+  .sign-in {
+    display: none;
   }
   /* The label shortens rather than the button disappearing. */
   .cta-short {
@@ -264,6 +273,9 @@ import { bookingHref } from "../lib/booking";
   .mobile-nav nav > *:nth-child(4) {
     animation-delay: 170ms;
   }
+  .mobile-nav nav > *:nth-child(5) {
+    animation-delay: 220ms;
+  }
   .mobile-nav nav a:not(.btn) {
     padding: 0.85rem 0;
     /* Sans, not the display serif: these are navigation controls, not
@@ -284,6 +296,9 @@ import { bookingHref } from "../lib/booking";
     }
     .header-cta {
       margin-inline-start: 0;
+    }
+    .sign-in {
+      display: inline-flex;
     }
     .menu-toggle {
       display: none;

@@ -67,6 +67,9 @@ export const site = {
       | string
       | null,
 
+  // Members' area sign-in. Structural, so not editable from the CMS.
+  appUrl: "https://app.sterkirpabbar.is",
+
   // Empty strings are coerced to null so the Footer can skip the link entirely
   // and `sameAs` never emits a blank URL into the structured data.
   social: {
