@@ -150,6 +150,22 @@ fólki inn.
 Eitt plan. **Þrisvar í viku, fitutap.** Það eru svona 18 æfingar að filma — ekki 60.
 Búðu æfingarnar til hér jafnóðum og þú filmar, settu svo planið saman úr þeim.
 
+## Aðstoðarmaðurinn — spurningar og svör
+
+Neðst í listanum er **Spurningar fyrir aðstoðarmann**: 41 spurning og svar úr samtalinu
+þínu við ChatGPT. Aðstoðarmaðurinn má aðeins byggja á svörum sem eru **birt**. Þau eru öll
+drög núna, svo hann sér ekkert þeirra fyrr en þú hefur farið yfir þau.
+
+Farðu í gegnum þau eitt í einu: lestu, lagaðu ef þarf og smelltu á **Publish**. Ef svar á
+ekki heima þar, eyddu því.
+
+Sum svör eru með **athugasemd við yfirferð**. Þar stendur hvað ég breytti og hvers vegna.
+Til dæmis var lýst uppsagnarhnappi og sjálfvirkri endurnýjun, en greitt er með kröfu. Lestu
+athugasemdina, hreinsaðu hana og birtu. Aðstoðarmaðurinn sér athugasemdirnar aldrei.
+
+Viltu taka svar út aftur? Veldu **Unpublish**. Það virkar strax, án þess að neinn þurfi að
+gera neitt.
+
 ---
 
 Studioið: <https://sterkirpabbar.sanity.studio> · Síðan: <https://sterkirpabbar.is>
