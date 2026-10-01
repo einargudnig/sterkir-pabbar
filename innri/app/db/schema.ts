@@ -319,3 +319,34 @@ export const repeatEvents = pgTable(
     index("repeat_events_user_id_idx").on(table.userId),
   ],
 );
+
+export const ASSISTANT_OUTCOMES = ["answered", "failed"] as const;
+
+export const assistantOutcome = pgEnum("assistant_outcome", ASSISTANT_OUTCOMES);
+
+/**
+ * One row per message a member sends the AI assistant. Holds what it cost and
+ * how it ended — never the text, so this table is not a conversation log and
+ * can be read without reading anyone's questions.
+ *
+ * The daily limit counts these rows, so a row is written for a failed call too:
+ * otherwise a provider outage would hand out unlimited retries.
+ */
+export const assistantUsage = pgTable(
+  "assistant_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    model: text("model").notNull(),
+    inputTokens: integer("input_tokens"),
+    outputTokens: integer("output_tokens"),
+    durationMs: integer("duration_ms"),
+    outcome: assistantOutcome("outcome").notNull(),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("assistant_usage_user_created_idx").on(table.userId, table.createdAt)],
+);

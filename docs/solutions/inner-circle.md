@@ -677,7 +677,16 @@ draft system prompt, 41 draft FAQ answers, 60 acceptance cases. Step 1 is the co
   automatic renewal, a 24-hour plan update and "Mínar síður". None of those exist. Each
   rewritten entry keeps the original text in its review note.
 
-Planned next, not built yet: a resource route under the paid gate with AI SDK
-`streamText`. Its tools are server-scoped to the session user: plan, macros, FAQ lookup,
-and a deterministic protein swap. It adds a kill switch and a per-member daily limit.
-Conversations are not stored in v1.
+Step 2 is the chat.
+
+- **Where it lives:** `routes/api/assistant.ts` streams AI SDK `streamText` through the
+  Gateway. The bubble (`components/assistant-chat.tsx`) renders in the paid layout.
+- **The route guards itself.** A resource route runs no layout loader, so
+  `requireActiveAccess` is its first line.
+- **Only the session user's data.** The tools are `myPlan`, `myMacros` and `proteinSwap`,
+  each closed over the session user's id. Only text parts of the browser-held history are
+  forwarded; tool parts are dropped because they could be forged.
+- **Every approved FAQ answer goes into the instructions; there is no search tool.** At tens
+  of entries this costs a few thousand tokens. It also removes the retrieval miss.
+- **`assistant_usage` stores cost and outcome, never the text.** Failed calls count toward
+  the daily limit. Conversations are not stored at all.

@@ -60,6 +60,24 @@ export const serverEnvSchema = z.object({
    */
   SESSION_SECRET: z.string().min(32, { message: "SESSION_SECRET must be at least 32 characters" }),
 
+  /**
+   * The AI assistant's kill switch. Off unless set to "true", so a deploy
+   * without the variable ships the app with no chat rather than a broken one.
+   * Turning it off hides the bubble and refuses the endpoint; plans are
+   * untouched.
+   */
+  ASSISTANT_ENABLED: z.stringbool().default(false),
+
+  /**
+   * An AI Gateway model id. Changing model, or provider, is changing this.
+   * Gateway auth is not here: the AI SDK reads Vercel's OIDC token on
+   * deployments, and AI_GATEWAY_API_KEY or a pulled OIDC token locally.
+   */
+  ASSISTANT_MODEL: z.string().min(1).default("openai/gpt-6-sol"),
+
+  /** Messages per member per day. The hard stop on cost, not a budget alert. */
+  ASSISTANT_DAILY_LIMIT: z.coerce.number().int().positive().default(30),
+
   /** Neon's pooled connection, provisioned by the Vercel integration. */
   DATABASE_URL: z
     .string()

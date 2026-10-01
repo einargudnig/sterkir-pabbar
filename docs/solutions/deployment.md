@@ -111,6 +111,21 @@ Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes i
 Everything the server needs is declared in `innri/app/lib/env.server.ts` and parsed at the
 boundary. Nothing reads `process.env` directly except the database client and that schema.
 
+**AI assistant.** `ASSISTANT_ENABLED` is the kill switch. It is off unless set to `true`,
+and off also hides the bubble. `ASSISTANT_MODEL` defaults to `openai/gpt-6-sol`, and
+`ASSISTANT_DAILY_LIMIT` to 30.
+
+- **Gateway auth needs no variable on Vercel:** the AI SDK uses the deployment's OIDC
+  token. Locally that token expires after about 12 hours. Pull a fresh one, or set
+  `AI_GATEWAY_API_KEY`.
+- **Free Gateway credits refuse OpenAI models** with a 403, "Free tier users do not have
+  access to this model". The team needs paid credits, or a bring-your-own OpenAI key in the
+  Gateway settings. The key also decides who is billed.
+
+**`innri/.env.local` points at the production database.** The dev server is not affected:
+it reads `.env.development.local`, which wins in development. Bun and drizzle-kit can still
+pick up `.env.local`, so pass `DATABASE_URL_UNPOOLED` explicitly for any migration.
+
 ## Databases
 
 Three, and it matters which one a command reaches:

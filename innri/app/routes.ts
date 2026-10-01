@@ -44,6 +44,7 @@ export default [
     route("admin", "routes/admin.tsx"),
   ]),
 
-  // Resource routes — no component, called by other systems, never by a member.
+  // Resource routes — no component, and no layout gate: each guards itself.
   route("api/clerk/webhook", "routes/api/clerk-webhook.ts"),
+  route("api/assistant", "routes/api/assistant.ts"),
 ] satisfies RouteConfig;
