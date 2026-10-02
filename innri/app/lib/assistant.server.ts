@@ -1,4 +1,4 @@
-import { tool } from "ai";
+import { isStepCount, tool } from "ai";
 import { and, count, eq, gte } from "drizzle-orm";
 import { z } from "zod";
 
@@ -18,6 +18,14 @@ import { assistantFaqQuery, sanity } from "~/lib/sanity.server";
  */
 
 /**
+ * The one reply to anything outside training, nutrition and the app. Fixed
+ * wording so a member cannot negotiate a partial answer out of it: a model
+ * left to phrase its own refusal tends to refuse and then help anyway.
+ */
+export const OFF_TOPIC_REPLY =
+  "Ég get eingöngu aðstoðað með æfingar, næringu og notkun vefs Sterkra pabba. Er eitthvað slíkt sem ég get hjálpað þér með?";
+
+/**
  * From Aron's handoff (04-DRAG-AD-KERFISLEIDBEININGUM.md), tightened to what
  * the app can actually back up: the tools below, published answers only, and
  * no claim of having sent or changed anything.
@@ -25,6 +33,13 @@ import { assistantFaqQuery, sanity } from "~/lib/sanity.server";
 const RULES = `Þú ert gervigreindaraðstoðarmaður Sterkra pabba, þjálfunarþjónustu Arons. Þú talar við innskráðan meðlim.
 
 Hlutverk: stuttar, hagnýtar skýringar á æfingum, næringu, venjum og notkun vefsins. Svaraðu á íslensku nema meðlimur skrifi á öðru máli. Venjulega 2–5 stuttar setningar. Hlýr og beinn tónn, án ýktrar hvatningar, sölupressu eða sektarkenndar. Berðu virðingu fyrir því að meðlimurinn ræður ferðinni.
+
+Afmörkun:
+- Innan sviðs: æfingar, hreyfing, næring, svefn og venjur sem tengjast þjálfun, æfingaplan og næringarviðmið meðlimsins, þjónusta Sterkra pabba og notkun vefsins. Kveðjur og þakkir máttu svara stuttlega.
+- Allt annað er utan sviðs, líka þótt það sé einfalt eða meðlimur biðji fallega: forritun og kóði, heimaverkefni, almennur fróðleikur, þýðingar, textaskrif, fréttir, aðrar vörur og þjónustur.
+- Við beiðni utan sviðs svarar þú NÁKVÆMLEGA þessum texta og engu öðru — hvorki að hluta, með fyrirvara né „bara í þetta sinn“:
+${OFF_TOPIC_REPLY}
+- Undantekning: neyð og öryggi (sjá Tilvísanir) ganga alltaf fyrir afmörkun.
 
 Heimildir:
 - Fullyrðingar um Aron, þjónustuna, verð og vefinn mega aðeins koma úr SAMÞYKKTUM SVÖRUM hér að neðan.
@@ -47,7 +62,7 @@ Tilvísanir:
 
 Gagnsæi: segðu satt að þú sért gervigreind. Segðu aldrei að þú hafir breytt, vistað eða sent eitthvað — þú getur það ekki.`;
 
-type Faq = Awaited<ReturnType<typeof publishedFaq>>;
+export type Faq = Awaited<ReturnType<typeof publishedFaq>>;
 
 const publishedFaq = () => sanity.fetch(assistantFaqQuery);
 
@@ -57,7 +72,7 @@ const publishedFaq = () => sanity.fetch(assistantFaqQuery);
  * view on every turn, and there is no retrieval step to miss the right one.
  * Revisit when the collection is large enough for that to cost real money.
  */
-const instructionsFor = (faq: Faq) => {
+export const instructionsFor = (faq: Faq) => {
   const approved =
     faq.length === 0
       ? "(Engin samþykkt svör enn. Vísaðu spurningum um þjónustuna til Arons.)"
@@ -68,13 +83,31 @@ const instructionsFor = (faq: Faq) => {
 
 export const assistantInstructions = async () => instructionsFor(await publishedFaq());
 
+/**
+ * How each turn is generated. Shared with the evals, which must exercise the
+ * same budget as members do or their results describe a different assistant.
+ */
+export const generationSettings = {
+  stopWhen: isStepCount(4),
+  maxOutputTokens: 600,
+} as const;
+
+/** Where the tools read a member's data. The evals swap in a synthetic member. */
+export type MemberReaders = {
+  readonly assignedPlan: typeof assignedPlan;
+  readonly latestMacros: typeof latestMacros;
+};
+
 /** Read-only tools, each closed over the session user's id. */
-export const assistantTools = (userId: string) => ({
+export const assistantTools = (
+  userId: string,
+  read: MemberReaders = { assignedPlan, latestMacros },
+) => ({
   myPlan: tool({
     description: "Æfingaplan meðlimsins: dagar, æfingar, sett, endurtekningar og athugasemdir.",
     inputSchema: z.object({}),
     execute: async () => {
-      const plan = await assignedPlan(userId);
+      const plan = await read.assignedPlan(userId);
 
       if (!plan) {
         return { found: false } as const;
@@ -104,7 +137,7 @@ export const assistantTools = (userId: string) => ({
     description: "Næringarviðmið meðlimsins á dag: hitaeiningar, prótein, kolvetni og fita.",
     inputSchema: z.object({}),
     execute: async () => {
-      const macros = await latestMacros(userId);
+      const macros = await read.latestMacros(userId);
 
       if (!macros) {
         return { found: false } as const;
