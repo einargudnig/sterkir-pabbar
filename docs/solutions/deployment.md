@@ -1,6 +1,6 @@
 # Deployment and environments
 
-**Status:** live as of 2026-09-16
+**Status:** live as of 2026-09-16 · members' area v1 launched 2026-10-02
 
 ## What is deployed where
 
@@ -104,6 +104,7 @@ Never committed. `innri/.env.local` is gitignored; `vercel env pull` refreshes i
 | `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `PG*`, `POSTGRES_*`                                 | Neon integration, Production only; Preview/Development by hand  | innri                                                          |
 | `CLERK_SECRET_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`                                             | `clerk init`                                                    | innri                                                          |
 | `VITE_CLERK_SIGN_IN_URL`, `VITE_CLERK_SIGN_UP_URL`, and their `_FALLBACK_REDIRECT_URL` pairs | `clerk init`                                                    | innri                                                          |
+| `SESSION_SECRET`                                                                             | set by hand, 32+ characters; signs the questionnaire cookie     | innri                                                          |
 | `APP_URL`                                                                                    | set by hand — `https://app.sterkirpabbar.is`, no trailing slash | innri                                                          |
 | `SANITY_READ_TOKEN`                                                                          | Sanity manage, **Viewer** permission                            | **both** — landing page reads it at build time, app at runtime |
 | `SANITY_PROJECT_ID`, `SANITY_DATASET`                                                        | root `.env`                                                     | landing page                                                   |
@@ -172,8 +173,8 @@ production without saying so. `.env.local` no longer holds production's URL — 
 pull` fills it from Development, which is the `dev` branch — so production's string comes from
 Neon, named `main`, at the moment of use.
 
-**Before launch: additive migrations only** (new tables, new nullable columns). No drops or
-renames on production. Order, every time:
+**Additive migrations by default** (new tables, new nullable columns, new enum values). A drop
+or rename on production is its own deliberate change, never a side effect. Order, every time:
 
 1. `bun run db:generate` and read the SQL it wrote.
 2. Migrate `dev`, then run the app against it and check the change works.
@@ -191,61 +192,20 @@ refuses any host that is not localhost.
 
 ## Open risks
 
-**The Sanity dataset is public, and stays that way — decided 2026-09-16.**
+**The Sanity dataset is public** — decided 2026-09-16, reasoning in `docs/decisions.md`.
+Anyone with the project id (visible in the Studio URL) can read exercise names, sets, reps,
+cues, article text, and video URLs. If the videos need protecting, the money goes to the video
+host, not Sanity:
 
-Private datasets require Sanity's Growth plan ($15/user/month); the free tier is public-only,
-permanently. We are staying free.
+- **Vimeo** domain-level privacy restricts embedding to our domains. Check which plan it needs.
+- **Mux** signed playback tokens expire, so a shared link dies. Strongest, pay-as-you-go.
 
-What that exposes to anyone who knows the project id (discoverable from the Studio URL):
-exercise names, sets, reps, cues, article text, and video URLs.
-
-**Why we are not paying to close it.** The differentiated asset is Aron on video, and a
-private dataset would not have protected it — any paying member can read the video URL out of
-the page and share it. That is a far likelier leak than someone reverse-engineering a project
-id. Paying Sanity would buy protection against the low-value threat (plan text, which is
-largely commodity) while leaving the real asset exposed to the likely one.
-
-**Where the money should go instead**, before any public launch: a video host that enforces
-access.
-
-- **Vimeo** domain-level privacy restricts embedding to `sterkirpabbar.is`. Check the account
-  for which plan it needs — published sources disagree on whether it is all-plans or
-  Standard-and-up.
-- **Mux** signed playback tokens expire, so a shared link dies. Strongest option, pay-as-you-go,
-  already named in `inner-circle.md` as the at-scale choice.
-
-`SANITY_READ_TOKEN` is set in both Vercel projects anyway. It is harmless on a public dataset
-and means nothing has to change if the dataset ever does go private.
-
-**Accepted risk:** a competitor could scrape the training plans. Judged low-value and unlikely
-against the cost. Aron should be told in one sentence so it is his call too — he may consider
-his programming to be the product.
-
-**Clerk is on a development instance.** Dev instances are rate-limited and show development UI.
-Must be switched before taking real money.
-
-Getting out of dev mode requires a **custom domain** — Clerk production needs five DNS records
-(Frontend API, accounts portal, DKIM/email) and cannot run on `*.vercel.app`. That is why
-`app.sterkirpabbar.is` exists now rather than after launch.
-
-Remaining steps, from `clerk deploy status`:
-
-1. `clerk deploy` — interactive, needs a human terminal. Creates the production instance and
-   emits the five DNS records.
-2. Add those records to the Vercel DNS zone for `sterkirpabbar.is`.
-3. Wait for Clerk to verify.
-4. Swap `pk_live_` / `sk_live_` into the Vercel env and redeploy.
-
-**Google sign-in breaks on that switch.** Development instances use Clerk's shared OAuth
-credentials; production needs our own Google OAuth app with the new callback URL.
-`clerk deploy status` reports it separately under `oauth`. Email + password alone is a fine
-launch configuration if that is not worth the detour this week.
+`SANITY_READ_TOKEN` is set in both Vercel projects anyway: harmless on a public dataset, and
+nothing changes if the dataset ever goes private.
 
 **Watch the CAA records.** The zone restricts certificate issuance to `pki.goog`,
-`sectigo.com` and `letsencrypt.org`. Vercel uses Let'"'"'s Encrypt, which is allowed — the
-wildcard `*.sterkirpabbar.is` certificate already covered `app.` with no wait. If Clerk'"'"'s
-certificate authority is not on that list, its subdomains will fail to issue. This is the most
-likely explanation for the August apex certificate problem.
+`sectigo.com` and `letsencrypt.org`. Any new service that issues its own certificate under
+`sterkirpabbar.is` needs its authority on that list, or issuance fails.
 
 **Vercel's bun cannot parse `bun.lock`** (`Unknown lockfile version`) and falls back. Builds
 succeed, so this is noted rather than fixed.
