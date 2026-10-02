@@ -18,7 +18,7 @@
  * inherit the brand automatically and there is exactly one palette.     *
  *                                                                      *
  * @shadcn/lint enforces that nothing styles outside these tokens —     *
- * see docs/solutions/agent-tooling.md.                                 *
+ * see docs/decisions.md.                                               *
  * ==================================================================== */
 
 @custom-variant dark (&:is(.dark *));

@@ -120,13 +120,13 @@ valkosti sem eiga birt plan**. Birtirðu eingöngu plan fyrir fitutap, þrisvar 
 
 Fjöldi daga ræður skiptingunni:
 
-| Dagar í viku | Skipting                    |
-| ------------ | --------------------------- |
-| 1            | Allur líkaminn              |
-| 2            | Efri hluti / neðri hluti    |
-| 3            | Ýta / toga / fætur          |
-| 4            | Efri / neðri / efri / neðri |
-| 5            | Ekki ákveðið enn            |
+| Dagar í viku | Skipting                                  |
+| ------------ | ----------------------------------------- |
+| 1            | Allur líkaminn                            |
+| 2            | Efri hluti / neðri hluti                  |
+| 3            | Ýta / toga / fætur                        |
+| 4            | Efri / neðri / efri / neðri               |
+| 5            | Bringa / bak / fætur / axlir / handleggir |
 
 Í Studio velurðu **+ → t.d. „Æfingaplan — 4 dagar (efri/neðri tvisvar)“**. Þá eru dagarnir
 þegar komnir inn með réttum heitum og þú velur bara markmiðið og fyllir inn æfingarnar.
@@ -152,16 +152,13 @@ Búðu æfingarnar til hér jafnóðum og þú filmar, settu svo planið saman �
 
 ## Aðstoðarmaðurinn — spurningar og svör
 
-Neðst í listanum er **Spurningar fyrir aðstoðarmann**: 41 spurning og svar úr samtalinu
-þínu við ChatGPT. Aðstoðarmaðurinn má aðeins byggja á svörum sem eru **birt**. Þau eru öll
-drög núna, svo hann sér ekkert þeirra fyrr en þú hefur farið yfir þau.
+Neðst í listanum er **Spurningar fyrir aðstoðarmann**. Aðstoðarmaðurinn má aðeins byggja á
+svörum sem eru **birt**, og sér aldrei drög.
 
-Farðu í gegnum þau eitt í einu: lestu, lagaðu ef þarf og smelltu á **Publish**. Ef svar á
-ekki heima þar, eyddu því.
+Viltu laga svar eða bæta við nýju: skrifaðu það og smelltu á **Publish**. Það tekur gildi
+innan fárra mínútna, án þess að neinn þurfi að gera neitt.
 
-Sum svör eru með **athugasemd við yfirferð**. Þar stendur hvað ég breytti og hvers vegna.
-Til dæmis var lýst uppsagnarhnappi og sjálfvirkri endurnýjun, en greitt er með kröfu. Lestu
-athugasemdina, hreinsaðu hana og birtu. Aðstoðarmaðurinn sér athugasemdirnar aldrei.
+Reiturinn **athugasemd við yfirferð** er bara fyrir þig. Aðstoðarmaðurinn sér hann aldrei.
 
 Viltu taka svar út aftur? Veldu **Unpublish**. Það virkar strax, án þess að neinn þurfi að
 gera neitt.
