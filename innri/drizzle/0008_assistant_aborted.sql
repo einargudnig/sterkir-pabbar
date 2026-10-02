@@ -1,0 +1,1 @@
+ALTER TYPE "public"."assistant_outcome" ADD VALUE 'aborted';

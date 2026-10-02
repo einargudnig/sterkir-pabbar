@@ -320,7 +320,7 @@ export const repeatEvents = pgTable(
   ],
 );
 
-export const ASSISTANT_OUTCOMES = ["answered", "failed"] as const;
+export const ASSISTANT_OUTCOMES = ["answered", "failed", "aborted"] as const;
 
 export const assistantOutcome = pgEnum("assistant_outcome", ASSISTANT_OUTCOMES);
 

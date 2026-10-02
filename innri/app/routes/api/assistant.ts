@@ -4,6 +4,7 @@ import {
   safeValidateUIMessages,
   streamText,
   toUIMessageStream,
+  type LanguageModelUsage,
   type UIMessage,
 } from "ai";
 import { z } from "zod";
@@ -56,6 +57,12 @@ const tooLong = (messages: readonly UIMessage[]) =>
     message.parts.some((part) => part.type === "text" && part.text.length > MAX_CHARS),
   );
 
+const sumTokens = (
+  steps: readonly { readonly usage: LanguageModelUsage }[],
+  key: "inputTokens" | "outputTokens",
+) =>
+  steps.length === 0 ? undefined : steps.reduce((total, step) => total + (step.usage[key] ?? 0), 0);
+
 export async function action(args: Route.ActionArgs) {
   const user = await requireActiveAccess(args);
   const env = serverEnv();
@@ -104,6 +111,22 @@ export async function action(args: Route.ActionArgs) {
         outcome: "answered",
         inputTokens: totalUsage.inputTokens,
         outputTokens: totalUsage.outputTokens,
+        durationMs: Date.now() - startedAt,
+      });
+    },
+
+    /**
+     * A closed tab, a stop press or the timeout skips onEnd and onError, and an unrecorded message is
+     * one the daily limit never sees. Usage covers finished steps only; the
+     * step in flight when the member left is billed but not counted here.
+     */
+    onAbort: async ({ steps }) => {
+      await recordUsage({
+        userId: user.id,
+        model: env.ASSISTANT_MODEL,
+        outcome: "aborted",
+        inputTokens: sumTokens(steps, "inputTokens"),
+        outputTokens: sumTokens(steps, "outputTokens"),
         durationMs: Date.now() - startedAt,
       });
     },
