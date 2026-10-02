@@ -199,4 +199,6 @@ Carried over from before launch; confirm which are still open.
 | ehf./kennitala — still `TODO(client)` in `src/config/site.ts`                            | Aron              |
 | Delete the test account `einar+prufa@maul.is` from production                            | Einar             |
 | A Playwright smoke test (sign-up → questionnaire → dashboard) was planned, never written | Einar             |
+| Privacy notice: the app stores health data and kennitölur                                | Einar + Aron      |
+| Error monitoring                                                                         | Einar             |
 | Landing page sales section for the members' area (phase 7)                               | Einar             |
