@@ -1,7 +1,7 @@
 import { defineConfig } from "oxlint";
 
 /**
- * One linter, three rule sets. See docs/solutions/agent-tooling.md.
+ * One linter, three rule sets. See "One lint stack" in docs/decisions.md.
  *
  *   built-in   correctness / suspicious / perf        — everywhere
  *   anti-slop  rejects low-evidence TypeScript         — innri/ only

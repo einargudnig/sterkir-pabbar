@@ -53,7 +53,7 @@ export const EQUIPMENT_VALUES = ["raektarstod", "heima", "engin"] as const;
 
 export type Equipment = (typeof EQUIPMENT_VALUES)[number];
 
-/** Recorded, not yet used to pick a plan — see docs/solutions/inner-circle.md. */
+/** Recorded, not yet used to pick a plan — see docs/decisions.md. */
 export const EXPERIENCE_VALUES = ["byrjandi", "einhver", "vanur"] as const;
 
 export type Experience = (typeof EXPERIENCE_VALUES)[number];

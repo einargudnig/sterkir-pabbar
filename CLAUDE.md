@@ -11,8 +11,8 @@ Three packages, one repo, no workspace tooling:
 The members' area is live on `app.sterkirpabbar.is`. The directory and Vercel project are still named `innri` — internal names, deliberately not renamed.
 Infrastructure, env vars and deploy gotchas: `docs/solutions/deployment.md`.
 
-Design decisions live in `docs/solutions/`. Read `inner-circle.md` before working on
-`innri/`. UI copy is Icelandic; code and comments are English.
+Decisions and their reasons live in `docs/decisions.md` — add to it when you make one. Read
+`docs/solutions/inner-circle.md`, how the app works now, before working on `innri/`. UI copy is Icelandic; code and comments are English.
 
 ## Verify with one command
 

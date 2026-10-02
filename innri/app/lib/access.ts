@@ -9,7 +9,7 @@ type AccessFields = Pick<typeof users.$inferSelect, "isAdmin" | "accessGrantedUn
  *   accessGrantedUntil   set from /admin when Aron marks a claim paid.
  *
  * The Repeat columns on `users` are dormant and deliberately not read: see
- * "Repeat removed" in docs/solutions/inner-circle.md.
+ * "Repeat removed" in docs/decisions.md.
  *
  * Strictly greater-than: at the exact boundary instant, access has ended.
  */
