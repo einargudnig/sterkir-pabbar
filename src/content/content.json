@@ -124,5 +124,120 @@
   "social": {
     "instagram": "https://instagram.com/sterkirpabbar",
     "facebook": "https://facebook.com/sterkirpabbar"
+  },
+  "programPage": {
+    "seo": {
+      "title": "Æfingaprógram fyrir pabba — Sterkir pabbar",
+      "description": "Sérsniðið æfingaprógram og næringarviðmið fyrir pabba með lítinn tíma. Í símanum, með beinum stuðningi frá Aroni. Engin binding."
+    },
+    "hero": {
+      "headline": "Sterkari líkami. Meiri orka. Sama annasama vikan.",
+      "emphasis": "orka",
+      "sub": "Æfingaprógram fyrir pabba sem hafa lítinn tíma. Sniðið að þér, í símanum þínum, með mig þér við hlið.",
+      "ctaLabel": "Skrá mig"
+    },
+    "guarantee": "Engin binding. Þú getur hætt hvenær sem er.",
+    "situations": {
+      "title": "Kannastu við þetta?",
+      "points": [
+        "Vinnan tekur daginn og börnin kvöldið.",
+        "Þú ætlar að byrja á mánudaginn. Svo kemur mánudagur.",
+        "Bakið kvartar þegar þú lyftir krökkunum.",
+        "Allir í fjölskyldunni fá sinn tíma nema þú.",
+        "Þú veist ekki hvar þú átt að byrja."
+      ]
+    },
+    "solution": {
+      "title": "Prógram sem lagar sig að lífinu, ekki öfugt",
+      "paragraphs": [
+        "Þú svarar nokkrum spurningum um markmið, búnað og hvað þú hefur raunverulega tíma í. Út frá því færðu æfingaplan og næringarviðmið sem passa þér.",
+        "Planið er í símanum. Þú æfir heima, í ræktinni eða án búnaðar, þegar það hentar, og sérð myndband af hverri æfingu.",
+        "Þegar vikan fer úr skorðum, sem hún gerir, þá stillum við af. Það er ekki fall. Það er hluti af planinu."
+      ]
+    },
+    "included": {
+      "title": "Það sem þú færð",
+      "items": [
+        {
+          "title": "Sérsniðið æfingaplan",
+          "body": "Byggt á markmiðum þínum, búnaðinum sem þú hefur og tímanum sem þú átt. Þú þarft ekki að skipuleggja, bara mæta."
+        },
+        {
+          "title": "Myndbönd af hverri æfingu",
+          "body": "Þú sérð hvernig hver hreyfing er gerð rétt, svo þú æfir af öryggi."
+        },
+        {
+          "title": "Næringarviðmið",
+          "body": "Dagleg viðmið fyrir prótein, kolvetni og fitu, reiknuð út frá þér."
+        },
+        {
+          "title": "Bein skilaboð til mín",
+          "body": "Spurning um æfingu, mataræði eða verk í hné? Þú sendir mér línu og ég svara."
+        },
+        {
+          "title": "Vikulegt check-in",
+          "body": "Þú segir mér hvernig gekk og ég stilli planið af. Það heldur þér við efnið."
+        },
+        {
+          "title": "Fróðleikur",
+          "body": "Greinar um æfingar, næringu og venjur, skrifaðar fyrir pabba."
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "Frá öðrum pöbbum",
+      "quotes": []
+    },
+    "steps": {
+      "title": "Svona byrjarðu",
+      "items": [
+        {
+          "title": "Skráðu þig",
+          "body": "Þú býrð til aðgang með netfangi eða Google."
+        },
+        {
+          "title": "Svaraðu spurningunum",
+          "body": "Markmið, búnaður, tími og heilsa. Út frá svörunum verður planið þitt og næringarviðmiðin til."
+        },
+        {
+          "title": "Hefstu handa",
+          "body": "Ég sendi þér kröfu í heimabankann. Um leið og hún er greidd opnast planið og þú byrjar."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Algengar spurningar",
+      "items": [
+        {
+          "q": "Ég hef ekki æft í mörg ár. Er þetta fyrir mig?",
+          "a": "Já, einmitt þá. Planið byrjar þar sem þú ert núna, ekki þar sem þú varst."
+        },
+        {
+          "q": "Hvað þarf ég mikinn tíma?",
+          "a": "Það fer eftir þér. Þú segir hvað þú hefur raunverulega tíma í og planið er byggt utan um það. Ef vikan hrynur aðlögum við planið, við byrjum ekki upp á nýtt."
+        },
+        {
+          "q": "Þarf ég kort í ræktina eða búnað heima?",
+          "a": "Nei. Þú velur hvort þú æfir í ræktarstöð, heima með þann búnað sem þú átt, eða alveg án búnaðar, og planið miðast við það."
+        },
+        {
+          "q": "Hvernig fæ ég stuðning?",
+          "a": "Þú getur sent mér skilaboð hvenær sem er og ég svara. Einu sinni í viku förum við yfir hvernig gekk og ég stilli af."
+        },
+        {
+          "q": "Hvernig greiði ég?",
+          "a": "Mánaðargjaldið kemur sem krafa í heimabankann þinn. Ekkert kort og engin sjálfvirk áskrift."
+        },
+        {
+          "q": "Get ég hætt hvenær sem er?",
+          "a": "Já. Það er engin binding. Þú lætur mig vita og ég sendi ekki næstu kröfu. Aðgangurinn gildir út tímabilið sem þú greiddir fyrir."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Fyrsta skrefið tekur eina mínútu",
+      "body": "Skráðu þig, svaraðu spurningunum og planið þitt verður til. Engin binding.",
+      "ctaLabel": "Skrá mig"
+    }
   }
 }

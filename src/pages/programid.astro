@@ -1,0 +1,618 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { programOffering, programPage as page, site } from "../config/site";
+import { signUpHref } from "../lib/booking";
+
+const [before, after] = page.hero.headline.split(page.hero.emphasis);
+const year = new Date().getFullYear();
+const stepNumber = (i: number) => String(i + 1).padStart(2, "0");
+---
+
+{/*
+  The ad landing page. A father arrives here from an ad, cold, on his phone, so
+  the order follows the coach's formula: promise, price and button above the
+  fold, then the case for it, then the price and button again.
+
+  Deliberately different from the homepage in two ways:
+  - Every button signs up for the members' area instead of booking the free
+    chat. This visitor has already clicked an ad for the prógram.
+  - noindex. It exists for paid traffic and must not compete with the homepage
+    in search. Layout also drops the structured data for noindex pages.
+
+  No site navigation: anchors into the homepage would be exits, not help.
+*/}
+<Layout title={page.seo.title} description={page.seo.description} path="/programid" noindex>
+  <header class="bar-wrap">
+    <div class="shell bar">
+      <a href="/" class="wordmark" aria-label={`${site.name} — forsíða`}>
+        <span class="crest-mark mark" aria-hidden="true"></span>
+        <span class="wordmark-text">{site.name}</span>
+      </a>
+      <a href={signUpHref} class="btn btn-primary btn-sm">{page.hero.ctaLabel}</a>
+    </div>
+  </header>
+
+  <main id="meginmal">
+    <section class="hero">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-crest" aria-hidden="true">
+        <span class="crest-mark"></span>
+      </div>
+
+      <div class="shell hero-inner">
+        <h1 class="hero-title rise" style="animation-delay: 150ms">
+          {before}<em>{page.hero.emphasis}</em>{after}
+        </h1>
+        <p class="hero-sub rise" style="animation-delay: 300ms">{page.hero.sub}</p>
+
+        <div class="offer rise" style="animation-delay: 420ms">
+          <p class="offer-price">
+            <span class="offer-name">{programOffering.name}</span>
+            <span class="offer-amount">{programOffering.price}</span>
+          </p>
+          <a href={signUpHref} class="btn btn-primary">{page.hero.ctaLabel}</a>
+          {page.guarantee && <p class="offer-guarantee">{page.guarantee}</p>}
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <h2 class="section-title narrow">{page.situations.title}</h2>
+        <ul class="situations">
+          {page.situations.points.map((point) => <li>{point}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section class="section band">
+      <div class="shell split">
+        <h2 class="section-title narrow">{page.solution.title}</h2>
+        <div class="prose">
+          {page.solution.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <h2 class="section-title narrow">{page.included.title}</h2>
+        <ul class="included">
+          {
+            page.included.items.map((item) => (
+              <li class="included-item">
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    {/* Hidden until a real, permissioned quote exists — see PRODUCT.md. */}
+    {
+      page.testimonials.quotes.length > 0 && (
+        <section class="section band">
+          <div class="shell">
+            <h2 class="section-title narrow">{page.testimonials.title}</h2>
+            <div class="quotes">
+              {page.testimonials.quotes.map((t) => (
+                <figure class="quote">
+                  <blockquote>
+                    <p>{t.quote}</p>
+                  </blockquote>
+                  <figcaption>
+                    {t.name}
+                    {t.detail && <span>, {t.detail}</span>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="section">
+      <div class="shell split">
+        <h2 class="section-title narrow">{page.steps.title}</h2>
+        <ol class="steps">
+          {
+            page.steps.items.map((s, i) => (
+              <li class="step">
+                <span class="step-n" aria-hidden="true">
+                  {stepNumber(i)}
+                </span>
+                <div>
+                  <h3 class="step-title">{s.title}</h3>
+                  <p>{s.body}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="section band">
+      <div class="shell split">
+        <h2 class="section-title narrow">{page.faq.title}</h2>
+        <div>
+          {
+            page.faq.items.map((item, i) => (
+              <details class="faq-item" open={i === 0}>
+                <summary>
+                  <span>{item.q}</span>
+                  <span class="faq-icon" aria-hidden="true" />
+                </summary>
+                <div class="faq-answer">
+                  <p>{item.a}</p>
+                </div>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="cta-panel">
+          <div class="cta-crest" aria-hidden="true">
+            <span class="crest-mark"></span>
+          </div>
+          <div class="cta-content">
+            <h2 class="cta-title">{page.finalCta.title}</h2>
+            <p class="cta-body">{page.finalCta.body}</p>
+            <p class="cta-price">{programOffering.name} · {programOffering.price}</p>
+            <a href={signUpHref} class="btn cta-btn">{page.finalCta.ctaLabel}</a>
+            {page.guarantee && <p class="cta-guarantee">{page.guarantee}</p>}
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="shell foot-row">
+      <span>© {year} {site.name}</span>
+      <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      <a href="/">Forsíða</a>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  /* ─── Bar ─── */
+  .bar-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in oklch, var(--color-base) 85%, transparent);
+    backdrop-filter: saturate(1.5) blur(14px);
+    -webkit-backdrop-filter: saturate(1.5) blur(14px);
+    border-bottom: 1px solid var(--color-line-soft);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 4.5rem;
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--color-text);
+  }
+  .wordmark-text {
+    font-family: var(--font-mark);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .mark {
+    width: 2.05rem;
+    --crest-color: var(--color-bronze);
+  }
+  .btn-sm {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.875rem;
+  }
+  @media (max-width: 419px) {
+    .wordmark-text {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+    .mark {
+      width: 1.75rem;
+    }
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(3rem, 2rem + 5vw, 6.5rem) clamp(3rem, 2rem + 4vw, 5.5rem);
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        58% 46% at 76% 6%,
+        color-mix(in oklch, var(--color-bronze) 15%, transparent),
+        transparent 72%
+      ),
+      radial-gradient(
+        70% 50% at 12% 96%,
+        color-mix(in oklch, var(--color-slate) 42%, transparent),
+        transparent 70%
+      );
+  }
+  .hero-crest {
+    position: absolute;
+    top: 50%;
+    right: -18%;
+    width: min(78vw, 40rem);
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+  .hero-crest .crest-mark {
+    width: 100%;
+    --crest-color: var(--color-bronze);
+    opacity: 0.085;
+  }
+  .hero-inner {
+    position: relative;
+  }
+  .hero-title {
+    font-size: var(--text-hero);
+    font-weight: 430;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    max-width: 15ch;
+    text-wrap: pretty;
+  }
+  .hero-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--color-bronze);
+    font-variation-settings: "SOFT" 0, "WONK" 1;
+  }
+  .hero-sub {
+    font-size: var(--text-lead);
+    color: var(--color-text-soft);
+    max-width: 40ch;
+    margin-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+  }
+
+  .offer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.75rem;
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+  .offer-price {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .offer-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+  .offer-amount {
+    font-family: var(--font-display);
+    font-size: var(--text-subtitle);
+    font-weight: 460;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+  }
+  .offer-guarantee {
+    flex-basis: 100%;
+    font-size: 0.95rem;
+    color: var(--color-text-soft);
+  }
+
+  /* ─── Shared section rhythm ─── */
+  .narrow {
+    max-width: 14ch;
+    margin-top: 0;
+  }
+  .band {
+    background: var(--color-sunken);
+    border-block: 1px solid var(--color-line-soft);
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1.5rem + 3vw, 4.5rem);
+    align-items: start;
+  }
+
+  /* ─── Situations: recognition, set large, no chrome ─── */
+  .situations {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1.75rem, 1.25rem + 2.5vw, 3rem) clamp(2.5rem, 1rem + 5vw, 6rem);
+    margin-top: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+  }
+  .situations li {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1.05rem + 1.1vw, 1.8rem);
+    font-weight: 420;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+
+  /* ─── Solution ─── */
+  .prose {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .prose p {
+    font-size: var(--text-lead);
+    color: var(--color-text-soft);
+    max-width: 46ch;
+  }
+  .prose p:first-child {
+    color: var(--color-text);
+  }
+
+  /* ─── Included ─── */
+  /* Hairline above each item rather than a filled grid: Aron can add any
+     number of items, and an odd count must not leave a filled empty cell. */
+  .included {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 clamp(2rem, 1rem + 3vw, 4rem);
+    margin-top: clamp(2.5rem, 2rem + 3vw, 4rem);
+  }
+  .included-item {
+    padding-block: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+    border-top: 1px solid var(--color-line-soft);
+  }
+  .included-item h3 {
+    font-size: var(--text-subtitle);
+    margin-bottom: 0.6rem;
+  }
+  .included-item p {
+    color: var(--color-text-soft);
+    max-width: 40ch;
+  }
+
+  /* ─── Testimonials ─── */
+  .quotes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1.5rem + 2vw, 3rem);
+    margin-top: clamp(2.5rem, 2rem + 3vw, 4rem);
+  }
+  .quote blockquote p {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 1rem + 0.7vw, 1.45rem);
+    line-height: 1.4;
+    max-width: 38ch;
+  }
+  .quote figcaption {
+    margin-top: 1rem;
+    font-weight: 600;
+    color: var(--color-bronze);
+  }
+  .quote figcaption span {
+    font-weight: 400;
+    color: var(--color-text-muted);
+  }
+
+  /* ─── Steps ─── */
+  .steps {
+    list-style: none;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(1.25rem, 0.75rem + 2vw, 2.5rem);
+    padding-block: clamp(1.5rem, 1.25rem + 1.5vw, 2.5rem);
+    border-top: 1px solid var(--color-line-soft);
+  }
+  .step:last-child {
+    border-bottom: 1px solid var(--color-line-soft);
+  }
+  .step-n {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-bronze);
+    line-height: 1.7;
+  }
+  .step-title {
+    font-size: var(--text-subtitle);
+    margin-bottom: 0.6rem;
+  }
+  .step p {
+    color: var(--color-text-soft);
+    max-width: 46ch;
+  }
+
+  /* ─── FAQ ─── */
+  .faq-item {
+    border-top: 1px solid var(--color-line-soft);
+  }
+  .faq-item:last-child {
+    border-bottom: 1px solid var(--color-line-soft);
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 1.5rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.3rem);
+    font-weight: 460;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    summary:hover {
+      color: var(--color-bronze);
+    }
+  }
+  .faq-icon {
+    position: relative;
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+  }
+  .faq-icon::before,
+  .faq-icon::after {
+    content: "";
+    position: absolute;
+    background: var(--color-bronze);
+    border-radius: 2px;
+    transition:
+      transform 320ms var(--ease-out-expo),
+      opacity 200ms ease;
+  }
+  .faq-icon::before {
+    inset-block: 0;
+    inset-inline: 45%;
+  }
+  .faq-icon::after {
+    inset-inline: 0;
+    inset-block: 45%;
+  }
+  .faq-item[open] .faq-icon::before {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  .faq-answer {
+    padding-bottom: 1.75rem;
+  }
+  .faq-answer p {
+    color: var(--color-text-soft);
+    max-width: 58ch;
+  }
+
+  /* ─── Final CTA: the homepage's bronze panel, carrying the price again ─── */
+  .cta-panel {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    padding: clamp(2.5rem, 1.5rem + 5vw, 5.5rem) clamp(1.75rem, 1rem + 3vw, 4.5rem);
+    border-radius: clamp(1.25rem, 0.75rem + 1.5vw, 2rem);
+    background: linear-gradient(
+      152deg,
+      var(--color-bronze-bright) 0%,
+      var(--color-bronze) 58%,
+      var(--color-bronze-deep) 100%
+    );
+    color: var(--color-base);
+  }
+  .cta-crest {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    right: -6%;
+    width: min(46vw, 24rem);
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+  .cta-crest .crest-mark {
+    width: 100%;
+    --crest-color: var(--color-base);
+    opacity: 0.11;
+  }
+  .cta-content {
+    max-width: 34rem;
+  }
+  .cta-title {
+    font-size: var(--text-display);
+    max-width: 16ch;
+    color: var(--color-base);
+  }
+  .cta-body {
+    font-size: var(--text-lead);
+    color: color-mix(in oklch, var(--color-base) 82%, transparent);
+    max-width: 40ch;
+    margin-top: 1.35rem;
+  }
+  .cta-price {
+    margin-top: 1.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .cta-btn {
+    margin-top: 1rem;
+    background: var(--color-base);
+    color: var(--color-text);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .cta-btn:hover {
+      background: var(--color-sunken);
+    }
+  }
+  .cta-guarantee {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: color-mix(in oklch, var(--color-base) 82%, transparent);
+  }
+
+  /* ─── Footer ─── */
+  .foot {
+    border-top: 1px solid var(--color-line-soft);
+    background: var(--color-sunken);
+  }
+  .foot-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2rem;
+    padding-block: 2rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+  .foot-row a {
+    color: var(--color-text-soft);
+  }
+
+  @media (min-width: 760px) {
+    .situations,
+    .included,
+    .quotes {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .cta-crest {
+      right: 2%;
+      width: min(34vw, 22rem);
+    }
+  }
+  @media (min-width: 900px) {
+    .hero-crest {
+      right: -8%;
+      width: min(52vw, 44rem);
+    }
+    .split {
+      grid-template-columns: 0.85fr 1.15fr;
+    }
+    .included {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
