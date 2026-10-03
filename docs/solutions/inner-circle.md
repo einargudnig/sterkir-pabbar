@@ -213,7 +213,7 @@ fix a typo.
 | 4   | Inner circle — Mínar æfingar / Mín macros / Fróðleikur, video embeds               | 20–28        |
 | 5   | Admin page — manual grant, comps, ops tooling                                      | 3–4          |
 | 6   | 🔶 Repeat — built and unit-tested; not yet run against a Repeat shop               | 12–18        |
-| 7   | Landing page sales section + Sanity fields                                         | 6–10         |
+| 7   | 🔶 Ad landing page `/programid` + `programPage` Sanity doc (homepage untouched)    | 6–10         |
 | 8   | QA, mobile, handover                                                               | 10–14        |
 |     | **Total**                                                                          | **91–135 h** |
 

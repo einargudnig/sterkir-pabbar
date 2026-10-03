@@ -40,6 +40,15 @@ export const bookingHref = site.bookingUrl ?? CONTACT_ANCHOR;
 export const enquiryHref = (tier: string) =>
   `mailto:${site.contact.email}?subject=${encodeURIComponent(`Fyrirspurn: ${tier}`)}`;
 
+/**
+ * Sign-up in the members' area — the one exception to the free-chat goal.
+ *
+ * /programid is where ad traffic lands, and an ad visitor who has already
+ * decided should not have to email anyone to start. Every button on that page
+ * goes here.
+ */
+export const signUpHref = new URL("/sign-up", site.appUrl).href;
+
 export const assertBookingConfigured = () => {
   if (!isBookingUnresolved) return;
 

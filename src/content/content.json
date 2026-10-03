@@ -1,49 +1,66 @@
 {
   "hero": {
-    "headline": "Meiri orka. Fleiri góð ár með börnunum.",
-    "emphasis": "orka",
+    "headline": "Þú ert fyrirmynd hvort sem þú vilt það eða ekki",
+    "emphasis": "fyrirmynd",
     "sub": "Þjálfun sem passar inn í annasamt fjölskyldulíf, byggð til að þú endist.",
-    "primaryCtaLabel": "Bókaðu ókeypis spjall",
+    "primaryCtaLabel": "Tökum spjallið",
     "secondaryCtaLabel": "Sjá þjálfunarleiðir"
   },
-  "offeringsTitle": "Tvær leiðir. Eitt markmið.",
-  "offeringsLead": "Æfingar einar og sér, eða æfingar og mataræði saman. Í báðum ertu í beinu sambandi við mig.",
+  "offeringsTitle": "Þrjár leiðir. Eitt markmið.",
+  "offeringsLead": "Pakkar sem henta fyrir alla, byrjendur og lengra komna. Finnum það sem passar best við þig. ",
   "offerings": [
     {
-      "name": "Æfingaprógram",
-      "tag": "Um allt land",
-      "price": "15.900 kr/mán",
-      "summary": "Sérsniðið æfingaprógram eftir þínum markmiðum. Þú færð það í símann og æfir þegar þér hentar.",
+      "name": "Sterkari á þínum eigin tíma ",
+      "tag": "Innri hringurinn",
+      "price": "9.900 kr/mán",
+      "summary": "Engir fastir tímar. Engin pressa. Þú stjórnar ferðinni.\n\nÁskrift í innri hring Sterka pabba þar sem þú færð æfingaprógram og næringargildi",
       "features": [
-        "Sérsniðið æfingaprógram í appi",
-        "Myndbönd fyrir hverja æfingu",
-        "Bein skilaboð til mín",
-        "Vikulegt check-in"
+        "Æfingaprógram eftir þínum markmiðum",
+        "Næringar gildi - Kcal, protein, kolvetni og fitu magn sem er hægt að miða við",
+        "Aðgangur að Sterka pabba gervigreind sem hjálpar við einfaldar fyrirspurnir ",
+        "Aðgangur að Facebook hóp Sterka pabba ",
+        "30 daga áskriftar leyfi "
       ],
       "featured": true
     },
     {
+      "name": "1:1 Einkaþálfun ",
+      "tag": "Katla Fitness",
+      "price": "74.900 kr/mán",
+      "summary": "Sérniðið matar- og æfingarprógram eftir þínum markmiðum og 1:1 þjálfun í sal til koma þér almennilega í gang. ",
+      "features": [
+        "1:1 einkaþjálfun í sal (einungis Katla Fitness) ",
+        "Sérsniðið æfingar prógram ",
+        "Sérsniðið matarprógram",
+        "Bein skilaboð til mín 24/7",
+        "Vikulegt stöðumat ",
+        "Aðgangur að þjálfunar appi í síma sem heldur utan um öll gögn"
+      ],
+      "featured": false
+    },
+    {
       "name": "Æfinga- og matarprógram",
       "tag": "Allt utanumhaldið",
-      "price": "24.900 kr/mán",
+      "price": "29.900 kr/mán",
       "summary": "Þú færð sérsniðið matar- og æfingaprógram eftir þínum markmiðum.",
       "features": [
         "Sérsniðið æfingaprógram í appi",
         "Sérsniðið matarprógram",
         "Bein skilaboð til mín",
-        "Vikulegt check-in"
+        "Vikulegt check-in",
+        "Aðgangur að þjálfunar appi í síma sem heldur utan um öll gögn"
       ],
       "featured": false
     }
   ],
   "method": {
-    "title": "Enginn galdur. Bara plan sem heldur.",
-    "intro": "Flest prógrömm gera ráð fyrir að þú hafir klukkutíma á dag og enga krakka. Þetta gerir það ekki.",
+    "title": "Þetta er auðveldara en þú heldur.",
+    "intro": "Prógram sem hentar þér og þínu lífi.",
     "steps": [
       {
         "n": "01",
         "title": "Við byrjum á stöðunni þinni",
-        "body": "Ókeypis spjall um markmið, meiðsli og hvað þú hefur raunverulega tíma í."
+        "body": "Spjöllum saman um markmiðin þín, meiðsli og daglega rútinu."
       },
       {
         "n": "02",
@@ -58,12 +75,12 @@
     ]
   },
   "forDads": {
-    "title": "Því þú ert fyrirmyndin — hvort sem þú ætlar það eða ekki",
+    "title": "Því þú ert fyrirmyndin — hvort sem þú vilt það eða ekki",
     "points": [
       "Orka til að vera til staðar eftir langan dag.",
       "Bak og hné sem þola að lyfta, bera og elta.",
-      "Börnin læra af þér að hreyfing sé sjálfsögð.",
-      "Hraustur pabbi núna, hraustur afi seinna."
+      "Hreyfing verður sjálfsagður hluti af lífi barna þinna.",
+      "Hraustur pabbi núna, ekki seinna."
     ]
   },
   "coachIntro": {
@@ -74,7 +91,7 @@
       "Markmiðið er einfaldlega að koma þér í þitt besta form eða styrkjast svo þú getir verið fyrirmynd fyrir þá sem skipta þér mestu máli."
     ]
   },
-  "faqTitle": "Það sem pabbar spyrja fyrst",
+  "faqTitle": "Ef maður spyr ekki þá veit maður ekki",
   "faq": [
     {
       "q": "Ég hef varla æft í mörg ár — er þetta fyrir mig?",
@@ -82,47 +99,162 @@
     },
     {
       "q": "Hvað þarf ég að hafa mikinn tíma?",
-      "a": "Prógrammið er byggt í kringum þann tíma sem þú átt í raun og veru. Við förum yfir vikuna þína í ókeypis spjalli og sníðum æfingarnar að henni — ekki öfugt."
+      "a": "Prógrammið er byggt í kringum þann tíma sem þú átt í raun og veru. Við förum yfir vikuna þína eftir gott spjall og sníðum æfingarnar að henni — ekki öfugt."
     },
     {
       "q": "Þarf ég að vera með aðgang að líkamsræktarstöð?",
-      "a": "Nei. Ég byggi prógrammið í kringum þann búnað sem þú hefur, hvort sem það er full stöð, lítið heimatæki eða bara líkamsþyngd og teygjur."
+      "a": "Ég mæli alltaf með því en það þarf alls ekki. Ég byggi prógrammið í kringum þann búnað sem þú hefur, hvort sem það er í líkamsrækt, lítið heimatæki eða bara líkamsþyngd og teygjur."
     },
     {
-      "q": "Hver er munurinn á prógrömmunum tveimur?",
-      "a": "Í æfingaprógrammi færðu sérsniðið æfingaprógram í símann. Í æfinga- og matarprógrammi bætist sérsniðið matarprógram við. Í báðum ertu í beinu sambandi við mig og við tökum vikulegt check-in."
+      "q": "Hver er munurinn á prógrömmunum þremur?",
+      "a": "Sterkari á þínum eigin tíma er áskriftar aðgangur fyrir innri hringinn á heimasíðu, þar færð þú æfingar prógram og næringargildis viðmið og aðgang að sterkir pabba gervigreind. \nÍ æfinga- og matarprógrammi færðu sérsniðið matarprógram og æfingar prógram. Í 1:1 einkaþjálfun færðu það sama og fjarþjálfun og einkaþjálfun með mér út á gólfi í tækjasal þar sem við förum vel yfir allar æfingar og pössum að við séum að gera allt rétt. í fjár og einkaþjálfun er vikuleg stöðumat hjá þjálfara."
     },
     {
       "q": "Býðurðu upp á einkaþjálfun?",
-      "a": "Já. Ég sérhæfi mig í bæði einkaþjálfun og fjarþjálfun, fyrir byrjendur og lengra komna. Hafðu samband og við finnum út hvað hentar þér best."
+      "a": "Já. Ég sérhæfi mig í bæði einkaþjálfun og fjarþjálfun, fyrir byrjendur og lengra komna. Tökum spjallið og við finnum út hvað hentar þér best."
     },
     {
       "q": "Hvað kostar þetta?",
-      "a": "Æfingaprógram kostar 15.900 kr á mánuði og æfinga- og matarprógram 24.900 kr á mánuði. Í báðum eru bein skilaboð til mín og vikulegt check-in innifalin. Við finnum leiðina sem passar þér í ókeypis spjalli."
+      "a": "Sterkari á þínum eigin tíma áskrift 9.900 kr á mánuði. Fjarþjálfun 24.900 kr á mánuði. 1:1 þjálfun 74.900kr á mánuði. "
     }
   ],
   "finalCta": {
     "title": "Byrjum á spjalli — það kostar ekkert",
-    "body": "Fimmtán mínútur, engin skuldbinding. Við förum yfir hvar þú ert og hvert þú vilt fara.",
-    "ctaLabel": "Bókaðu ókeypis spjall"
+    "body": "Létt spjall, engin skuldbinding. Við förum yfir hvar þú ert og hvert þú vilt fara.",
+    "ctaLabel": "Sendu mér línu"
   },
   "general": {
-    "tagline": "Verðum sterkari saman",
-    "description": "Einkaþjálfun og fjarþjálfun sniðin að pöbbum. Sérsniðið æfinga- og matarprógram, bein skilaboð til þjálfara og vikulegt check-in. Þjálfun sem passar inn í annasamt fjölskyldulíf."
+    "tagline": "Verðum sterkari saman.",
+    "description": "Einkaþjálfun og fjarþjálfun sniðin að pöbbum. Sérsniðið æfinga- og matarprógram, bein skilaboð til þjálfara og vikulegt check-in. "
   },
   "contact": {
-    "email": "aron@sterkirpabbar.is",
-    "phone": "+354 456 7890",
+    "email": "Info@sterkirpabbar.is",
+    "phone": null,
     "city": "Mosfellsbær"
   },
   "coach": {
     "name": "Aron Ingi",
     "role": "Einkaþjálfari & pabbi",
     "bio": "Ég er tveggja barna faðir og Mosfellingur í húð og hár. Ég sérhæfi mig í einkaþjálfun og fjarþjálfun fyrir bæði byrjendur og lengra komna. Markmiðið er einfaldlega að koma þér í þitt besta form eða styrkjast svo þú getir verið fyrirmynd fyrir þá sem skipta þér mestu máli.",
-    "credentials": "ÍAK einkaþjálfari"
+    "credentials": "Einkaþjálfaraskóli World Class"
   },
   "social": {
     "instagram": "https://instagram.com/sterkirpabbar",
     "facebook": "https://facebook.com/sterkirpabbar"
+  },
+  "programPage": {
+    "seo": {
+      "title": "Æfingaprógram fyrir pabba — Sterkir pabbar",
+      "description": "Æfingaprógram og næringarviðmið fyrir pabba með lítinn tíma. Í símanum, á þínum eigin tíma. Engin binding."
+    },
+    "hero": {
+      "headline": "Sterkari líkami. Meiri orka. Sama annasama vikan.",
+      "emphasis": "orka",
+      "sub": "Æfingaprógram fyrir pabba sem hafa lítinn tíma. Sniðið að þér, í símanum þínum, á þínum eigin tíma.",
+      "ctaLabel": "Skrá mig"
+    },
+    "guarantee": "Engin binding. Þú getur hætt hvenær sem er.",
+    "situations": {
+      "title": "Kannastu við þetta?",
+      "points": [
+        "Vinnan tekur daginn og börnin kvöldið.",
+        "Þú ætlar að byrja á mánudaginn. Svo kemur mánudagur.",
+        "Bakið kvartar þegar þú lyftir krökkunum.",
+        "Allir í fjölskyldunni fá sinn tíma nema þú.",
+        "Þú veist ekki hvar þú átt að byrja."
+      ]
+    },
+    "solution": {
+      "title": "Prógram sem lagar sig að lífinu, ekki öfugt",
+      "paragraphs": [
+        "Þú svarar nokkrum spurningum um markmið, búnað og hvað þú hefur raunverulega tíma í. Út frá því færðu æfingaplan og næringarviðmið sem passa þér.",
+        "Planið er í símanum. Þú æfir heima, í ræktinni eða án búnaðar, þegar það hentar, og sérð myndband af hverri æfingu.",
+        "Þegar vikan fer úr skorðum, sem hún gerir, heldurðu áfram þar sem frá var horfið. Það er ekki fall. Það er hluti af planinu."
+      ]
+    },
+    "included": {
+      "title": "Það sem þú færð",
+      "items": [
+        {
+          "title": "Sérsniðið æfingaplan",
+          "body": "Byggt á markmiðum þínum, búnaðinum sem þú hefur og tímanum sem þú átt. Þú þarft ekki að skipuleggja, bara mæta."
+        },
+        {
+          "title": "Myndbönd af hverri æfingu",
+          "body": "Þú sérð hvernig hver hreyfing er gerð rétt, svo þú æfir af öryggi."
+        },
+        {
+          "title": "Næringarviðmið",
+          "body": "Dagleg viðmið fyrir hitaeiningar, prótein, kolvetni og fitu, reiknuð út frá þér."
+        },
+        {
+          "title": "Gervigreind Sterkra pabba",
+          "body": "Svarar einföldum spurningum um æfingar, næringu og appið, hvenær sem er."
+        },
+        {
+          "title": "Facebook hópur Sterkra pabba",
+          "body": "Aðrir pabbar í sömu stöðu. Hvatning, spurningar og félagsskapur."
+        },
+        {
+          "title": "Fróðleikur",
+          "body": "Greinar um æfingar, næringu og venjur, skrifaðar fyrir pabba."
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "Frá öðrum pöbbum",
+      "quotes": []
+    },
+    "steps": {
+      "title": "Svona byrjarðu",
+      "items": [
+        {
+          "title": "Skráðu þig",
+          "body": "Þú býrð til aðgang með netfangi eða Google."
+        },
+        {
+          "title": "Svaraðu spurningunum",
+          "body": "Markmið, búnaður, tími og heilsa. Út frá svörunum verður planið þitt og næringarviðmiðin til."
+        },
+        {
+          "title": "Hefstu handa",
+          "body": "Ég sendi þér kröfu í heimabankann. Um leið og hún er greidd opnast planið og þú byrjar."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Algengar spurningar",
+      "items": [
+        {
+          "q": "Ég hef ekki æft í mörg ár. Er þetta fyrir mig?",
+          "a": "Já, einmitt þá. Planið byrjar þar sem þú ert núna, ekki þar sem þú varst."
+        },
+        {
+          "q": "Hvað þarf ég mikinn tíma?",
+          "a": "Það fer eftir þér. Þú segir hvað þú hefur raunverulega tíma í og planið er byggt utan um það. Ef vikan hrynur heldurðu áfram þar sem frá var horfið, þú byrjar ekki upp á nýtt."
+        },
+        {
+          "q": "Þarf ég kort í ræktina eða búnað heima?",
+          "a": "Nei. Þú velur hvort þú æfir í ræktarstöð, heima með þann búnað sem þú átt, eða alveg án búnaðar, og planið miðast við það."
+        },
+        {
+          "q": "Hvernig fæ ég stuðning?",
+          "a": "Gervigreindin í appinu svarar einföldum spurningum hvenær sem er, og í Facebook hópnum eru aðrir pabbar í sömu stöðu. Ef þú vilt bein skilaboð og vikulegt stöðumat með mér er fjarþjálfun leiðin."
+        },
+        {
+          "q": "Hvernig greiði ég?",
+          "a": "Mánaðargjaldið kemur sem krafa í heimabankann þinn. Ekkert kort og engin sjálfvirk áskrift."
+        },
+        {
+          "q": "Get ég hætt hvenær sem er?",
+          "a": "Já. Það er engin binding. Þú lætur mig vita og ég sendi ekki næstu kröfu. Aðgangurinn gildir út tímabilið sem þú greiddir fyrir."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Fyrsta skrefið tekur eina mínútu",
+      "body": "Skráðu þig, svaraðu spurningunum og planið þitt verður til. Engin binding.",
+      "ctaLabel": "Skrá mig"
+    }
   }
 }
