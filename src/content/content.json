@@ -145,12 +145,12 @@
   "programPage": {
     "seo": {
       "title": "Æfingaprógram fyrir pabba — Sterkir pabbar",
-      "description": "Sérsniðið æfingaprógram og næringarviðmið fyrir pabba með lítinn tíma. Í símanum, með beinum stuðningi frá Aroni. Engin binding."
+      "description": "Æfingaprógram og næringarviðmið fyrir pabba með lítinn tíma. Í símanum, á þínum eigin tíma. Engin binding."
     },
     "hero": {
       "headline": "Sterkari líkami. Meiri orka. Sama annasama vikan.",
       "emphasis": "orka",
-      "sub": "Æfingaprógram fyrir pabba sem hafa lítinn tíma. Sniðið að þér, í símanum þínum, með mig þér við hlið.",
+      "sub": "Æfingaprógram fyrir pabba sem hafa lítinn tíma. Sniðið að þér, í símanum þínum, á þínum eigin tíma.",
       "ctaLabel": "Skrá mig"
     },
     "guarantee": "Engin binding. Þú getur hætt hvenær sem er.",
@@ -169,7 +169,7 @@
       "paragraphs": [
         "Þú svarar nokkrum spurningum um markmið, búnað og hvað þú hefur raunverulega tíma í. Út frá því færðu æfingaplan og næringarviðmið sem passa þér.",
         "Planið er í símanum. Þú æfir heima, í ræktinni eða án búnaðar, þegar það hentar, og sérð myndband af hverri æfingu.",
-        "Þegar vikan fer úr skorðum, sem hún gerir, þá stillum við af. Það er ekki fall. Það er hluti af planinu."
+        "Þegar vikan fer úr skorðum, sem hún gerir, heldurðu áfram þar sem frá var horfið. Það er ekki fall. Það er hluti af planinu."
       ]
     },
     "included": {
@@ -185,15 +185,15 @@
         },
         {
           "title": "Næringarviðmið",
-          "body": "Dagleg viðmið fyrir prótein, kolvetni og fitu, reiknuð út frá þér."
+          "body": "Dagleg viðmið fyrir hitaeiningar, prótein, kolvetni og fitu, reiknuð út frá þér."
         },
         {
-          "title": "Bein skilaboð til mín",
-          "body": "Spurning um æfingu, mataræði eða verk í hné? Þú sendir mér línu og ég svara."
+          "title": "Gervigreind Sterkra pabba",
+          "body": "Svarar einföldum spurningum um æfingar, næringu og appið, hvenær sem er."
         },
         {
-          "title": "Vikulegt check-in",
-          "body": "Þú segir mér hvernig gekk og ég stilli planið af. Það heldur þér við efnið."
+          "title": "Facebook hópur Sterkra pabba",
+          "body": "Aðrir pabbar í sömu stöðu. Hvatning, spurningar og félagsskapur."
         },
         {
           "title": "Fróðleikur",
@@ -231,7 +231,7 @@
         },
         {
           "q": "Hvað þarf ég mikinn tíma?",
-          "a": "Það fer eftir þér. Þú segir hvað þú hefur raunverulega tíma í og planið er byggt utan um það. Ef vikan hrynur aðlögum við planið, við byrjum ekki upp á nýtt."
+          "a": "Það fer eftir þér. Þú segir hvað þú hefur raunverulega tíma í og planið er byggt utan um það. Ef vikan hrynur heldurðu áfram þar sem frá var horfið, þú byrjar ekki upp á nýtt."
         },
         {
           "q": "Þarf ég kort í ræktina eða búnað heima?",
@@ -239,7 +239,7 @@
         },
         {
           "q": "Hvernig fæ ég stuðning?",
-          "a": "Þú getur sent mér skilaboð hvenær sem er og ég svara. Einu sinni í viku förum við yfir hvernig gekk og ég stilli af."
+          "a": "Gervigreindin í appinu svarar einföldum spurningum hvenær sem er, og í Facebook hópnum eru aðrir pabbar í sömu stöðu. Ef þú vilt bein skilaboð og vikulegt stöðumat með mér er fjarþjálfun leiðin."
         },
         {
           "q": "Hvernig greiði ég?",
