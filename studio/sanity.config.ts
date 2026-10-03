@@ -16,6 +16,10 @@ import { planTemplates } from "./schemas/splits";
  */
 const SINGLETON_ID = "siteContent";
 
+/** The ad landing page at /programid. Same rules: one document, fixed id. */
+const PROGRAM_PAGE_ID = "programPage";
+const SINGLETONS = [SINGLETON_ID, PROGRAM_PAGE_ID];
+
 export default defineConfig({
   name: "sterkir-pabbar",
   title: "Sterkir pabbar",
@@ -33,6 +37,10 @@ export default defineConfig({
               .title("Efni síðunnar")
               .id(SINGLETON_ID)
               .child(S.document().schemaType(SINGLETON_ID).documentId(SINGLETON_ID)),
+            S.listItem()
+              .title("Prógramsíðan")
+              .id(PROGRAM_PAGE_ID)
+              .child(S.document().schemaType(PROGRAM_PAGE_ID).documentId(PROGRAM_PAGE_ID)),
             S.divider(),
             S.listItem()
               .title("Æfingar")
@@ -73,10 +81,10 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
-    // Nothing on this site is creatable from the "+" button — there is exactly
-    // one document and it already exists.
+    // Neither page is creatable from the "+" button — each is exactly one
+    // document, reached from its own entry in the list.
     templates: (prev) => [
-      ...prev.filter((t) => t.schemaType !== SINGLETON_ID),
+      ...prev.filter((t) => !SINGLETONS.includes(t.schemaType)),
       ...planTemplates,
       /** Used by the muscle-group folders: a new exercise starts in its folder's group. */
       {
@@ -96,10 +104,10 @@ export default defineConfig({
       creationContext.type === "global"
         ? prev.filter((item) => item.templateId !== "exercise-in-group")
         : prev,
-    // Remove duplicate/delete from the singleton so the page can never lose
+    // Remove duplicate/delete from the singletons so a page can never lose
     // its only source of content.
     actions: (prev, { schemaType }) =>
-      schemaType === SINGLETON_ID
+      SINGLETONS.includes(schemaType)
         ? prev.filter(
             ({ action }) => action && !["unpublish", "delete", "duplicate"].includes(action),
           )
