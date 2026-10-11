@@ -72,7 +72,7 @@ export const sex = pgEnum("sex", SEX_VALUES);
  * `checkoutClaimedAt` were the Repeat mirror. The integration was removed on
  * 2026-09-29 and nothing reads or writes them; they are kept so launch needed
  * no production migration. Drop them, or reuse them if Repeat returns — see
- * "Repeat removed" in docs/solutions/inner-circle.md.
+ * "Repeat removed" in docs/decisions.md.
  */
 export const users = pgTable(
   "users",
