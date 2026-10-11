@@ -10,7 +10,7 @@
 <div class="consent" data-consent-banner hidden role="region" aria-label="Vafrakökur">
   <p class="consent-text">
     Við notum Google Analytics til að sjá hvernig síðan er notuð. Vafrakökur eru aðeins settar ef
-    þú samþykkir.
+    þú samþykkir. <a href="/personuvernd">Nánar</a>
   </p>
   <div class="consent-actions">
     <button type="button" class="btn btn-ghost consent-btn" data-consent="denied">Hafna</button>
@@ -30,9 +30,9 @@
     try {
       stored = localStorage.getItem(KEY);
     } catch (e) {}
-    if (stored === "granted" || stored === "denied") return;
-
-    banner.hidden = false;
+    // The listener is attached either way: /personuvernd can reopen the banner
+    // for a visitor who has already chosen.
+    banner.hidden = stored === "granted" || stored === "denied";
     banner.addEventListener("click", function (event) {
       var button = event.target.closest("[data-consent]");
       if (!button) return;
@@ -40,8 +40,8 @@
       try {
         localStorage.setItem(KEY, choice);
       } catch (e) {}
-      if (choice === "granted" && typeof gtag === "function") {
-        gtag("consent", "update", { analytics_storage: "granted" });
+      if (typeof gtag === "function") {
+        gtag("consent", "update", { analytics_storage: choice });
       }
       banner.hidden = true;
     });
@@ -75,6 +75,11 @@
     font-size: 0.92rem;
     line-height: 1.5;
     color: var(--color-text-soft);
+  }
+  .consent-text a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
   .consent-actions {
     display: flex;

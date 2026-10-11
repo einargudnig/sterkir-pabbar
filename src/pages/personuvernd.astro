@@ -1,0 +1,216 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { site } from "../config/site";
+
+/**
+ * Privacy notice for both the landing page and the members' area — the app
+ * links here rather than keeping a copy, so there is one text to keep true.
+ *
+ * Every fact below mirrors the code: the columns in `innri/app/db/schema.ts`,
+ * the services in `docs/solutions/deployment.md`, and the consent flow in
+ * `ConsentBanner.astro`. Change one of those and this page goes stale.
+ */
+const updated = "11. október 2026";
+---
+
+<Layout
+  title={`Persónuvernd — ${site.name}`}
+  description="Hvaða upplýsingum Sterkir pabbar safnar, til hvers og hverjir vinna úr þeim."
+  path="/personuvernd"
+>
+  <Header />
+
+  <main class="legal" id="meginmal">
+    <div class="shell legal-inner">
+      <h1 class="legal-title">Persónuvernd</h1>
+      <p class="legal-updated">Síðast uppfært {updated}</p>
+
+      <h2>Hver ber ábyrgð</h2>
+      <p>
+        {site.legalName} ({site.coach.name}) ber ábyrgð á vinnslu persónuupplýsinga á
+        sterkirpabbar.is og í appinu á app.sterkirpabbar.is. Spurningar og beiðnir sendast á{" "}
+        <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+      </p>
+
+      <h2>Vefurinn sterkirpabbar.is</h2>
+      <p>
+        Við notum Google Analytics til að sjá hversu margir heimsækja vefinn, hvaðan þeir koma og
+        hvaða síður þeir skoða. Vafrakökur frá Google eru aðeins settar ef þú samþykkir þær. Ef þú
+        hafnar sendir vefurinn Google aðeins nafnlaus merki án vafrakaka, sem ekki er hægt að
+        tengja við þig.
+      </p>
+      <p>
+        <button type="button" class="legal-reset" data-consent-reset>Breyta vali á vafrakökum</button>
+      </p>
+
+      <h2>Appið — Innri hringurinn</h2>
+      <p>Þegar þú stofnar aðgang og notar appið geymum við:</p>
+      <ul>
+        <li><strong>Aðgang:</strong> netfang og innskráningarupplýsingar.</li>
+        <li>
+          <strong>Svör við spurningalistanum:</strong> markmið, fjölda æfingadaga, reynslu, þyngd,
+          hæð, aldur, kyn, daglega hreyfingu og staðfestingu á að þú sért 18 ára eða eldri.
+        </li>
+        <li>
+          <strong>Heilsufarsupplýsingar:</strong> hvort þú hafir langvinnan sjúkdóm, takir lyf,
+          eigir sögu um átröskun eða sért með meiðsli, og það sem þú skrifar sjálfur um hvað
+          takmarkar þig.
+        </li>
+        <li><strong>Það sem appið reiknar:</strong> næringarviðmiðin þín og æfingaplanið.</li>
+        <li>
+          <strong>Greiðsluupplýsingar:</strong> fullt nafn, kennitölu, símanúmer ef þú gefur það
+          upp, hvenær krafa var send og greidd, og til hvaða dags aðgangurinn er greiddur.
+        </li>
+        <li>
+          <strong>Gervigreindaraðstoðin:</strong> samtölin sjálf eru ekki geymd. Við skráum aðeins
+          hvenær spurt var, hversu langt svarið var og hvort það tókst, til að halda utan um kostnað
+          og daglegt hámark.
+        </li>
+      </ul>
+
+      <h2>Til hvers</h2>
+      <ul>
+        <li>Að reikna næringarviðmið og velja æfingaplan sem passar þér.</li>
+        <li>
+          Að Aron geti séð hvort eitthvað í heilsufari þínu kalli á að hann fari yfir planið með
+          þér.
+        </li>
+        <li>Að stofna kröfu í heimabankann þinn og opna aðganginn þegar hún er greidd.</li>
+        <li>Að gervigreindaraðstoðin geti svarað spurningum um planið þitt og viðmiðin.</li>
+      </ul>
+      <p>
+        Aron er sá eini sem sér upplýsingarnar þínar. Þær eru aldrei seldar né notaðar í
+        auglýsingar.
+      </p>
+
+      <h2>Á hvaða grundvelli</h2>
+      <ul>
+        <li>
+          Aðgangur, plan og greiðslur eru nauðsynleg til að veita þjónustuna sem þú skráðir þig í.
+        </li>
+        <li>
+          Heilsufarsupplýsingar eru viðkvæmar persónuupplýsingar. Við vinnum aðeins með þær á
+          grundvelli samþykkis þíns, sem þú getur dregið til baka hvenær sem er með því að biðja um
+          að aðgangi þínum sé eytt.
+        </li>
+        <li>Google Analytics er aðeins notað með samþykki þínu.</li>
+      </ul>
+
+      <h2>Hverjir vinna úr gögnunum</h2>
+      <p>Við notum þessa þjónustuaðila. Þeir vinna aðeins úr gögnunum fyrir okkar hönd:</p>
+      <ul>
+        <li><strong>Clerk</strong> sér um innskráningu og geymir netfangið þitt.</li>
+        <li><strong>Neon</strong> hýsir gagnagrunninn með svörum þínum og viðmiðum.</li>
+        <li><strong>Vercel</strong> hýsir vefinn og appið.</li>
+        <li>
+          <strong>OpenAI</strong>, í gegnum Vercel, svarar spurningum í gervigreindaraðstoðinni.
+          Þegar þú spyrð fær það spurninguna og, ef við á, planið þitt og næringarviðmiðin.
+        </li>
+        <li><strong>Google</strong> rekur Google Analytics, ef þú samþykkir það.</li>
+      </ul>
+      <p>
+        Þessir aðilar eru í Bandaríkjunum. Flutningur gagna þangað byggir á rammasamningi ESB og
+        Bandaríkjanna um persónuvernd (EU–US Data Privacy Framework) eða stöðluðum
+        samningsákvæðum framkvæmdastjórnar ESB.
+      </p>
+
+      <h2>Hversu lengi</h2>
+      <p>
+        Við geymum upplýsingarnar á meðan þú ert með aðgang. Þegar aðgangi er eytt eyðast öll gögn
+        þín úr appinu. Bókhaldsgögn um greiddar kröfur eru geymd í sjö ár eins og lög um bókhald
+        krefjast. Google geymir gögn úr Google Analytics í takmarkaðan tíma, að hámarki 14 mánuði.
+      </p>
+
+      <h2>Réttindi þín</h2>
+      <p>Þú átt rétt á að:</p>
+      <ul>
+        <li>fá afrit af upplýsingunum sem við geymum um þig,</li>
+        <li>láta leiðrétta rangar upplýsingar,</li>
+        <li>láta eyða aðgangi þínum og öllum gögnum,</li>
+        <li>fá gögnin þín afhent á tölvutæku formi,</li>
+        <li>draga samþykki þitt til baka.</li>
+      </ul>
+      <p>
+        Sendu póst á <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a> og við
+        svörum innan mánaðar. Ef þú ert ósáttur við hvernig farið er með upplýsingarnar þínar
+        geturðu kvartað til <a href="https://www.personuvernd.is" rel="noopener noreferrer"
+          >Persónuverndar</a
+        >.
+      </p>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script is:inline>
+  document.querySelector("[data-consent-reset]")?.addEventListener("click", function () {
+    try {
+      localStorage.removeItem("sp-analytics-consent");
+    } catch (e) {}
+    var banner = document.querySelector("[data-consent-banner]");
+    if (banner) banner.hidden = false;
+  });
+</script>
+
+<style>
+  .legal {
+    padding-block: var(--spacing-block) var(--spacing-section);
+  }
+  .legal-inner {
+    max-width: 44rem;
+  }
+  .legal-title {
+    font-size: var(--text-display);
+  }
+  .legal-updated {
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+  }
+  .legal h2 {
+    font-size: var(--text-subtitle);
+    margin-top: 2.75rem;
+  }
+  .legal p,
+  .legal ul {
+    margin-top: 1rem;
+    color: var(--color-text-soft);
+    line-height: 1.65;
+    max-width: 65ch;
+  }
+  .legal ul {
+    padding-left: 1.2rem;
+    list-style: disc;
+  }
+  .legal li + li {
+    margin-top: 0.5rem;
+  }
+  .legal strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .legal a,
+  .legal-reset {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-bronze-dim);
+    text-underline-offset: 0.25em;
+  }
+  .legal-reset {
+    font: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .legal a:hover,
+    .legal-reset:hover {
+      color: var(--color-bronze);
+      text-decoration-color: var(--color-bronze);
+    }
+  }
+</style>
