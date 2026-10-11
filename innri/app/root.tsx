@@ -11,6 +11,9 @@ import {
   useLoaderData,
 } from "react-router";
 
+import { ConsentBanner } from "~/components/consent-banner";
+import { GTAG_BOOTSTRAP } from "~/lib/analytics";
+
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -30,10 +33,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script dangerouslySetInnerHTML={{ __html: GTAG_BOOTSTRAP }} />
       </head>
-
       <body>
         {children}
+
+        <ConsentBanner />
 
         <ScrollRestoration />
         <Scripts />
