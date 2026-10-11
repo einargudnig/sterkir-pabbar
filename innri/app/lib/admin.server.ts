@@ -192,3 +192,37 @@ export const markClaimPaid = async (claimId: string, now: Date): Promise<PaidRes
 export const cancelClaim = async (claimId: string): Promise<void> => {
   await db.delete(claims).where(and(eq(claims.id, claimId), isNull(claims.paidAt)));
 };
+
+export type DeleteResult = "deleted" | "unknown";
+
+/**
+ * Remove someone from the app entirely — typically a sign-up who answered the
+ * questionnaire, saw the price and walked away, and now sits in Aron's queue.
+ *
+ * `deleteIdentity` removes the Clerk account and runs first. Deleting only the
+ * row would not stick: `requireUser` recreates a missing row on the next
+ * request, and the person would still be signed in. If Clerk fails, the row
+ * stays, so Aron can simply try again.
+ *
+ * The cascade takes answers, macros, plan assignments and claims with the row,
+ * the same as when a member deletes their own account. Admins cannot be
+ * deleted from here.
+ */
+export const deleteMember = async (
+  userId: string,
+  deleteIdentity: (clerkUserId: string) => Promise<void>,
+): Promise<DeleteResult> => {
+  const deletable = and(eq(users.id, userId), eq(users.isAdmin, false));
+
+  const member = await db.query.users.findFirst({ where: deletable });
+
+  if (!member) {
+    return "unknown";
+  }
+
+  await deleteIdentity(member.clerkUserId);
+
+  await db.delete(users).where(deletable);
+
+  return "deleted";
+};
