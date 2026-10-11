@@ -1,5 +1,7 @@
 import { SignUp } from "@clerk/react-router";
 
+import { PRIVACY_URL } from "~/lib/links";
+
 import type { Route } from "./+types/sign-up";
 
 export function meta(_args: Route.MetaArgs) {
@@ -21,6 +23,14 @@ export default function Nyskraning() {
       </p>
 
       <SignUp signInUrl="/sign-in" forceRedirectUrl="/" />
+
+      <p className="mt-6 text-xs text-text-muted">
+        Svörin þín, þar á meðal heilsufarsupplýsingar, eru geymd eins og lýst er í{" "}
+        <a href={PRIVACY_URL} className="underline underline-offset-2 hover:text-text">
+          persónuverndarstefnunni
+        </a>
+        .
+      </p>
     </main>
   );
 }
