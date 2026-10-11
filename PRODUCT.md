@@ -29,6 +29,13 @@ back and knees that hold up.
 The single conversion goal of the site is booking the **free intro chat**
 (`ókeypis spjall`). Nothing else on the page is asked of the visitor.
 
+**One deliberate exception: `/programid`**, the ad landing page (Aron, 2026-10-03).
+Paid traffic lands there having already clicked an ad for the prógram, so every
+button signs up for the members' area instead of booking a chat. It sells only the
+featured tier, reads its price from `offerings`, is `noindex`, and its copy lives in
+the `programPage` Sanity document. Its guarantee is **"Engin binding"** — true by
+construction, since each month is a separate krafa.
+
 ## Positioning
 
 **Aron is a dad training dads.** He lives the constraint he programs around, so

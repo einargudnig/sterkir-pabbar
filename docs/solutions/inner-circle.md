@@ -189,16 +189,13 @@ what Aron believes as a coach.
 
 ## Open
 
-Carried over from before launch; confirm which are still open.
+Updated 2026-10-11. Aron has been using the app in production since launch.
 
-| Item                                                                                     | Owner             |
-| ---------------------------------------------------------------------------------------- | ----------------- |
-| Aron's sign-off on the macro formula, then bump `formula_version`                        | Aron, then Einar  |
-| Legal position on prescribing macros in Iceland                                          | Aron              |
-| Price and VSK treatment                                                                  | Aron + accountant |
-| ehf./kennitala — still `TODO(client)` in `src/config/site.ts`                            | Aron              |
-| Delete the test account `einar+prufa@maul.is` from production                            | Einar             |
-| A Playwright smoke test (sign-up → questionnaire → dashboard) was planned, never written | Einar             |
-| Privacy notice: the app stores health data and kennitölur                                | Einar + Aron      |
-| Error monitoring                                                                         | Einar             |
-| Landing page sales section for the members' area (phase 7)                               | Einar             |
+| Item                                                                               | Owner             |
+| ---------------------------------------------------------------------------------- | ----------------- |
+| Legal position on prescribing macros in Iceland                                    | Aron              |
+| Price and VSK treatment                                                            | Aron + accountant |
+| ehf./kennitala — still `TODO(client)` in `src/config/site.ts`                      | Aron              |
+| Review the wording of `/personuvernd`; it names `site.legalName`, so fill that in  | Aron              |
+| Health answers rest on consent; the questionnaire has no explicit consent checkbox | Einar + Aron      |
+| Error monitoring — deferred on 2026-10-11                                          | Einar             |

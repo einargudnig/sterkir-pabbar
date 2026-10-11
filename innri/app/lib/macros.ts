@@ -21,9 +21,8 @@ import type { ActivityLevel, Goal, Sex } from "~/lib/onboarding";
  * the agent. They are grouped here, with their reasoning, so that changing one
  * is a deliberate five-line edit rather than an archaeology exercise.
  *
- * **v1 values are conservative defaults awaiting Aron's sign-off.** They are
- * defensible and safe to ship behind a paywall nobody has paid through yet;
- * they are not yet what a coach has said he believes.
+ * **v1 was signed off by Aron on 2026-10-11, unchanged.** These are the
+ * numbers he stands behind as a coach. Changing any of them now needs him.
  *
  * Bump `version` whenever any other value here changes. Every stored row
  * carries it, so a member asking "why did the app tell me 1.800 kcal in

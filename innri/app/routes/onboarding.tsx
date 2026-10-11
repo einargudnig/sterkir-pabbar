@@ -33,6 +33,7 @@ import {
   type StepErrors,
   submitStep,
 } from "~/lib/onboarding-draft.server";
+import { PRIVACY_URL } from "~/lib/links";
 import { completeOnboarding, hasCompletedOnboarding } from "~/lib/onboarding.server";
 import { availableFrequenciesQuery, sanity } from "~/lib/sanity.server";
 
@@ -561,7 +562,10 @@ function ReadyStep({
       </div>
 
       <p className="mt-6 text-xs text-text-muted">
-        Aron sér þessar upplýsingar til að senda þér reikning, enginn annar.
+        Aron sér þessar upplýsingar til að senda þér reikning, enginn annar.{" "}
+        <a href={PRIVACY_URL} className="underline underline-offset-2 hover:text-text">
+          Persónuvernd
+        </a>
       </p>
     </>
   );

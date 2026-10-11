@@ -205,3 +205,31 @@ export const finalCta = {
   body: content.finalCta.body,
   cta: { label: content.finalCta.ctaLabel }, // destination: site.bookingUrl
 } as const;
+
+/**
+ * The ad landing page at /programid. Its own Sanity document, so Aron can rework
+ * the ad copy without touching the homepage.
+ *
+ * The JSON import infers an empty `quotes` array as `never[]`; the shape is the
+ * one `fetch-content.mjs` projects.
+ */
+type Testimonial = { quote: string; name: string; detail?: string | null };
+
+export const programPage = {
+  ...content.programPage,
+  testimonials: {
+    title: content.programPage.testimonials.title,
+    quotes: content.programPage.testimonials.quotes as Testimonial[],
+  },
+} as const;
+
+/**
+ * The tier the ad page sells. Read from `offerings` rather than written into the
+ * page, so the ad and the homepage can never quote two different prices. The
+ * featured tier is the entry point, and the CMS guarantees exactly one exists.
+ */
+export const programOffering = (() => {
+  const featured = offerings.find((o) => o.featured);
+  if (!featured) throw new Error("[site] No featured offering — /programid has no price to show.");
+  return featured;
+})();

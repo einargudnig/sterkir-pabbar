@@ -2,8 +2,10 @@ import { ChevronLeft } from "lucide-react";
 import { Link } from "react-router";
 import { z } from "zod";
 
+import { ExerciseVideo } from "~/components/exercise-video";
 import { requireUser } from "~/lib/auth.server";
 import { assignedPlan } from "~/lib/onboarding.server";
+import { toVideoEmbed } from "~/lib/video";
 
 import type { Route } from "./+types/session";
 
@@ -38,8 +40,13 @@ export async function loader(args: Route.LoaderArgs) {
 
   const next = sessions.length > 1 ? (position % sessions.length) + 1 : null;
 
+  const exercises = (session.exercises ?? []).map((item) => ({
+    ...item,
+    embed: item.exercise?.videoUrl ? toVideoEmbed(item.exercise.videoUrl) : null,
+  }));
+
   return {
-    session,
+    session: { ...session, exercises },
     position,
     total: sessions.length,
     next: next === null ? null : { position: next, title: sessions[next - 1]?.title },
@@ -69,7 +76,7 @@ export default function Session({ loaderData }: Route.ComponentProps) {
 
       <section className="mt-6 overflow-hidden rounded-xl border border-line bg-raised">
         <ul className="divide-y divide-line-soft">
-          {session.exercises?.map((item) => (
+          {session.exercises.map((item) => (
             <li key={item._key} className="px-6 py-4">
               <div className="flex items-baseline justify-between gap-4">
                 <h2 className="font-medium text-text">{item.exercise?.name ?? "Æfing vantar"}</h2>
@@ -88,7 +95,9 @@ export default function Session({ loaderData }: Route.ComponentProps) {
                 <p className="mt-1.5 text-sm text-text-muted">{item.note ?? item.exercise?.cue}</p>
               )}
 
-              {!item.exercise?.videoUrl && (
+              {item.embed ? (
+                <ExerciseVideo embed={item.embed} name={item.exercise?.name ?? "æfing"} />
+              ) : (
                 <p className="mt-2 text-xs text-text-muted italic">Myndband kemur</p>
               )}
             </li>

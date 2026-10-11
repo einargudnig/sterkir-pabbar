@@ -37,8 +37,8 @@ Deploying the members' area from the CLI runs from the **repo root**, not `innri
 
 ## Invariants
 
-**The landing page is revenue. Leave it alone.** `src/` is out of scope until phase 7 of the
-inner-circle plan. It is static, SEO-critical and converts cold traffic.
+**The landing page is revenue. Leave it alone.** Change `src/` only when Einar asks for it.
+It is static, SEO-critical and converts cold traffic.
 
 **`src/styles/global.css` is the canonical design system.** `innri/app/app.css` copies its
 `@font-face` and `@theme` blocks verbatim and then maps shadcn's semantic tokens

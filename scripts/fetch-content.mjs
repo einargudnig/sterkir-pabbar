@@ -64,6 +64,40 @@ const QUERY = `*[_type == "siteContent"][0]{
   social{instagram, facebook}
 }`;
 
+/**
+ * The ad landing page. Fetched separately and validated separately: if Aron has
+ * not published it yet, or publishes something broken, the committed copy of
+ * `programPage` is kept and the homepage still gets his latest edits.
+ */
+const PROGRAM_QUERY = `*[_type == "programPage" && _id == "programPage"][0]{
+  seo{title, description},
+  hero{headline, emphasis, sub, ctaLabel},
+  guarantee,
+  situations{title, points},
+  solution{title, paragraphs},
+  included{title, items[]{title, body}},
+  // Never opened in the Studio means null; the page hides the section when
+  // there are no quotes, so normalise rather than reject.
+  "testimonials": {
+    "title": coalesce(testimonials.title, ""),
+    "quotes": coalesce(testimonials.quotes[]{quote, name, detail}, [])
+  },
+  steps{title, items[]{title, body}},
+  faq{title, items[]{q, a}},
+  finalCta{title, body, ctaLabel}
+}`;
+
+const PROGRAM_REQUIRED_KEYS = [
+  "seo",
+  "hero",
+  "situations",
+  "solution",
+  "included",
+  "steps",
+  "faq",
+  "finalCta",
+];
+
 const REQUIRED_KEYS = [
   "hero",
   "offeringsTitle",
@@ -131,6 +165,33 @@ const validate = (c) => {
   return problems;
 };
 
+const validateProgram = (p) => {
+  const problems = PROGRAM_REQUIRED_KEYS.filter((key) => p[key] == null).map(
+    (key) => `missing "${key}"`,
+  );
+  if (problems.length) return problems;
+
+  // programid.astro splits the headline on the emphasis word, as Hero.astro does.
+  if (!p.hero.emphasis || !p.hero.headline?.includes(p.hero.emphasis)) {
+    problems.push(
+      `hero.emphasis "${p.hero.emphasis}" does not occur in hero.headline "${p.hero.headline}"`,
+    );
+  }
+
+  const lists = {
+    "situations.points": p.situations.points,
+    "solution.paragraphs": p.solution.paragraphs,
+    "included.items": p.included.items,
+    "steps.items": p.steps.items,
+    "faq.items": p.faq.items,
+  };
+  for (const [name, list] of Object.entries(lists)) {
+    if (!Array.isArray(list) || list.length === 0) problems.push(`${name} is empty`);
+  }
+
+  return problems;
+};
+
 const keepExisting = (reason) => {
   console.warn(`[content] ${reason}`);
   console.warn("[content] Building from the committed src/content/content.json.");
@@ -141,12 +202,12 @@ if (!PROJECT_ID) {
   keepExisting("SANITY_PROJECT_ID is not set.");
 }
 
-const url =
-  `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}` +
-  `?query=${encodeURIComponent(QUERY)}`;
+/** Resolves to the query result, or throws with a reason worth logging. */
+const query = async (groq) => {
+  const url =
+    `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}` +
+    `?query=${encodeURIComponent(groq)}`;
 
-let payload;
-try {
   const res = await fetch(url, {
     headers: {
       // Only needed if the dataset is private. Public datasets ignore it.
@@ -157,10 +218,13 @@ try {
     signal: AbortSignal.timeout(15_000),
   });
 
-  if (!res.ok) {
-    keepExisting(`Sanity returned ${res.status} ${res.statusText}.`);
-  }
-  payload = (await res.json()).result;
+  if (!res.ok) throw new Error(`Sanity returned ${res.status} ${res.statusText}.`);
+  return (await res.json()).result;
+};
+
+let payload;
+try {
+  payload = await query(QUERY);
 } catch (error) {
   keepExisting(`Could not reach Sanity: ${error.message}`);
 }
@@ -175,6 +239,33 @@ if (problems.length) {
   for (const problem of problems) console.warn(`[content]   • ${problem}`);
   keepExisting("Content from Sanity failed validation.");
 }
+
+/** The program page from Sanity, or null to keep the committed copy. */
+const fetchProgramPage = async () => {
+  let program;
+  try {
+    program = await query(PROGRAM_QUERY);
+  } catch (error) {
+    console.warn(`[content] Program page: ${error.message}`);
+    return null;
+  }
+
+  if (!program) {
+    console.warn("[content] Sanity has no published `programPage` yet.");
+    return null;
+  }
+
+  const programProblems = validateProgram(program);
+  if (programProblems.length) {
+    console.warn("[content] Rejected the program page from Sanity:");
+    for (const problem of programProblems) console.warn(`[content]   • ${problem}`);
+    return null;
+  }
+
+  return program;
+};
+
+const programPage = await fetchProgramPage();
 
 /**
  * Sanity's query API returns object keys alphabetically, ignoring the order
@@ -202,6 +293,12 @@ const orderLike = (template, value) => {
 
 const current = await readFile(OUT, "utf8").catch(() => "");
 const template = current ? JSON.parse(current) : {};
+if (programPage) {
+  payload.programPage = programPage;
+} else {
+  console.warn("[content] Keeping the committed program page.");
+  payload.programPage = template.programPage;
+}
 const next = `${JSON.stringify(orderLike(template, payload), null, 2)}\n`;
 
 if (next === current) {

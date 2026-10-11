@@ -120,6 +120,75 @@ export type Exercise = {
   videoUrl?: string;
 };
 
+export type ProgramPage = {
+  _id: string;
+  _type: "programPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  hero?: {
+    headline: string;
+    emphasis: string;
+    sub: string;
+    ctaLabel: string;
+  };
+  guarantee?: string;
+  situations?: {
+    title: string;
+    points: Array<string>;
+  };
+  solution?: {
+    title: string;
+    paragraphs: Array<string>;
+  };
+  included?: {
+    title: string;
+    items: Array<{
+      title: string;
+      body: string;
+      _type: "includedItem";
+      _key: string;
+    }>;
+  };
+  testimonials?: {
+    title: string;
+    quotes?: Array<{
+      quote: string;
+      name: string;
+      detail?: string;
+      _type: "testimonial";
+      _key: string;
+    }>;
+  };
+  steps?: {
+    title: string;
+    items: Array<{
+      title: string;
+      body: string;
+      _type: "programStep";
+      _key: string;
+    }>;
+  };
+  faq?: {
+    title: string;
+    items: Array<{
+      q: string;
+      a: string;
+      _type: "programFaqItem";
+      _key: string;
+    }>;
+  };
+  finalCta?: {
+    title: string;
+    body: string;
+    ctaLabel: string;
+  };
+  seo?: {
+    title: string;
+    description: string;
+  };
+};
+
 export type SiteContent = {
   _id: string;
   _type: "siteContent";
@@ -317,6 +386,7 @@ export type AllSanitySchemaTypes =
   | ExerciseReference
   | TrainingPlan
   | Exercise
+  | ProgramPage
   | SiteContent
   | SanityImagePaletteSwatch
   | SanityImagePalette

@@ -146,8 +146,9 @@ constants. Protein is capped at 40% of calories: at 250 kg, 1.8 g/kg alone excee
 and leaves negative carbohydrate.
 
 **Why.** These are health judgment calls reserved for Einar and Aron, not the agent. They're
-grouped with their reasoning so replacing them is a five-line edit. **Still open:** Aron's
-sign-off. Bump `formula_version` when his numbers land.
+grouped with their reasoning so replacing them is a five-line edit. **Signed off by Aron on
+2026-10-11, unchanged.** `formula_version` stays 1: a bump marks a change of rules, and none
+of the values changed.
 
 ## 2026-09-24 — Experience is recorded, not used to pick a plan
 
@@ -262,3 +263,28 @@ Vercel AI Gateway (`routes/api/assistant.ts`).
 **Why.** Aron's handoff brief: answers members' everyday questions from approved content
 without being able to change anything. Nine of his draft answers were rewritten because they
 described features the app doesn't have (a cancel button, automatic renewal).
+
+## 2026-10-11 — Google Analytics, behind a consent banner
+
+**Decision.** GA4 (`G-BCRGWDSJM5`) on the landing page only, loaded with Consent Mode v2 and
+every storage type denied. `ConsentBanner.astro` grants `analytics_storage` and stores the
+choice in `localStorage` (`sp-analytics-consent`); `/personuvernd` can reopen it.
+
+**Why.** Search Console sees Google search only, and most traffic to `/programid` comes from
+ads. Vercel Web Analytics was the cookieless alternative; Einar chose GA. Iceland is in the
+EEA, so cookies wait for consent.
+
+## 2026-10-11 — Privacy notice and launch close-out
+
+**Decision.** One privacy notice, `/personuvernd` on the landing site, which the app links to
+from sign-up and the billing step. It lists what `schema.ts` stores, the processors (Clerk,
+Neon, Vercel, OpenAI, Google) and retention.
+
+- **The smoke test is marked passed.** Aron runs the full sign-up → questionnaire → dashboard
+  path in production, so the planned Playwright test was not written.
+- **Error monitoring is deferred.**
+- The production test account `einar+prufa@maul.is` and the `pre-0007` / `pre-0008` Neon
+  snapshot branches were deleted.
+
+**Why.** The app stores health answers and kennitölur, and the site now sets cookies; both
+need a notice. Handover happened by use, not by document.
