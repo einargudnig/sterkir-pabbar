@@ -266,7 +266,7 @@ described features the app doesn't have (a cancel button, automatic renewal).
 
 ## 2026-10-11 — Google Analytics, behind a consent banner
 
-**Decision.** GA4 (`G-BCRGWDSJM5`) on the landing page only, loaded with Consent Mode v2 and
+**Decision.** GA4 (`G-BCRGWDSJM5`) on the landing page, loaded with Consent Mode v2 and
 every storage type denied. `ConsentBanner.astro` grants `analytics_storage` and stores the
 choice in `localStorage` (`sp-analytics-consent`); `/personuvernd` can reopen it.
 
@@ -288,3 +288,8 @@ Neon, Vercel, OpenAI, Google) and retention.
 
 **Why.** The app stores health answers and kennitölur, and the site now sets cookies; both
 need a notice. Handover happened by use, not by document.
+
+Same day, the members' area got its own stream, `G-66J34LSM16`, with the same consent
+model: `GTAG_BOOTSTRAP` in `app/lib/analytics.ts` is inlined into `root.tsx`'s `<head>`, and
+`components/consent-banner.tsx` grants. It only runs on `app.sterkirpabbar.is`, so preview
+deployments and local dev send nothing. No user id, email or answer is sent to Google.
