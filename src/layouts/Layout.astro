@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import { site } from "../config/site";
 import { buildJsonLd } from "../lib/jsonLd";
+import ConsentBanner from "../components/ConsentBanner.astro";
 
 interface Props {
   title?: string;
@@ -108,12 +109,35 @@ const jsonLd = noindex ? null : JSON.stringify(buildJsonLd());
     <link rel="apple-touch-icon" href="/logo/icon-512.png" />
 
     {jsonLd && <script type="application/ld+json" set:html={jsonLd} is:inline />}
+
+    <!-- Google tag (gtag.js). Consent defaults to denied; ConsentBanner grants it. -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-BCRGWDSJM5"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("consent", "default", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied",
+      });
+      try {
+        if (localStorage.getItem("sp-analytics-consent") === "granted") {
+          gtag("consent", "update", { analytics_storage: "granted" });
+        }
+      } catch (e) {}
+      gtag("js", new Date());
+      gtag("config", "G-BCRGWDSJM5");
+    </script>
   </head>
   <body>
     {/* #efni is the homepage's main landmark; pages without it target #meginmal,
         which every page wrapper provides. */}
     <a href={noindex ? "#meginmal" : "#efni"} class="skip-link">Fara í meginmál</a>
     <slot />
+    <ConsentBanner />
 
     <style>
       .skip-link {
