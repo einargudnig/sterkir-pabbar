@@ -59,7 +59,7 @@ Paths and filenames are English; every word a member reads is Icelandic.
 /dashboard/macros     Mín macros
 /articles             Fróðleikur, and /articles/:slug
 /settings             account, measurements, days per week, paid-until date
-/admin                Aron: claims sent and paid, grants, rerun the questionnaire
+/admin                Aron: claims sent and paid, grants, delete a user, rerun the questionnaire
 
 /api/clerk/webhook    user created/deleted → users table (signature verified)
 /api/assistant        the chat bubble's endpoint

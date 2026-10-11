@@ -1,3 +1,4 @@
+import { isClerkAPIResponseError } from "@clerk/react-router/errors";
 import { clerkClient } from "@clerk/react-router/server";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
   cancelClaim,
+  deleteMember,
   grantAccess,
   listUsers,
   markClaimPaid,
@@ -114,9 +116,23 @@ const actionSchema = z.discriminatedUnion("intent", [
       .refine((value) => value === null || !Number.isNaN(value.getTime())),
   }),
   z.object({ intent: z.literal("revoke"), userId: z.uuid() }),
+  z.object({ intent: z.literal("delete"), userId: z.uuid() }),
 ]);
 
 type ActionResult = { readonly notice: string };
+
+/** A Clerk account already gone — deleted by the member, or a retry — is the outcome we wanted. */
+const deleteClerkUser = (args: Route.ActionArgs) => async (clerkUserId: string) => {
+  try {
+    await clerkClient(args).users.deleteUser(clerkUserId);
+  } catch (error) {
+    if (isClerkAPIResponseError(error) && error.status === 404) {
+      return;
+    }
+
+    throw error;
+  }
+};
 
 const STALE = "Þetta hafði þegar verið skráð — listinn sýnir stöðuna eins og hún er núna.";
 
@@ -149,6 +165,18 @@ export async function action(args: Route.ActionArgs): Promise<ActionResult> {
     await cancelClaim(input.claimId);
 
     return { notice: "Hætt við kröfuna." };
+  }
+
+  if (input.intent === "delete") {
+    try {
+      return (await deleteMember(input.userId, deleteClerkUser(args))) === "deleted"
+        ? { notice: "Notanda eytt." }
+        : { notice: "Þessi notandi fannst ekki." };
+    } catch (error) {
+      console.error("admin: delete failed", error);
+
+      return { notice: "Náði ekki að eyða notandanum — reyndu aftur eftir smá stund." };
+    }
   }
 
   if (input.intent === "revoke") {
@@ -364,6 +392,26 @@ function Details({ user }: { user: DashboardUser }) {
             </Button>
           </Form>
         )}
+
+        {/* For someone who signed up and walked away. Irreversible, so it asks
+            first; the person can always sign up again from scratch. */}
+        <Form
+          method="post"
+          onSubmit={(event) => {
+            const who = user.name ?? user.email ?? "þessum notanda";
+
+            if (!window.confirm(`Eyða ${who} úr kerfinu? Svör, plan og kröfur hverfa líka.`)) {
+              event.preventDefault();
+            }
+          }}
+        >
+          <input type="hidden" name="intent" value="delete" />
+          <input type="hidden" name="userId" value={user.id} />
+
+          <Button type="submit" variant="destructive" size="sm">
+            Eyða notanda
+          </Button>
+        </Form>
       </div>
     </div>
   );

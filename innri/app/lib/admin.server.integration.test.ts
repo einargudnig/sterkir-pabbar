@@ -7,6 +7,7 @@ import { onboarding, users } from "~/db/schema";
 
 import {
   cancelClaim,
+  deleteMember,
   grantAccess,
   listMembers,
   listUsers,
@@ -206,5 +207,51 @@ describe("claims", () => {
     expect((await listUsers(now)).find((user) => user.id === member.id)?.lastPaidClaim?.id).toBe(
       claim?.id,
     );
+  });
+});
+
+describe("deleteMember", () => {
+  const exists = async (id: string) =>
+    (await db.query.users.findFirst({ where: eq(users.id, id) })) !== undefined;
+
+  it("deletes the Clerk account, then the row and everything that hangs off it", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    await db.insert(onboarding).values(answer(member.id, days(-1), 92));
+    await sendClaim(member.id, 30, now);
+
+    const deletedIdentities: string[] = [];
+
+    const result = await deleteMember(member.id, async (clerkUserId) => {
+      deletedIdentities.push(clerkUserId);
+    });
+
+    expect(result).toBe("deleted");
+    expect(deletedIdentities).toEqual([member.clerkUserId]);
+    expect(await exists(member.id)).toBe(false);
+    expect(await db.select().from(onboarding)).toEqual([]);
+  });
+
+  it("keeps the row when Clerk fails, so Aron can try again", async () => {
+    const member = await createMember({ readyAt: days(-1) });
+
+    await expect(
+      deleteMember(member.id, async () => {
+        throw new Error("Clerk is down");
+      }),
+    ).rejects.toThrow("Clerk is down");
+
+    expect(await exists(member.id)).toBe(true);
+  });
+
+  it("refuses to delete an admin", async () => {
+    const admin = await createMember({ isAdmin: true });
+
+    const result = await deleteMember(admin.id, async () => {
+      throw new Error("must not be called");
+    });
+
+    expect(result).toBe("unknown");
+    expect(await exists(admin.id)).toBe(true);
   });
 });

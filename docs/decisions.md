@@ -293,3 +293,16 @@ Same day, the members' area got its own stream, `G-66J34LSM16`, with the same co
 model: `GTAG_BOOTSTRAP` in `app/lib/analytics.ts` is inlined into `root.tsx`'s `<head>`, and
 `components/consent-banner.tsx` grants. It only runs on `app.sterkirpabbar.is`, so preview
 deployments and local dev send nothing. No user id, email or answer is sent to Google.
+
+## 2026-10-11 — Aron can delete a user from /admin
+
+**Decision.** "Eyða notanda" on an expanded row deletes the person's Clerk account, then their
+row, which cascades to answers, macros, plans and claims. It asks for confirmation first and
+refuses admins.
+
+**Why.** Someone answered the questionnaire, saw the price and left, and sat in the invoicing
+queue with no way out. Deleting only the row would not stick: `requireUser` recreates a missing
+row on the next request. So Clerk goes first, and if Clerk fails the row stays and Aron retries.
+A hard delete, not an archive flag: the person never paid, and they can sign up again from
+scratch. It also deletes a paying member's claim history, the same as when a member deletes
+their own account.
